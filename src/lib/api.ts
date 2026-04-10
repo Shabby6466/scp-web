@@ -1,0 +1,77 @@
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
+function getToken(): string | null {
+  return localStorage.getItem('access_token');
+}
+
+export function setToken(token: string) {
+  localStorage.setItem('access_token', token);
+}
+
+export function clearToken() {
+  localStorage.removeItem('access_token');
+}
+
+export class ApiError extends Error {
+  status: number;
+  data: any;
+  constructor(status: number, data: any) {
+    super(data?.message || `API Error ${status}`);
+    this.status = status;
+    this.data = data;
+  }
+}
+
+export async function apiFetch<T = any>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...((options.headers as Record<string, string>) || {}),
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  if (!res.ok) {
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      data = { message: res.statusText };
+    }
+    throw new ApiError(res.status, data);
+  }
+
+  const text = await res.text();
+  return text ? JSON.parse(text) : (null as T);
+}
+
+export const api = {
+  get: <T = any>(path: string) => apiFetch<T>(path),
+
+  post: <T = any>(path: string, body?: any) =>
+    apiFetch<T>(path, {
+      method: 'POST',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  patch: <T = any>(path: string, body?: any) =>
+    apiFetch<T>(path, {
+      method: 'PATCH',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  put: <T = any>(path: string, body?: any) =>
+    apiFetch<T>(path, {
+      method: 'PUT',
+      body: body ? JSON.stringify(body) : undefined,
+    }),
+
+  delete: <T = any>(path: string) =>
+    apiFetch<T>(path, { method: 'DELETE' }),
+};

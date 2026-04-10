@@ -1,0 +1,52 @@
+project_id = "rzuitahepljoteokmyiu"
+
+[functions.send-parent-invitation]
+verify_jwt = true
+
+[functions.authenticate-document]
+verify_jwt = true
+
+[functions.scan-document]
+verify_jwt = true
+
+[functions.log-auth-event]
+verify_jwt = false
+
+[functions.send-expiration-reminders]
+verify_jwt = true
+
+[functions.log-event]
+verify_jwt = true
+
+[functions.auto-assign-branch]
+verify_jwt = true
+
+[functions.process-bulk-documents]
+verify_jwt = true
+
+[functions.send-school-admin-invitation]
+verify_jwt = true
+
+[functions.notify-parent-accepted]
+verify_jwt = true
+
+[functions.send-parent-welcome]
+verify_jwt = true
+
+[functions.send-teacher-invitation]
+verify_jwt = true
+
+[functions.send-director-invitation]
+verify_jwt = true
+
+[functions.analyze-teacher-eligibility]
+verify_jwt = true
+
+[functions.import-roster]
+verify_jwt = true
+
+[functions.log-error]
+verify_jwt = false
+
+[functions.export-school-data]
+verify_jwt = true
