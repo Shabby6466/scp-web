@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { api } from "@/lib/api";
+import { api, unwrapList } from "@/lib/api";
 import { GraduationCap, Search, Command } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentComplianceSummary } from "./StudentComplianceSummary";
@@ -46,12 +46,19 @@ export const StudentComplianceBreakdown = ({
 
   const fetchStudentCompliance = async () => {
     try {
+      if (!schoolId) {
+        setStudents([]);
+        setLoading(false);
+        return;
+      }
       const params = new URLSearchParams();
       params.set('role', 'STUDENT');
-      if (schoolId) params.set('schoolId', schoolId);
       if (branchId) params.set('branchId', branchId);
+      params.set('limit', '500');
 
-      const studentsData = await api.get(`/users?${params.toString()}`);
+      const studentsData = await api
+        .get(`/schools/${schoolId}/users?${params.toString()}`)
+        .then(unwrapList);
 
       const studentCompliance: StudentCompliance[] = [];
 

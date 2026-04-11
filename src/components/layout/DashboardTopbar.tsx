@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -126,18 +127,31 @@ export function DashboardTopbar({
       {/* Breadcrumbs */}
       <Breadcrumb className="flex-1">
         <BreadcrumbList>
-          {breadcrumbs.map((crumb, index) => <BreadcrumbItem key={crumb.path}>
-              {index === breadcrumbs.length - 1 ? <BreadcrumbPage className="text-sm font-medium">{crumb.label}
-                </BreadcrumbPage> : <>
-                  <BreadcrumbLink href={crumb.path} onClick={e => {
-              e.preventDefault();
-              navigate(crumb.path);
-            }} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          {breadcrumbs.map((crumb, index) => (
+            <Fragment key={`${crumb.path}-${index}`}>
+              <BreadcrumbItem>
+                {index === breadcrumbs.length - 1 ? (
+                  <BreadcrumbPage className="text-sm font-medium">
+                    {crumb.label}
+                  </BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink
+                    href={crumb.path}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(crumb.path);
+                    }}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     {crumb.label}
                   </BreadcrumbLink>
-                  <BreadcrumbSeparator className="[&>svg]:size-3.5" />
-                </>}
-            </BreadcrumbItem>)}
+                )}
+              </BreadcrumbItem>
+              {index < breadcrumbs.length - 1 ? (
+                <BreadcrumbSeparator className="[&>svg]:size-3.5" />
+              ) : null}
+            </Fragment>
+          ))}
         </BreadcrumbList>
       </Breadcrumb>
 

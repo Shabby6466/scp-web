@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { useUserRole } from '@/hooks/useUserRole';
 import { userService } from '@/services/userService';
 import { studentParentService } from '@/services/studentParentService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +23,24 @@ interface Parent {
   }>;
 }
 
+/** `GET /student-parents/parent/:id` returns rows with nested `student`. */
+function mapStudentLinksToDisplay(apiRows: unknown): Parent['students'] {
+  const rows = Array.isArray(apiRows) ? apiRows : [];
+  return rows.map((row: any) => {
+    const s = row.student ?? row;
+    const full = (s.name as string | undefined)?.trim() ?? '';
+    const parts = full.split(/\s+/).filter(Boolean);
+    return {
+      id: s.id as string,
+      first_name: parts[0] ?? '',
+      last_name: parts.slice(1).join(' ') ?? '',
+      school_name: (s.school?.name ?? s.branch?.name ?? null) as string | null,
+    };
+  });
+}
+
 const AdminParents = () => {
+  const { schoolId, isAdmin } = useUserRole();
   const [parents, setParents] = useState<Parent[]>([]);
   const [filteredParents, setFilteredParents] = useState<Parent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -30,7 +48,7 @@ const AdminParents = () => {
 
   useEffect(() => {
     fetchParents();
-  }, []);
+  }, [schoolId, isAdmin]);
 
   useEffect(() => {
     applyFilters();
@@ -38,15 +56,44 @@ const AdminParents = () => {
 
   const fetchParents = async () => {
     try {
-      const parentProfiles = await userService.list({ role: 'parent' });
+      // GET /users is admin-only; school directors must use /schools/:schoolId/users
+      if (!schoolId && !isAdmin) {
+        setParents([]);
+        return;
+      }
+
+      const parentProfiles = await userService.list(
+        schoolId
+          ? { schoolId, role: 'PARENT' }
+          : { role: 'PARENT' },
+      );
 
       const parentsWithStudents = await Promise.all(
         (parentProfiles || []).map(async (profile: any) => {
           try {
-            const students = await studentParentService.getStudentsOfParent(profile.id);
-            return { ...profile, students: students || [] };
+            const linkRows = await studentParentService.getStudentsOfParent(profile.id);
+            const displayName =
+              profile.full_name ??
+              profile.name ??
+              [profile.first_name, profile.last_name].filter(Boolean).join(' ') ??
+              profile.email ??
+              'Parent';
+            return {
+              ...profile,
+              full_name: displayName,
+              students: mapStudentLinksToDisplay(linkRows),
+            };
           } catch {
-            return { ...profile, students: [] };
+            return {
+              ...profile,
+              full_name:
+                profile.full_name ??
+                profile.name ??
+                [profile.first_name, profile.last_name].filter(Boolean).join(' ') ??
+                profile.email ??
+                'Parent',
+              students: [],
+            };
           }
         })
       );

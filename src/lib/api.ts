@@ -12,6 +12,16 @@ export function clearToken() {
   localStorage.removeItem('access_token');
 }
 
+/** Many Nest handlers return `{ data: T[]; meta: {...} }` instead of a raw array. */
+export function unwrapList<T>(res: unknown): T[] {
+  if (Array.isArray(res)) return res as T[];
+  if (res && typeof res === 'object' && 'data' in res) {
+    const d = (res as { data: unknown }).data;
+    return Array.isArray(d) ? (d as T[]) : [];
+  }
+  return [];
+}
+
 export class ApiError extends Error {
   status: number;
   data: any;

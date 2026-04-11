@@ -109,7 +109,9 @@ export const useComplianceFramework = (schoolId?: string | null) => {
     if (!targetSchoolId) return;
 
     try {
-      const data = await api.get(`/compliance/stats?schoolId=${targetSchoolId}`);
+      const data = await api.get(
+        `/analytics/compliance/stats?schoolId=${targetSchoolId}`,
+      );
       setStats(data || []);
       return data;
     } catch (err) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { api, unwrapList } from '@/lib/api';
 import { addDays, isBefore } from 'date-fns';
 
 export interface SchoolSetupStatus {
@@ -71,16 +71,24 @@ export const useSchoolSetupStatus = (schoolId: string | null, branchId?: string 
         complianceReqsData,
         facilityTypesData,
       ] = await Promise.all([
-        api.get(`/document-types?schoolId=${schoolId}&isActive=true`),
-        api.get(`/users?role=TEACHER&schoolId=${schoolId}${branchParam}`),
-        api.get(`/users?role=STUDENT&schoolId=${schoolId}${branchParam}`),
+        api.get(`/document-types?schoolId=${schoolId}`),
+        api
+          .get(
+            `/schools/${schoolId}/users?role=TEACHER${branchId ? `&branchId=${branchId}` : ''}&limit=500`,
+          )
+          .then(unwrapList),
+        api
+          .get(
+            `/schools/${schoolId}/users?role=STUDENT${branchId ? `&branchId=${branchId}` : ''}&limit=500`,
+          )
+          .then(unwrapList),
         api.get(`/invitations?schoolId=${schoolId}${branchParam}`),
         api.get(`/documents/search?schoolId=${schoolId}&status=approved`),
         api.get(`/invitations?schoolId=${schoolId}${branchParam}&status=pending`),
         api.get(`/invitations?schoolId=${schoolId}${branchParam}&status=accepted`),
-        api.get(`/compliance/inspection-types?category=doh&schoolId=${schoolId}`),
-        api.get(`/compliance/requirements?schoolId=${schoolId}&status=complete`),
-        api.get(`/compliance/inspection-types?category=facility_safety&schoolId=${schoolId}`),
+        api.get(`/schools/${schoolId}/inspection-types`),
+        api.get(`/schools/${schoolId}/compliance-requirements`),
+        api.get(`/schools/${schoolId}/inspection-types`),
       ]);
 
       const requiredDocumentCount = Array.isArray(requiredDocsData) ? requiredDocsData.length : 0;

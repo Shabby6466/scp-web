@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
+import { api, unwrapList } from '@/lib/api';
 import { analyticsService } from '@/services/analyticsService';
 import { useUserRole } from './useUserRole';
 import { useAuth } from '@/contexts/AuthContext';
@@ -60,10 +60,21 @@ export const useComplianceData = (schoolId?: string, branchId?: string) => {
         targetSchoolId = user.schoolId;
       }
 
+      if (!targetSchoolId) {
+        setStats(null);
+        setExpiringDocs([]);
+        setExpiredDocs([]);
+        setLoading(false);
+        return;
+      }
+
       const [statsData, expiringData, expiredData] = await Promise.all([
-        analyticsService.complianceStats(isAdmin ? undefined : targetSchoolId),
-        analyticsService.expiringDocuments(60, isAdmin ? undefined : targetSchoolId),
-        analyticsService.expiredDocuments(isAdmin ? undefined : targetSchoolId),
+        analyticsService.getComplianceStats({ schoolId: targetSchoolId }),
+        analyticsService.getExpiringDocuments({
+          schoolId: targetSchoolId,
+          days: 60,
+        }),
+        analyticsService.getExpiredDocuments({ schoolId: targetSchoolId }),
       ]);
 
       if (statsData && (Array.isArray(statsData) ? statsData.length > 0 : true)) {
@@ -73,10 +84,18 @@ export const useComplianceData = (schoolId?: string, branchId?: string) => {
       let filteredExpiring = expiringData || [];
       let filteredExpired = expiredData || [];
 
-      if (branchId) {
+      if (branchId && targetSchoolId) {
         const [branchStudents, branchTeachers] = await Promise.all([
-          api.get(`/users?role=STUDENT&branchId=${branchId}`),
-          api.get(`/users?role=TEACHER&branchId=${branchId}`),
+          api
+            .get(
+              `/schools/${targetSchoolId}/users?role=STUDENT&branchId=${branchId}&limit=500`,
+            )
+            .then(unwrapList),
+          api
+            .get(
+              `/schools/${targetSchoolId}/users?role=TEACHER&branchId=${branchId}&limit=500`,
+            )
+            .then(unwrapList),
         ]);
 
         const branchStudentIds = new Set((branchStudents || []).map((s: any) => s.id));

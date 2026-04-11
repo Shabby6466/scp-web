@@ -13,5 +13,11 @@ export const documentTypeService = {
   update: (id: string, data: any) => api.patch(`/document-types/${id}`, data),
   remove: (id: string) => api.delete(`/document-types/${id}`),
   assign: (documentTypeId: string, userIds: string[]) => api.post(`/document-types/${documentTypeId}/assign`, { userIds }),
-  unassign: (documentTypeId: string, userIds: string[]) => api.post(`/document-types/${documentTypeId}/unassign`, { userIds }),
+  unassign: async (documentTypeId: string, userIds: string[]) => {
+    await Promise.all(
+      userIds.map((userId) =>
+        api.delete(`/document-types/${documentTypeId}/assign/${userId}`),
+      ),
+    );
+  },
 };

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { api } from "@/lib/api";
+import { api, unwrapList } from "@/lib/api";
 import { Users, Search, CheckCircle, AlertCircle, ChevronRight } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -46,12 +46,19 @@ export const TeacherComplianceBreakdown = ({ schoolId, branchId, isAdmin }: Teac
 
   const fetchTeacherCompliance = async () => {
     try {
+      if (!schoolId) {
+        setTeachers([]);
+        setLoading(false);
+        return;
+      }
       const params = new URLSearchParams();
       params.set('role', 'TEACHER');
-      if (schoolId) params.set('schoolId', schoolId);
       if (branchId) params.set('branchId', branchId);
+      params.set('limit', '500');
 
-      const teachersData = await api.get(`/users?${params.toString()}`);
+      const teachersData = await api
+        .get(`/schools/${schoolId}/users?${params.toString()}`)
+        .then(unwrapList);
 
       const teacherCompliance: TeacherCompliance[] = (teachersData || []).map((teacher: any) => {
         const certStatus = getStatus(teacher.certification_expiry);

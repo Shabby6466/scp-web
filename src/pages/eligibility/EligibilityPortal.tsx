@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { api } from "@/lib/api";
+import { api, unwrapList } from "@/lib/api";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useToast } from "@/hooks/use-toast";
 import { PageContainer } from "@/components/ui/page-container";
@@ -57,10 +57,12 @@ export default function EligibilityPortal() {
     try {
       setLoading(true);
 
-      const branchParam = isDirector && branchId ? `&branchId=${branchId}` : '';
-
       const [teachersRes, profilesRes, positionsRes] = await Promise.all([
-        api.get(`/users?role=TEACHER&schoolId=${schoolId}${branchParam}`),
+        api
+          .get(
+            `/schools/${schoolId}/users?role=TEACHER${isDirector && branchId ? `&branchId=${branchId}` : ''}&limit=500`,
+          )
+          .then(unwrapList),
         api.get(`/eligibility-profiles?schoolId=${schoolId}`),
         api.get(`/teacher-positions?schoolId=${schoolId}&isActive=true`),
       ]);

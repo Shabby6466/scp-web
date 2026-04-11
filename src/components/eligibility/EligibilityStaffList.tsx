@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/lib/api";
+import { api, unwrapList } from "@/lib/api";
 import { eligibilityService } from "@/services/eligibilityService";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,9 +84,12 @@ export function EligibilityStaffList({ schoolId, branchId }: EligibilityStaffLis
     try {
       setLoading(true);
 
-      const branchParam = branchId ? `&branchId=${branchId}` : '';
       const [teachers, profiles] = await Promise.all([
-        api.get(`/users?role=TEACHER&schoolId=${schoolId}${branchParam}`),
+        api
+          .get(
+            `/schools/${schoolId}/users?role=TEACHER${branchId ? `&branchId=${branchId}` : ''}&limit=500`,
+          )
+          .then(unwrapList),
         api.get(`/eligibility-profiles?schoolId=${schoolId}`),
       ]);
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { api } from "@/lib/api";
+import { api, unwrapList } from "@/lib/api";
 import { branchService } from "@/services/branchService";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
@@ -148,11 +148,13 @@ export function EligibilityMatrix({ schoolId, branchId }: EligibilityMatrixProps
     try {
       setLoading(true);
 
-      const branchParam = branchId ? `&branchId=${branchId}` : '';
-
       const [positionsData, teachersData, profilesData, branchesData] = await Promise.all([
         api.get(`/teacher-positions?schoolId=${schoolId}&isActive=true`),
-        api.get(`/users?role=TEACHER&schoolId=${schoolId}${branchParam}`),
+        api
+          .get(
+            `/schools/${schoolId}/users?role=TEACHER${branchId ? `&branchId=${branchId}` : ''}&limit=500`,
+          )
+          .then(unwrapList),
         api.get(`/eligibility-profiles?schoolId=${schoolId}`),
         branchService.listBySchool(schoolId),
       ]);
