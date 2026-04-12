@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { api } from '@/lib/api';
+import { mapDocumentFromNest, mapStudentFromParentLink } from '@/lib/nestMappers';
 import { studentParentService } from '@/services/studentParentService';
 import { documentService } from '@/services/documentService';
 import Header from '@/components/Header';
@@ -48,55 +49,11 @@ interface DocumentStats {
 }
 
 function mapStudentLink(link: any, parentId: string) {
-  const s = link?.student;
-  if (!s?.id) return null;
-  const sp = s.studentProfile;
-  const dob = sp?.dateOfBirth
-    ? new Date(sp.dateOfBirth).toISOString().slice(0, 10)
-    : '';
-  const parts = (s.name || '').trim().split(/\s+/).filter(Boolean);
-  const first = sp?.firstName ?? parts[0] ?? '';
-  const last = sp?.lastName ?? (parts.length > 1 ? parts.slice(1).join(' ') : '');
-  return {
-    id: s.id,
-    first_name: first,
-    last_name: last,
-    date_of_birth: dob,
-    school_id: s.schoolId ?? null,
-    branch_id: s.branchId ?? null,
-    grade_level: sp?.gradeLevel ?? null,
-    parent_id: parentId,
-    school_name: null as string | null,
-    created_at: '',
-    updated_at: '',
-    deleted_at: null,
-    deleted_by: null,
-  };
-}
-
-function normalizeDocStatus(status: string) {
-  return String(status || '').toLowerCase();
+  return mapStudentFromParentLink(link, parentId);
 }
 
 function mapApiDocument(d: any) {
-  const cat =
-    d.documentType?.category ||
-    (d.documentType?.name
-      ? String(d.documentType.name)
-          .toLowerCase()
-          .replace(/\s+/g, '_')
-      : '');
-  return {
-    ...d,
-    student_id: d.ownerUserId,
-    ownerUserId: d.ownerUserId,
-    file_name: d.fileName,
-    created_at: d.createdAt,
-    expiration_date: d.expiresAt,
-    rejection_reason: d.rejectionReason,
-    category: cat,
-    status: normalizeDocStatus(d.status),
-  };
+  return mapDocumentFromNest(d as Record<string, unknown>) as any;
 }
 
 const Dashboard = () => {
@@ -116,6 +73,7 @@ const Dashboard = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showConsentDialog, setShowConsentDialog] = useState(false);
   const [consentGiven, setConsentGiven] = useState(false);
+  const [requiredByStudent, setRequiredByStudent] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (authLoading || roleLoading) return;
@@ -158,7 +116,7 @@ const Dashboard = () => {
       const list = Array.isArray(links) ? links : [];
       const rows = list
         .map((l: any) => mapStudentLink(l, user.id))
-        .filter(Boolean) as ReturnType<typeof mapStudentLink>[];
+        .filter(Boolean) as NonNullable<ReturnType<typeof mapStudentLink>>[];
       setStudents(rows);
     } catch (e) {
       console.error(e);
@@ -225,6 +183,31 @@ const Dashboard = () => {
     fetchDocuments();
   }, [user?.id, refreshTrigger, fetchStudents, fetchDocuments]);
 
+  useEffect(() => {
+    if (students.length === 0) {
+      setRequiredByStudent({});
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const entries = await Promise.all(
+        students.map(async (s) => {
+          try {
+            const sum = await documentService.getSummary(s.id);
+            const n = (sum as { assignedCount?: number })?.assignedCount;
+            return [s.id, typeof n === 'number' && n > 0 ? n : 1] as const;
+          } catch {
+            return [s.id, 1] as const;
+          }
+        }),
+      );
+      if (!cancelled) setRequiredByStudent(Object.fromEntries(entries));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [students]);
+
   const handleConsentAccept = async () => {
     if (!user?.id) return;
 
@@ -243,8 +226,6 @@ const Dashboard = () => {
   const handleRefresh = () => {
     setRefreshTrigger((prev) => prev + 1);
   };
-
-  const REQUIRED_CATEGORIES = 6;
 
   if (authLoading || roleLoading) {
     return <LoadingSpinner />;
@@ -350,7 +331,7 @@ const Dashboard = () => {
                       key={student.id}
                       student={student}
                       documents={documents}
-                      requiredCount={REQUIRED_CATEGORIES}
+                      requiredCount={requiredByStudent[student.id] ?? 1}
                       onDocumentUploaded={handleRefresh}
                       onClick={() => navigate(`/child/${student.id}`)}
                     />

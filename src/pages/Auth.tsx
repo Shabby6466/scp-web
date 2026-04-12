@@ -53,10 +53,9 @@ const Auth = () => {
       <div className="hidden lg:flex lg:w-1/2 bg-primary relative">
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="SCP" className="h-10 brightness-0 invert" />
+          
             <span className="text-xl font-semibold text-white">SCP</span>
-          </Link>
+          
 
           <div className="max-w-md">
             <h1 className="text-4xl font-semibold text-white leading-tight">
@@ -67,7 +66,7 @@ const Auth = () => {
             </p>
           </div>
 
-          <p className="text-white/40 text-sm">© 2024 SCP</p>
+          <p className="text-white/40 text-sm">© 2026 SCP</p>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { documentService } from '@/services/documentService';
 import { studentParentService } from '@/services/studentParentService';
+import { mapDocumentFromNest, mapStudentFromParentLink } from '@/lib/nestMappers';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +50,11 @@ const DocumentsList = ({ refreshTrigger }: DocumentsListProps) => {
 
     try {
       const data = await studentParentService.getStudentsOfParent(user.id);
-      setStudents(data || []);
+      const list = Array.isArray(data) ? data : [];
+      const rows = list
+        .map((l: unknown) => mapStudentFromParentLink(l as Parameters<typeof mapStudentFromParentLink>[0], user.id))
+        .filter(Boolean);
+      setStudents(rows);
     } catch (error: any) {
       console.error('Failed to load students:', error);
     }
@@ -59,8 +64,14 @@ const DocumentsList = ({ refreshTrigger }: DocumentsListProps) => {
     if (!user) return;
 
     try {
-      const data = await documentService.listByOwner(user.id);
-      setDocuments(data || []);
+      const links = await studentParentService.getStudentsOfParent(user.id);
+      const list = Array.isArray(links) ? links : [];
+      const studentIds = list.map((l: any) => l.student?.id).filter(Boolean);
+      const docLists = await Promise.all(
+        studentIds.map((sid: string) => documentService.listByOwner(sid).catch(() => [])),
+      );
+      const flat = docLists.flat().map((d) => mapDocumentFromNest(d as Record<string, unknown>));
+      setDocuments(flat);
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -108,18 +119,21 @@ const DocumentsList = ({ refreshTrigger }: DocumentsListProps) => {
   };
 
   const getStudentName = (studentId: string) => {
-    const student = students.find(s => s.id === studentId);
+    const student = students.find((s: { id: string }) => s.id === studentId);
     return student ? `${student.first_name} ${student.last_name}` : '';
   };
+
+  const categoryLabel = (doc: { category?: string; documentType?: { name?: string } }) =>
+    CATEGORY_LABELS[doc.category || ''] || doc.documentType?.name || 'Document';
 
   const filteredDocuments = documents.filter((doc) => {
     if (!searchQuery.trim()) return true;
     
     const query = searchQuery.toLowerCase();
-    const fileName = doc.file_name.toLowerCase();
-    const category = CATEGORY_LABELS[doc.category].toLowerCase();
-    const studentName = getStudentName(doc.student_id).toLowerCase();
-    const status = doc.status.toLowerCase();
+    const fileName = String(doc.file_name || '').toLowerCase();
+    const category = categoryLabel(doc).toLowerCase();
+    const studentName = getStudentName(doc.student_id as string).toLowerCase();
+    const status = String(doc.status || '').toLowerCase();
     
     return fileName.includes(query) || 
            category.includes(query) || 
@@ -188,7 +202,7 @@ const DocumentsList = ({ refreshTrigger }: DocumentsListProps) => {
                   {doc.file_name}
                 </CardTitle>
                 <CardDescription className="mt-1">
-                  {CATEGORY_LABELS[doc.category]}
+                  {categoryLabel(doc)}
                 </CardDescription>
               </div>
               <Badge variant={STATUS_COLORS[doc.status]}>
@@ -203,7 +217,7 @@ const DocumentsList = ({ refreshTrigger }: DocumentsListProps) => {
               )}
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center gap-4 text-muted-foreground">
-                  <span>{(doc.file_size / 1024 / 1024).toFixed(2)} MB</span>
+                  <span>{((Number(doc.file_size) || 0) / 1024 / 1024).toFixed(2)} MB</span>
                   {doc.expiration_date && (
                     <span className="flex items-center gap-1">
                       <Calendar className="h-4 w-4" />

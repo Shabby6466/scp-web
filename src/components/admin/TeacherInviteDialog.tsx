@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { schoolService } from "@/services/schoolService";
 import { branchService } from "@/services/branchService";
-import { api } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
+import { invitationService } from "@/services/invitationService";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +28,6 @@ interface TeacherInviteDialogProps {
 }
 
 export default function TeacherInviteDialog({ schoolId: propSchoolId, branchId: propBranchId, onInviteSent }: TeacherInviteDialogProps) {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -77,7 +75,13 @@ export default function TeacherInviteDialog({ schoolId: propSchoolId, branchId: 
     try {
       const data = await branchService.listBySchool(schoolId);
       const list = Array.isArray(data) ? data : (data as any)?.data ?? [];
-      setBranches(list);
+      setBranches(
+        list.map((b: Record<string, unknown>) => ({
+          ...b,
+          branch_name: (b.branch_name as string) ?? (b.name as string) ?? '',
+          school_id: (b.school_id as string) ?? (b.schoolId as string) ?? schoolId,
+        })),
+      );
     } catch {
       setBranches([]);
     }
@@ -94,14 +98,10 @@ export default function TeacherInviteDialog({ schoolId: propSchoolId, branchId: 
     setLoading(true);
 
     try {
-      await api.post('/invitations/send-teacher', {
+      await invitationService.sendTeacher({
         schoolId: selectedSchoolId,
-        branchId: selectedBranchId || null,
+        branchId: selectedBranchId || undefined,
         email: email.toLowerCase().trim(),
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        classroom: classroom.trim() || null,
-        createdBy: user?.id,
       });
 
       toast({

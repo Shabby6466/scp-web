@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { api } from '@/lib/api';
+import { studentParentService } from '@/services/studentParentService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import {
@@ -51,13 +51,11 @@ const StudentRegistrationDialog = ({ onStudentAdded, children }: StudentRegistra
     if (!user) return;
 
     try {
-      await api.post('/students', {
-        parentId: user.id,
+      await studentParentService.registerChild({
         firstName: data.firstName,
         lastName: data.lastName,
         dateOfBirth: data.dateOfBirth,
         gradeLevel: data.gradeLevel || null,
-        schoolName: data.schoolName || null,
       });
 
       toast({

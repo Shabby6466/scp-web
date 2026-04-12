@@ -97,7 +97,7 @@ const Footer = () => {
         {/* Footer Bottom */}
         <div className="pt-6 border-t border-border/50">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>© 2024 SCP. All rights reserved.</p>
+            <p>© 2026 SCP. All rights reserved.</p>
             <div className="flex items-center gap-5">
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-success" />

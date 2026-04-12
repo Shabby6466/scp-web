@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { documentService } from '@/services/documentService';
+import { studentParentService } from '@/services/studentParentService';
+import { mapDocumentFromNest } from '@/lib/nestMappers';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,26 +28,29 @@ const ExpirationAlerts = ({ refreshTrigger }: ExpirationAlertsProps) => {
     if (!user) return;
 
     try {
-      const data = await documentService.listByOwner(user.id);
+      const links = await studentParentService.getStudentsOfParent(user.id);
+      const list = Array.isArray(links) ? links : [];
+      const studentIds = list.map((l: { student?: { id?: string } }) => l.student?.id).filter(Boolean) as string[];
+      const docLists = await Promise.all(
+        studentIds.map((sid) => documentService.listByOwner(sid).catch(() => [])),
+      );
+      const data = docLists.flat().map((d) => mapDocumentFromNest(d as Record<string, unknown>));
 
-      if (data) {
-        const now = new Date();
-        const thirtyDaysFromNow = addDays(now, 30);
+      const now = new Date();
+      const thirtyDaysFromNow = addDays(now, 30);
 
-        const withExpiration = data.filter((doc: any) => doc.expiration_date);
+      const withExpiration = data.filter((doc) => doc.expiration_date);
 
-        const expired = withExpiration.filter((doc: any) =>
-          isBefore(new Date(doc.expiration_date), now)
-        );
+      const expired = withExpiration.filter((doc) => isBefore(new Date(doc.expiration_date as string), now));
 
-        const expiring = withExpiration.filter((doc: any) =>
-          isAfter(new Date(doc.expiration_date), now) &&
-          isBefore(new Date(doc.expiration_date), thirtyDaysFromNow)
-        );
+      const expiring = withExpiration.filter(
+        (doc) =>
+          isAfter(new Date(doc.expiration_date as string), now) &&
+          isBefore(new Date(doc.expiration_date as string), thirtyDaysFromNow),
+      );
 
-        setExpiredDocs(expired);
-        setExpiringDocs(expiring);
-      }
+      setExpiredDocs(expired);
+      setExpiringDocs(expiring);
     } catch (error) {
       console.error('Error fetching expiring documents:', error);
     }

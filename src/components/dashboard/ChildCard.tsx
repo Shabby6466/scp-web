@@ -25,8 +25,13 @@ const ChildCard = ({ student, documents, requiredCount, onDocumentUploaded, onCl
   
   const progress = requiredCount > 0 ? Math.round((approvedCount / requiredCount) * 100) : 0;
   
-  const initials = `${student.first_name.charAt(0)}${student.last_name.charAt(0)}`.toUpperCase();
-  const age = Math.floor((new Date().getTime() - new Date(student.date_of_birth).getTime()) / (1000 * 60 * 60 * 24 * 365));
+  const fi = (student.first_name || '?').charAt(0);
+  const li = (student.last_name || '?').charAt(0);
+  const initials = `${fi}${li}`.toUpperCase();
+  const dobMs = student.date_of_birth ? new Date(student.date_of_birth).getTime() : NaN;
+  const age = Number.isNaN(dobMs)
+    ? null
+    : Math.floor((Date.now() - dobMs) / (1000 * 60 * 60 * 24 * 365));
 
   return (
     <Card 
@@ -54,13 +59,9 @@ const ChildCard = ({ student, documents, requiredCount, onDocumentUploaded, onCl
                 )}
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>Age {age}</span>
-                {student.grade_level && (
-                  <>
-                    <span className="text-border">•</span>
-                    <span>{student.grade_level}</span>
-                  </>
-                )}
+                {age !== null && <span>Age {age}</span>}
+                {age !== null && student.grade_level && <span className="text-border">•</span>}
+                {student.grade_level && <span>{student.grade_level}</span>}
               </div>
             </div>
 

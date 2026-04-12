@@ -6,19 +6,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle2, TrendingUp } from 'lucide-react';
+import { mapStudentFromParentLink } from '@/lib/nestMappers';
 
 interface ProgressBarProps {
   refreshTrigger: number;
 }
-
-const REQUIRED_DOCUMENT_CATEGORIES = [
-  'immunization_records',
-  'health_forms',
-  'emergency_contacts',
-  'birth_certificate',
-  'proof_of_residence',
-  'medical_records'
-];
 
 const ProgressBar = ({ refreshTrigger }: ProgressBarProps) => {
   const { user } = useAuth();
@@ -28,37 +20,50 @@ const ProgressBar = ({ refreshTrigger }: ProgressBarProps) => {
 
   useEffect(() => {
     if (user) {
-      fetchProgress();
+      void fetchProgress();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refreshTrigger
   }, [user, refreshTrigger]);
 
   const fetchProgress = async () => {
     if (!user) return;
 
     try {
-      const students = await studentParentService.getStudentsOfParent(user.id);
+      const links = await studentParentService.getStudentsOfParent(user.id);
+      const list = Array.isArray(links) ? links : [];
+      const students = list
+        .map((l: unknown) => mapStudentFromParentLink(l as Parameters<typeof mapStudentFromParentLink>[0], user.id))
+        .filter(Boolean) as { id: string }[];
 
-      if (!students || students.length === 0) {
+      if (students.length === 0) {
         setProgress(0);
         setCompletedCount(0);
         setTotalRequired(0);
         return;
       }
 
-      const documents = await documentService.search({ ownerUserId: user.id, status: 'approved' });
+      let assigned = 0;
+      let verified = 0;
 
-      const approvedDocs = documents || [];
-    
-    // Calculate unique approved categories across all students
-    const uniqueApprovedCategories = new Set(approvedDocs.map(d => d.category));
-    const approved = uniqueApprovedCategories.size;
-    
-    const required = REQUIRED_DOCUMENT_CATEGORIES.length * students.length;
-    const percentage = required > 0 ? Math.round((approved / required) * 100) : 0;
+      for (const s of students) {
+        try {
+          const summary = (await documentService.getSummary(s.id)) as {
+            assignedCount?: number;
+            items?: { latestDocument?: { verifiedAt?: string | null } | null }[];
+          };
+          const items = summary?.items ?? [];
+          const ac = typeof summary?.assignedCount === 'number' ? summary.assignedCount : items.length;
+          assigned += Math.max(0, ac);
+          verified += items.filter((i) => i.latestDocument?.verifiedAt).length;
+        } catch {
+          /* skip */
+        }
+      }
 
-    setProgress(percentage);
-    setCompletedCount(approved);
-    setTotalRequired(required);
+      const percentage = assigned > 0 ? Math.round((verified / assigned) * 100) : 0;
+      setProgress(percentage);
+      setCompletedCount(verified);
+      setTotalRequired(assigned);
     } catch (error) {
       console.error('Error fetching progress:', error);
     }
@@ -75,39 +80,18 @@ const ProgressBar = ({ refreshTrigger }: ProgressBarProps) => {
             <div>
               <h3 className="font-semibold text-sm">Progress</h3>
               <p className="text-xs text-muted-foreground">
-                {completedCount} of {totalRequired} required documents
+                {completedCount} of {totalRequired} required slots verified
               </p>
             </div>
           </div>
-          <Badge 
-            variant={progress === 100 ? "default" : "secondary"}
-            className={`text-lg px-3 py-1 ${progress === 100 ? 'bg-green-600' : ''}`}
-          >
+          <Badge variant={progress === 100 ? 'default' : 'secondary'} className="text-xs">
             {progress}%
           </Badge>
         </div>
-        
-        <div className="space-y-2">
-          <Progress value={progress} className="h-3" />
-          
-          {progress === 100 && (
-            <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
-              <CheckCircle2 className="h-4 w-4" />
-              All required documents complete!
-            </div>
-          )}
-          
-          {progress > 0 && progress < 100 && (
-            <p className="text-xs text-muted-foreground">
-              Keep going! You're {progress}% of the way there.
-            </p>
-          )}
-          
-          {progress === 0 && totalRequired > 0 && (
-            <p className="text-xs text-muted-foreground">
-              Start uploading documents to track your progress
-            </p>
-          )}
+        <Progress value={progress} className="h-2 mb-2" />
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <CheckCircle2 className="h-3 w-3" />
+          <span>Based on forms your school assigned to each child</span>
         </div>
       </CardContent>
     </Card>

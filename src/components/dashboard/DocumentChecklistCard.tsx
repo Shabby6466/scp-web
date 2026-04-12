@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { documentService } from '@/services/documentService';
 import { studentParentService } from '@/services/studentParentService';
+import { mapDocumentFromNest, mapStudentFromParentLink } from '@/lib/nestMappers';
 import { useAuth } from '@/contexts/AuthContext';
-import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -26,67 +26,19 @@ import {
   FileText,
   RefreshCw,
   User,
-  ChevronDown,
-  ChevronRight,
 } from 'lucide-react';
-interface RequiredDocument {
-  category: string;
+
+type RowStatus = 'missing' | 'pending' | 'approved' | 'rejected' | 'expired';
+
+interface ChecklistRow {
+  typeId: string;
   name: string;
   description: string;
   isMandatory: boolean;
-}
-
-interface DocumentStatus {
-  category: string;
-  status: 'missing' | 'pending' | 'approved' | 'rejected' | 'expired';
-  document?: any;
+  status: RowStatus;
+  document?: Record<string, unknown>;
   rejectionReason?: string;
 }
-
-const REQUIRED_DOCUMENTS: RequiredDocument[] = [
-  {
-    category: 'immunization_records',
-    name: 'Immunization Records',
-    description: 'Complete vaccination history including MMR, DTaP, Polio, etc.',
-    isMandatory: true,
-  },
-  {
-    category: 'health_forms',
-    name: 'Health Forms',
-    description: 'Physical examination and health history forms',
-    isMandatory: true,
-  },
-  {
-    category: 'emergency_contacts',
-    name: 'Emergency Contacts',
-    description: 'Emergency contact information and authorization forms',
-    isMandatory: true,
-  },
-  {
-    category: 'birth_certificate',
-    name: 'Birth Certificate',
-    description: 'Official birth certificate or proof of age',
-    isMandatory: true,
-  },
-  {
-    category: 'proof_of_residence',
-    name: 'Proof of Residence',
-    description: 'Utility bill, lease agreement, or mortgage statement',
-    isMandatory: true,
-  },
-  {
-    category: 'medical_records',
-    name: 'Medical Records',
-    description: 'Additional medical documentation or special needs information',
-    isMandatory: false,
-  },
-];
-
-const CATEGORY_GROUPS = {
-  'Health & Medical': ['immunization_records', 'health_forms', 'medical_records'],
-  'Identification & Residence': ['birth_certificate', 'proof_of_residence'],
-  'Emergency Information': ['emergency_contacts'],
-};
 
 interface DocumentChecklistCardProps {
   refreshTrigger?: number;
@@ -95,20 +47,23 @@ interface DocumentChecklistCardProps {
 
 const DocumentChecklistCard = ({ refreshTrigger, onRefresh }: DocumentChecklistCardProps) => {
   const { user } = useAuth();
-  const [students, setStudents] = useState<any[]>([]);
+  const [students, setStudents] = useState<
+    { id: string; first_name: string; last_name: string }[]
+  >([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
-  const [documentStatuses, setDocumentStatuses] = useState<DocumentStatus[]>([]);
+  const [rows, setRows] = useState<ChecklistRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(Object.keys(CATEGORY_GROUPS)));
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refreshTrigger
   }, [user, refreshTrigger]);
 
   useEffect(() => {
     if (selectedStudentId) {
-      fetchDocumentStatuses(selectedStudentId);
+      void fetchRows(selectedStudentId);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refreshTrigger
   }, [selectedStudentId, refreshTrigger]);
 
   const fetchData = async () => {
@@ -116,73 +71,77 @@ const DocumentChecklistCard = ({ refreshTrigger, onRefresh }: DocumentChecklistC
 
     try {
       const studentsData = await studentParentService.getStudentsOfParent(user.id);
+      const list = Array.isArray(studentsData) ? studentsData : [];
+      const mapped = list
+        .map((l: unknown) =>
+          mapStudentFromParentLink(l as Parameters<typeof mapStudentFromParentLink>[0], user.id),
+        )
+        .filter(Boolean) as { id: string; first_name: string; last_name: string }[];
 
-      if (studentsData && studentsData.length > 0) {
-        setStudents(studentsData);
-        if (!selectedStudentId) {
-          setSelectedStudentId(studentsData[0].id);
-        }
+      setStudents(mapped);
+      if (mapped.length > 0 && !selectedStudentId) {
+        setSelectedStudentId(mapped[0].id);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching students:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchDocumentStatuses = async (studentId: string) => {
+  const rowStatusFromDoc = (raw: Record<string, unknown> | null | undefined): RowStatus => {
+    if (!raw) return 'missing';
+    const doc = mapDocumentFromNest(raw);
+    if (doc.verifiedAt) return 'approved';
+    const exp = doc.expiration_date as string | undefined;
+    if (exp && new Date(exp) < new Date()) return 'expired';
+    const st = String(doc.status || '').toLowerCase();
+    if (st === 'rejected') return 'rejected';
+    return 'pending';
+  };
+
+  const fetchRows = async (studentId: string) => {
     try {
-      const documents = await documentService.search({ ownerUserId: studentId });
-
-      const statuses: DocumentStatus[] = REQUIRED_DOCUMENTS.map((reqDoc) => {
-        const doc = (documents || []).find((d: any) => d.category === reqDoc.category);
-        
-        if (!doc) {
-          return {
-            category: reqDoc.category,
-            status: 'missing' as const,
+      const summary = (await documentService.getSummary(studentId)) as {
+        items?: {
+          documentType: {
+            id: string;
+            name?: string;
+            isMandatory?: boolean;
           };
-        }
-
-        // Check if expired
-        if (doc.expiration_date && new Date(doc.expiration_date) < new Date()) {
+          latestDocument?: Record<string, unknown> | null;
+        }[];
+      };
+      const items = summary?.items ?? [];
+      setRows(
+        items.map((item) => {
+          const dt = item.documentType;
+          const latest = item.latestDocument;
+          const status = rowStatusFromDoc(latest ?? null);
+          const doc = latest ? (mapDocumentFromNest(latest) as Record<string, unknown>) : undefined;
           return {
-            category: reqDoc.category,
-            status: 'expired' as const,
+            typeId: dt.id,
+            name: dt.name || 'Document',
+            description: '',
+            isMandatory: !!dt.isMandatory,
+            status,
             document: doc,
+            rejectionReason: (doc?.rejection_reason as string) || undefined,
           };
-        }
-
-        return {
-          category: reqDoc.category,
-          status: doc.status as 'pending' | 'approved' | 'rejected',
-          document: doc,
-          rejectionReason: doc.rejection_reason || undefined,
-        };
-      });
-
-      setDocumentStatuses(statuses);
-    } catch (error: any) {
+        }),
+      );
+    } catch (error: unknown) {
       console.error('Error fetching document statuses:', error);
+      setRows([]);
     }
   };
 
   const handleUploadComplete = () => {
-    fetchDocumentStatuses(selectedStudentId);
-    if (onRefresh) onRefresh();
+    if (selectedStudentId) void fetchRows(selectedStudentId);
+    onRefresh?.();
   };
 
-  const toggleGroup = (groupName: string) => {
-    const newExpanded = new Set(expandedGroups);
-    if (newExpanded.has(groupName)) {
-      newExpanded.delete(groupName);
-    } else {
-      newExpanded.add(groupName);
-    }
-    setExpandedGroups(newExpanded);
-  };
-
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: RowStatus) => {
     switch (status) {
       case 'approved':
         return <CheckCircle2 className="h-5 w-5 text-green-600" />;
@@ -192,23 +151,20 @@ const DocumentChecklistCard = ({ refreshTrigger, onRefresh }: DocumentChecklistC
         return <XCircle className="h-5 w-5 text-red-600" />;
       case 'expired':
         return <AlertTriangle className="h-5 w-5 text-orange-600" />;
-      case 'missing':
-        return <Circle className="h-5 w-5 text-muted-foreground" />;
       default:
         return <Circle className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, { variant: any; label: string }> = {
+  const getStatusBadge = (status: RowStatus) => {
+    const variants: Record<RowStatus, { variant: 'default' | 'secondary' | 'destructive' | 'outline'; label: string }> = {
       approved: { variant: 'default', label: 'Approved' },
       pending: { variant: 'secondary', label: 'Pending Review' },
       rejected: { variant: 'destructive', label: 'Rejected' },
       expired: { variant: 'destructive', label: 'Expired' },
       missing: { variant: 'outline', label: 'Not Uploaded' },
     };
-
-    const config = variants[status] || variants.missing;
+    const config = variants[status];
     return (
       <Badge variant={config.variant} className="text-xs">
         {config.label}
@@ -216,16 +172,13 @@ const DocumentChecklistCard = ({ refreshTrigger, onRefresh }: DocumentChecklistC
     );
   };
 
-  const calculateProgress = () => {
-    const mandatoryDocs = REQUIRED_DOCUMENTS.filter((d) => d.isMandatory);
-    const approvedCount = documentStatuses.filter(
-      (s) => s.status === 'approved' && REQUIRED_DOCUMENTS.find((d) => d.category === s.category)?.isMandatory
-    ).length;
-    return {
-      completed: approvedCount,
-      total: mandatoryDocs.length,
-      percentage: mandatoryDocs.length > 0 ? Math.round((approvedCount / mandatoryDocs.length) * 100) : 0,
-    };
+  const mandatory = rows.filter((r) => r.isMandatory);
+  const approvedMandatory = mandatory.filter((r) => r.status === 'approved').length;
+  const progress = {
+    completed: approvedMandatory,
+    total: mandatory.length,
+    percentage:
+      mandatory.length > 0 ? Math.round((approvedMandatory / mandatory.length) * 100) : rows.length === 0 ? 0 : 100,
   };
 
   if (loading) {
@@ -257,196 +210,127 @@ const DocumentChecklistCard = ({ refreshTrigger, onRefresh }: DocumentChecklistC
     );
   }
 
-  const progress = calculateProgress();
-  const selectedStudent = students.find((s) => s.id === selectedStudentId);
-
   return (
-    <>
-      <Card>
-        <CardHeader>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Document Checklist
+            </CardTitle>
+            <CardDescription>Forms your school assigned to this child</CardDescription>
+          </div>
+          {students.length > 1 && (
+            <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {students.map((student) => (
+                  <SelectItem key={student.id} value={student.id}>
+                    {student.first_name} {student.last_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-6">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Document Checklist
-              </CardTitle>
-              <CardDescription>Track your document submission progress</CardDescription>
+            <div>
+              <p className="text-sm font-medium">Overall Progress</p>
+              <p className="text-xs text-muted-foreground">
+                {progress.completed} of {progress.total} required documents verified
+              </p>
             </div>
-            {students.length > 1 && (
-              <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {students.map((student) => (
-                    <SelectItem key={student.id} value={student.id}>
-                      {student.first_name} {student.last_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </div>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {/* Overall Progress */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Overall Progress</p>
-                <p className="text-xs text-muted-foreground">
-                  {progress.completed} of {progress.total} required documents approved
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-bold">{progress.percentage}%</p>
-                <p className="text-xs text-muted-foreground">Complete</p>
-              </div>
+            <div className="text-right">
+              <p className="text-2xl font-bold">{progress.percentage}%</p>
+              <p className="text-xs text-muted-foreground">Complete</p>
             </div>
-            <Progress value={progress.percentage} className="h-3" />
-            {progress.percentage === 100 ? (
-              <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950 p-3 rounded-lg">
-                <CheckCircle2 className="h-4 w-4" />
-                <span className="font-medium">All required documents approved!</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <AlertTriangle className="h-4 w-4" />
-                <span>
-                  {progress.total - progress.completed} document{progress.total - progress.completed !== 1 ? 's' : ''}{' '}
-                  remaining
-                </span>
-              </div>
-            )}
           </div>
+          <Progress value={progress.percentage} className="h-3" />
+          {rows.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              No document types are assigned yet. Your school will assign required forms.
+            </p>
+          ) : progress.percentage === 100 && progress.total > 0 ? (
+            <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 dark:bg-green-950 p-3 rounded-lg">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="font-medium">All required documents verified!</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <AlertTriangle className="h-4 w-4" />
+              <span>
+                {Math.max(0, progress.total - progress.completed)} document
+                {progress.total - progress.completed !== 1 ? 's' : ''} remaining
+              </span>
+            </div>
+          )}
+        </div>
 
-          <Separator />
+        <Separator />
 
-          {/* Document Categories */}
-          <div className="space-y-4">
-            {Object.entries(CATEGORY_GROUPS).map(([groupName, categories]) => {
-              const isExpanded = expandedGroups.has(groupName);
-              const groupDocs = REQUIRED_DOCUMENTS.filter((doc) => categories.includes(doc.category));
-              const groupStatuses = documentStatuses.filter((status) => categories.includes(status.category));
-              const groupApproved = groupStatuses.filter((s) => s.status === 'approved').length;
-
-              return (
-                <div key={groupName} className="space-y-3">
-                  <button
-                    onClick={() => toggleGroup(groupName)}
-                    className="w-full flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      {isExpanded ? (
-                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        <div className="space-y-3">
+          {rows.map((row) => (
+            <div
+              key={row.typeId}
+              className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors"
+            >
+              <div className="mt-0.5">{getStatusIcon(row.status)}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-medium">{row.name}</h4>
+                      {row.isMandatory && (
+                        <Badge variant="outline" className="text-xs">
+                          Required
+                        </Badge>
                       )}
-                      <div className="text-left">
-                        <p className="font-semibold">{groupName}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {groupApproved} of {groupDocs.length} complete
-                        </p>
-                      </div>
                     </div>
-                    <Badge variant="outline">
-                      {groupApproved}/{groupDocs.length}
-                    </Badge>
-                  </button>
-
-                  {isExpanded && (
-                    <div className="space-y-3 pl-4">
-                      {groupDocs.map((reqDoc) => {
-                        const status = documentStatuses.find((s) => s.category === reqDoc.category);
-                        const statusType = status?.status || 'missing';
-
-                        return (
-                          <div
-                            key={reqDoc.category}
-                            className="flex items-start gap-4 p-4 border rounded-lg hover:bg-muted/30 transition-colors"
-                          >
-                            <div className="mt-0.5">{getStatusIcon(statusType)}</div>
-
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-start justify-between gap-4 mb-2">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="font-medium">{reqDoc.name}</h4>
-                                    {reqDoc.isMandatory && (
-                                      <Badge variant="outline" className="text-xs">
-                                        Required
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">{reqDoc.description}</p>
-                                </div>
-                                {getStatusBadge(statusType)}
-                              </div>
-
-                              {status?.rejectionReason && (
-                                <div className="mt-2 p-2 bg-red-50 dark:bg-red-950 rounded text-sm text-red-700 dark:text-red-300">
-                                  <p className="font-medium">Rejection reason:</p>
-                                  <p>{status.rejectionReason}</p>
-                                </div>
-                              )}
-
-                              {status?.document?.expiration_date && statusType !== 'expired' && (
-                                <div className="mt-2 text-xs text-muted-foreground">
-                                  Expires: {new Date(status.document.expiration_date).toLocaleDateString()}
-                                </div>
-                              )}
-
-                              <div className="mt-3">
-                                {statusType === 'missing' || statusType === 'rejected' || statusType === 'expired' ? (
-                                  <DocumentUploadDialog
-                                    students={students}
-                                    onDocumentUploaded={handleUploadComplete}
-                                    defaultStudentId={selectedStudentId}
-                                  >
-                                    <Button size="sm" className="w-full sm:w-auto">
-                                      <Upload className="h-4 w-4 mr-2" />
-                                      {statusType === 'missing' ? 'Upload' : 'Replace'}
-                                    </Button>
-                                  </DocumentUploadDialog>
-                                ) : statusType === 'pending' ? (
-                                  <DocumentUploadDialog
-                                    students={students}
-                                    onDocumentUploaded={handleUploadComplete}
-                                    defaultStudentId={selectedStudentId}
-                                  >
-                                    <Button size="sm" variant="outline" className="w-full sm:w-auto">
-                                      <RefreshCw className="h-4 w-4 mr-2" />
-                                      Replace
-                                    </Button>
-                                  </DocumentUploadDialog>
-                                ) : (
-                                  <DocumentUploadDialog
-                                    students={students}
-                                    onDocumentUploaded={handleUploadComplete}
-                                    defaultStudentId={selectedStudentId}
-                                  >
-                                    <Button size="sm" variant="ghost" className="w-full sm:w-auto">
-                                      <RefreshCw className="h-4 w-4 mr-2" />
-                                      Update
-                                    </Button>
-                                  </DocumentUploadDialog>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                    {row.description ? (
+                      <p className="text-sm text-muted-foreground">{row.description}</p>
+                    ) : null}
+                  </div>
+                  {getStatusBadge(row.status)}
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
 
-    </>
+                {row.rejectionReason && (
+                  <div className="mt-2 p-2 bg-red-50 dark:bg-red-950 rounded text-sm text-red-700 dark:text-red-300">
+                    <p className="font-medium">Rejection reason:</p>
+                    <p>{row.rejectionReason}</p>
+                  </div>
+                )}
+
+                {row.document?.expiration_date && row.status !== 'expired' && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    Expires: {new Date(row.document.expiration_date as string).toLocaleDateString()}
+                  </div>
+                )}
+
+                <div className="mt-3">
+                  <DocumentUploadDialog
+                    students={students}
+                    onDocumentUploaded={handleUploadComplete}
+                    defaultStudentId={selectedStudentId}
+                  >
+                    <Button size="sm" className="w-full sm:w-auto">
+                      <Upload className="h-4 w-4 mr-2" />
+                      {row.status === 'missing' ? 'Upload' : row.status === 'pending' ? 'Replace' : 'Update'}
+                    </Button>
+                  </DocumentUploadDialog>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
