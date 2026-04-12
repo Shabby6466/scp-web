@@ -74,7 +74,7 @@ export default function AcceptTeacherInvite() {
         branch_name: inviteData.branch_name,
         email: inviteData.email,
       });
-      
+
       if (inviteData.email) {
         setInvitationEmail(inviteData.email);
       }
@@ -167,7 +167,7 @@ export default function AcceptTeacherInvite() {
         <Card>
           <CardHeader className="text-center">
             <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
-            <CardTitle className="text-2xl">Welcome to LittleLedger</CardTitle>
+            <CardTitle className="text-2xl">Welcome to SCP</CardTitle>
             <CardDescription>
               You've been invited to join <strong>{invitation.school_name}</strong> as a staff member.
               Complete your profile below to get started.

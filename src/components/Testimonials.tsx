@@ -3,7 +3,7 @@ import { Star, Quote } from "lucide-react";
 
 const testimonials = [
   {
-    quote: "LittleLedger saves us hours every week. Compliance has never been easier. The parent portal is intuitive and the automatic expiration alerts keep us ahead of deadlines.",
+    quote: "SCP saves us hours every week. Compliance has never been easier. The parent portal is intuitive and the automatic expiration alerts keep us ahead of deadlines.",
     author: "Sarah Martinez",
     role: "School Director",
     school: "Manhattan Schoolhouse",
@@ -19,7 +19,7 @@ const testimonials = [
     avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
   },
   {
-    quote: "We manage 3 locations and LittleLedger keeps everything organized. The compliance dashboard gives us instant visibility across all our campuses.",
+    quote: "We manage 3 locations and SCP keeps everything organized. The compliance dashboard gives us instant visibility across all our campuses.",
     author: "Jennifer Thompson",
     role: "Regional Director",
     school: "ABC Preschools Network",
@@ -42,36 +42,36 @@ const Testimonials = () => {
               Trusted by Schools Nationwide
             </h2>
             <p className="text-lg text-muted-foreground leading-relaxed">
-              See what directors and administrators are saying about LittleLedger
+              See what directors and administrators are saying about SCP
             </p>
           </div>
-          
+
           {/* Testimonial cards */}
           <div className="grid md:grid-cols-3 gap-6">
             {testimonials.map((testimonial, index) => (
-              <Card 
+              <Card
                 key={index}
                 className="group hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1"
               >
                 <CardContent className="pt-6">
                   <Quote className="h-8 w-8 text-secondary/30 mb-4" />
-                  
+
                   {/* Rating */}
                   <div className="flex gap-0.5 mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
                       <Star key={i} className="h-4 w-4 fill-secondary text-secondary" />
                     ))}
                   </div>
-                  
+
                   {/* Quote */}
                   <p className="text-muted-foreground leading-relaxed mb-6 text-sm">
                     "{testimonial.quote}"
                   </p>
-                  
+
                   {/* Author */}
                   <div className="border-t border-border pt-4 flex items-center gap-3">
-                    <img 
-                      src={testimonial.avatar} 
+                    <img
+                      src={testimonial.avatar}
                       alt={testimonial.author}
                       className="w-12 h-12 rounded-full object-cover border-2 border-secondary/20"
                     />

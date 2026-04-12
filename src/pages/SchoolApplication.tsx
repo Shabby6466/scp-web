@@ -67,15 +67,15 @@ export default function SchoolApplication() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast.error("You must be logged in");
       navigate("/institution-auth");
       return;
     }
 
-    if (!formData.current_enrollment || !formData.expected_enrollment || 
-        !formData.staff_count || !formData.timeline) {
+    if (!formData.current_enrollment || !formData.expected_enrollment ||
+      !formData.staff_count || !formData.timeline) {
       toast.error("Please complete all required fields");
       return;
     }
@@ -132,7 +132,7 @@ export default function SchoolApplication() {
                 {/* Enrollment Information */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold">Enrollment Information</h3>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="current_enrollment">Current Student Enrollment *</Label>
                     <Input
@@ -233,7 +233,7 @@ export default function SchoolApplication() {
 
                 {/* Timeline */}
                 <div className="space-y-4">
-                  <Label>When do you need to start using LittleLedger? *</Label>
+                  <Label>When do you need to start using SCP? *</Label>
                   <RadioGroup
                     required
                     value={formData.timeline}

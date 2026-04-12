@@ -32,7 +32,7 @@ interface ProcessedDocument {
 // Document type classification based on filename patterns
 function classifyDocument(fileName: string): { category: string; confidence: number } {
   const lowerName = fileName.toLowerCase();
-  
+
   const patterns: { pattern: RegExp; category: string; confidence: number }[] = [
     { pattern: /immuniz|vaccin|shot|mmr|dtap|polio|hep/i, category: "immunization_records", confidence: 0.9 },
     { pattern: /health\s*form|physical|medical\s*exam|doctor/i, category: "health_forms", confidence: 0.85 },
@@ -114,7 +114,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const body: ProcessBulkRequest = await req.json();
+    const body: ProcessBulkRequest = await reqon();
     const { documents, student_id, parent_id, school_id } = body;
 
     // ========== INPUT VALIDATION ==========
@@ -134,10 +134,10 @@ serve(async (req) => {
 
     // ========== AUTHORIZATION: Verify ownership ==========
     // The authenticated user must be the parent_id OR have school/admin role for the student's school
-    
+
     // First check: Is the caller the parent?
     const isParent = user.id === parent_id;
-    
+
     if (!isParent) {
       // Check if caller has school/admin privileges for this student
       const { data: userRole, error: roleError } = await supabase
@@ -203,7 +203,7 @@ serve(async (req) => {
 
         // Insert document record - use the verified parent_id (not from request if caller is staff)
         const insertParentId = isParent ? parent_id : parent_id; // Keep original parent_id
-        
+
         const { data: insertedDoc, error: insertError } = await supabase
           .from("documents")
           .insert({

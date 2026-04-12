@@ -358,7 +358,7 @@ export function DashboardSidebar({
           {!collapsed && (
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground text-sm">LittleLedger</span>
+                <span className="font-semibold text-foreground text-sm">SCP</span>
                 <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-gradient-to-r from-secondary/20 to-secondary/10 text-secondary-foreground border border-secondary/20">
                   PRO
                 </span>

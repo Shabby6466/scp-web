@@ -35,7 +35,7 @@ const RoleSelection = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 text-foreground">
-              Get Started with LittleLedger
+              Get Started with SCP
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Select your role to access the appropriate portal
@@ -46,7 +46,7 @@ const RoleSelection = () => {
             {roles.map((role) => {
               const Icon = role.icon;
               return (
-                <Card 
+                <Card
                   key={role.type}
                   className="border-2 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 >
@@ -64,7 +64,7 @@ const RoleSelection = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-0">
-                    <Button 
+                    <Button
                       className={`w-full font-semibold ${role.color}`}
                       size="lg"
                       onClick={() => navigate(role.path)}

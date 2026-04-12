@@ -70,7 +70,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const body: AssignBranchRequest = await req.json();
+    const body: AssignBranchRequest = await reqon();
     const { student_id, school_id, date_of_birth } = body;
 
     if (!student_id || !school_id || !date_of_birth) {
@@ -82,7 +82,7 @@ serve(async (req) => {
 
     // ========== AUTHORIZATION ==========
     // Verify the caller has permission for this student/school
-    
+
     // First, get the student to check ownership
     const { data: student, error: studentError } = await supabase
       .from("students")

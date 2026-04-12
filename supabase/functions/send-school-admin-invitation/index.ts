@@ -24,7 +24,7 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    
+
     // Get the user's JWT from the request
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -56,7 +56,7 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Only platform admins can send school admin invitations");
     }
 
-    const { school_id, admin_email, admin_name }: InvitationRequest = await req.json();
+    const { school_id, admin_email, admin_name }: InvitationRequest = await reqon();
 
     if (!school_id || !admin_email) {
       throw new Error("school_id and admin_email are required");
@@ -108,15 +108,15 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Build the acceptance URL
-    const appUrl = Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", ".lovable.app") 
-      || "https://littleledger.lovable.app";
+    const appUrl = Deno.env.get("SUPABASE_URL")?.replace(".supabase.co", ".lovable.app")
+      || "https://SCP.lovable.app";
     const acceptUrl = `${appUrl}/accept-school-invite?token=${invitation.invitation_token}`;
 
     // Send email via Resend
     const emailResponse = await resend.emails.send({
-      from: "LittleLedger <onboarding@resend.dev>",
+      from: "SCP <onboarding@resend.dev>",
       to: [admin_email],
-      subject: `Welcome to LittleLedger - Set Up ${school.name}`,
+      subject: `Welcome to SCP - Set Up ${school.name}`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -144,7 +144,7 @@ const handler = async (req: Request): Promise<Response> => {
                         </tr>
                         <tr>
                           <td align="center">
-                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">LittleLedger</h1>
+                            <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">SCP</h1>
                             <p style="margin: 8px 0 0; color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 500;">Secure Document Management for Preschools</p>
                           </td>
                         </tr>
@@ -175,7 +175,7 @@ const handler = async (req: Request): Promise<Response> => {
                       </h2>
                       
                       <p style="margin: 0 0 24px; color: #4a5568; font-size: 16px; line-height: 1.7; text-align: center;">
-                        Great news! <strong style="color: #1e3a5f;">${school.name}</strong> has been approved on LittleLedger, and you have been invited to manage its account.
+                        Great news! <strong style="color: #1e3a5f;">${school.name}</strong> has been approved on SCP, and you have been invited to manage its account.
                       </p>
                       
                       <!-- Features Box -->
@@ -225,10 +225,10 @@ const handler = async (req: Request): Promise<Response> => {
                   <!-- Footer -->
                   <tr>
                     <td style="background-color: #1e3a5f; padding: 32px 40px; text-align: center;">
-                      <p style="margin: 0 0 8px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">LittleLedger</p>
+                      <p style="margin: 0 0 8px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">SCP</p>
                       <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 12px; line-height: 1.6;">
                         Secure document management for preschools.<br>
-                        &copy; ${new Date().getFullYear()} LittleLedger. All rights reserved.
+                        &copy; ${new Date().getFullYear()} SCP. All rights reserved.
                       </p>
                     </td>
                   </tr>
@@ -240,7 +240,7 @@ const handler = async (req: Request): Promise<Response> => {
                   <tr>
                     <td style="padding: 24px 40px; text-align: center;">
                       <p style="margin: 0; color: #718096; font-size: 12px;">
-                        Questions? Contact us at <a href="mailto:support@littleledger.com" style="color: #1e3a5f; text-decoration: underline;">support@littleledger.com</a>
+                        Questions? Contact us at <a href="mailto:support@SCP.com" style="color: #1e3a5f; text-decoration: underline;">support@SCP.com</a>
                       </p>
                     </td>
                   </tr>
@@ -257,10 +257,10 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("School admin invitation sent:", emailResponse);
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         invitation_id: invitation.id,
-        message: `Invitation sent to ${admin_email}` 
+        message: `Invitation sent to ${admin_email}`
       }),
       {
         status: 200,

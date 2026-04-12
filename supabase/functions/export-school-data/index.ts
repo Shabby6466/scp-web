@@ -312,7 +312,7 @@ Deno.serve(async (req) => {
         headers: {
           ...corsHeaders,
           "Content-Type": "application/json",
-          "Content-Disposition": `attachment; filename="school_export_${schoolId}_${new Date().toISOString().split("T")[0]}.json"`,
+          "Content-Disposition": `attachment; filename="school_export_${schoolId}_${new Date().toISOString().split("T")[0]}on"`,
         },
       }
     );
@@ -327,7 +327,7 @@ Deno.serve(async (req) => {
 
     // Sanitize error message for external response
     const safeMessage = sanitizeErrorMessage(err);
-    
+
     return new Response(
       JSON.stringify({ error: safeMessage }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

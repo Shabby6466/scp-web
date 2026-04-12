@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { UserPlus, Trash2, Search } from 'lucide-react';
+import { UserPlus, Trash2, Search, Building2, ShieldCheck, MapPin } from 'lucide-react';
+import { branchService } from '@/services/branchService';
 
 interface School {
   id: string;
@@ -23,26 +24,53 @@ interface User {
   email: string;
 }
 
+interface Branch {
+  id: string;
+  branch_name: string;
+}
+
 interface DirectorAssignment {
   id: string;
   user_id: string;
   school_id: string;
+  branch_id?: string;
   user: User;
   school: School;
+  branch?: Branch;
 }
 
 export const AdminDirectors = () => {
   const [schools, setSchools] = useState<School[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [assignments, setAssignments] = useState<DirectorAssignment[]>([]);
+  const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSchool, setSelectedSchool] = useState<string>('');
+  const [selectedBranch, setSelectedBranch] = useState<string>('');
   const [selectedUser, setSelectedUser] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selectedSchool) {
+      fetchBranches(selectedSchool);
+    } else {
+      setBranches([]);
+      setSelectedBranch('');
+    }
+  }, [selectedSchool]);
+
+  const fetchBranches = async (schoolId: string) => {
+    try {
+      const data = await branchService.listBySchool(schoolId);
+      setBranches(data || []);
+    } catch {
+      setBranches([]);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -54,15 +82,17 @@ export const AdminDirectors = () => {
         userService.list({ role: 'director' }),
       ]);
 
-      setSchools(schoolsData || []);
-      setUsers(usersData || []);
+      setSchools((schoolsData as School[]) || []);
+      setUsers((usersData as User[]) || []);
       
       const transformedAssignments = (directorsData || []).map((assignment: any) => ({
         id: assignment.id,
         user_id: assignment.user_id,
         school_id: assignment.school_id,
+        branch_id: assignment.branch_id,
         user: assignment.user || assignment.profiles || { id: assignment.user_id, full_name: '', email: '' },
         school: assignment.school || assignment.schools || { id: assignment.school_id, name: '', city: '', state: '' },
+        branch: assignment.branch || assignment.branches || null,
       }));
       
       setAssignments(transformedAssignments);
@@ -94,10 +124,12 @@ export const AdminDirectors = () => {
       await userService.update(selectedUser, {
         role: 'director',
         school_id: selectedSchool,
+        branch_id: selectedBranch || null,
       });
 
       toast.success('Director assigned successfully');
       setSelectedSchool('');
+      setSelectedBranch('');
       setSelectedUser('');
       fetchData();
     } catch (error) {
@@ -107,10 +139,15 @@ export const AdminDirectors = () => {
   };
 
   const handleRemoveDirector = async (assignmentId: string) => {
+    if (!confirm("Are you sure you want to remove this director's administrative access?")) return;
     try {
-      await userService.update(assignmentId, { role: null });
+      await userService.update(assignmentId, { 
+        role: null,
+        school_id: null,
+        branch_id: null
+      });
 
-      toast.success('Director removed successfully');
+      toast.success('Director access revoked successfully');
       fetchData();
     } catch (error) {
       console.error('Error removing director:', error);
@@ -139,7 +176,7 @@ export const AdminDirectors = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Card>
         <CardHeader>
           <CardTitle>Assign Director to School</CardTitle>
@@ -166,6 +203,23 @@ export const AdminDirectors = () => {
             </div>
 
             <div className="space-y-2">
+              <Label>Select Branch (Optional)</Label>
+              <Select value={selectedBranch} onValueChange={setSelectedBranch} disabled={!selectedSchool}>
+                <SelectTrigger>
+                  <SelectValue placeholder={branches.length > 0 ? "Choose a branch" : "No branches available"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none_">Whole School (All Locations)</SelectItem>
+                  {branches.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      {branch.branch_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label>Select User</Label>
               <Select value={selectedUser} onValueChange={setSelectedUser}>
                 <SelectTrigger>
@@ -182,7 +236,7 @@ export const AdminDirectors = () => {
             </div>
 
             <div className="flex items-end">
-              <Button onClick={handleAssignDirector} className="w-full">
+              <Button onClick={handleAssignDirector} className="w-full h-10 shadow-sm" disabled={!selectedSchool || !selectedUser}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 Assign Director
               </Button>
@@ -227,10 +281,18 @@ export const AdminDirectors = () => {
                         <Badge variant="secondary">Director</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">{assignment.user.email}</p>
-                      <p className="text-sm font-medium text-primary">
+                      <p className="text-sm font-medium text-primary flex items-center gap-1.5">
+                        <Building2 className="h-3.5 w-3.5" />
                         {assignment.school.name}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      {assignment.branch && (
+                        <p className="text-xs font-medium text-blue-600 flex items-center gap-1.5">
+                          <MapPin className="h-3 w-3" />
+                          Branch: {assignment.branch.branch_name}
+                        </p>
+                      )}
+                      <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                        <ShieldCheck className="h-3 w-3" />
                         {assignment.school.city}, {assignment.school.state}
                       </p>
                     </div>

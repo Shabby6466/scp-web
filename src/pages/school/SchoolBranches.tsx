@@ -151,14 +151,17 @@ const SchoolBranches = () => {
 
     try {
       const existingBranches = await branchService.listBySchool(school.id);
-      await Promise.all(
-        (existingBranches || []).map((b: any) => branchService.remove(b.id))
-      );
+      const existingIds = (existingBranches || []).map((b: any) => b.id);
+      const currentIds = branches.filter(b => b.id).map(b => b.id!);
+      
+      // 1. Branches to remove (only those that were there but are not anymore)
+      const toRemove = existingIds.filter(id => !currentIds.includes(id));
+      await Promise.all(toRemove.map(id => branchService.remove(id)));
 
+      // 2. Branches to create or update
       await Promise.all(
-        branches.map(branch =>
-          branchService.create({
-            schoolId: school.id,
+        branches.map(branch => {
+          const payload = {
             branchName: branch.branch_name,
             address: branch.address,
             city: branch.city,
@@ -171,8 +174,17 @@ const SchoolBranches = () => {
             totalCapacity: branch.total_capacity,
             isPrimary: branch.is_primary,
             notes: branch.notes || null,
-          })
-        )
+          };
+
+          if (branch.id) {
+            return branchService.update(branch.id, payload);
+          } else {
+            return branchService.create({ 
+              schoolId: school.id, 
+              ...payload 
+            });
+          }
+        })
       );
 
       toast.success("School locations updated successfully");
@@ -200,45 +212,47 @@ const SchoolBranches = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/20">
       <Header />
       <main className="flex-1 pt-20 pb-12">
-        <div className="container px-4 max-w-4xl">
+        <div className="container px-4 max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-700">
           {/* Header */}
           <div className="mb-8">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4 hover:bg-muted/80">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <h1 className="text-3xl font-display font-bold mb-2">Manage Locations</h1>
-            <p className="text-muted-foreground">Add and manage your school's physical locations</p>
+            <h1 className="text-4xl font-display font-bold mb-2 tracking-tight">Manage Locations</h1>
+            <p className="text-muted-foreground text-lg">Add and manage your school's physical campuses and branches</p>
           </div>
 
-          <Card>
-            <CardHeader>
+          <Card className="backdrop-blur-md bg-white/60 dark:bg-black/40 border-border/40 overflow-hidden">
+            <CardHeader className="border-b border-border/10 bg-muted/30">
               <CardTitle>School Locations & Branches</CardTitle>
               <CardDescription>
-                Manage your school's physical locations, each with their own age ranges and capacity
+                Define your organizational structure. Each location can have specific age ranges and student capacities.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 pt-6">
               <SchoolBranchesManager 
                 branches={branches} 
                 onChange={setBranches}
                 defaultState={school?.state || "NY"}
               />
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
+              <div className="flex justify-end gap-3 pt-6 border-t border-border/10">
                 <Button
                   variant="outline"
                   onClick={loadBranches}
                   disabled={saving}
+                  className="hover:bg-muted/80"
                 >
                   Reset Changes
                 </Button>
                 <Button
                   onClick={handleSave}
                   disabled={saving}
+                  className="px-8"
                 >
                   {saving ? (
                     <>

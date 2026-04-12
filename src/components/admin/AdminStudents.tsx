@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Search, Edit, FileText, Calendar, School as SchoolIcon, GraduationCap, Mail, CheckCircle, UserCheck, RefreshCw, X, Filter } from 'lucide-react';
+import { Search, Edit, FileText, Calendar, School as SchoolIcon, GraduationCap, Mail, CheckCircle, UserCheck, RefreshCw, X, Filter, Trash2 } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import StudentInviteDialog from './StudentInviteDialog';
@@ -52,7 +52,7 @@ interface School {
   name: string;
 }
 
-type ParentOnboardingStatus = 
+type ParentOnboardingStatus =
   | { type: 'docs_received' }
   | { type: 'parent_linked' }
   | { type: 'invite_pending'; createdAt: string }
@@ -63,18 +63,18 @@ function getParentOnboardingStatus(student: Student): ParentOnboardingStatus {
   if (student.documentsCount > 0) {
     return { type: 'docs_received' };
   }
-  
+
   // Priority 2: Has linked parent via junction table
   if (student.hasLinkedParent) {
     return { type: 'parent_linked' };
   }
-  
+
   // Priority 3: Has active (pending/sent) invitation
   const invite = student.latestInvite;
   if (invite && ['pending', 'sent'].includes(invite.status)) {
     return { type: 'invite_pending', createdAt: invite.created_at };
   }
-  
+
   // Default: Needs invitation
   return { type: 'needs_invite' };
 }
@@ -82,7 +82,7 @@ function getParentOnboardingStatus(student: Student): ParentOnboardingStatus {
 function getEnrollmentStatus(student: Student) {
   const hasIncomplete = student.documents?.some((doc) => doc.status === 'pending');
   const hasExpired = student.documents?.some((doc) => doc.status === 'expired');
-  
+
   if (hasExpired) return { label: 'Expired Docs', color: 'destructive' };
   if (hasIncomplete) return { label: 'Incomplete', color: 'secondary' };
   return { label: 'Complete', color: 'default' };
@@ -227,7 +227,7 @@ const AdminStudents = () => {
       filtered = filtered.filter((student) => {
         const hasIncomplete = student.documents?.some((doc) => doc.status === 'pending');
         const hasExpired = student.documents?.some((doc) => doc.status === 'expired');
-        
+
         if (statusFilter === 'complete') return !hasIncomplete && !hasExpired;
         if (statusFilter === 'incomplete') return hasIncomplete;
         if (statusFilter === 'expired') return hasExpired;
@@ -274,6 +274,24 @@ const AdminStudents = () => {
       toastHook({
         variant: "destructive",
         title: "Error updating student",
+        description: error.message,
+      });
+    }
+  };
+
+  const handleDeleteStudent = async (student: Student) => {
+    if (!confirm(`Are you sure you want to block/delete ${student.first_name} ${student.last_name}? This will prevent them from logging in.`)) return;
+    try {
+      await userService.remove(student.id);
+      toastHook({
+        title: "Student blocked",
+        description: "Student has been removed from active view.",
+      });
+      fetchStudents();
+    } catch (error: any) {
+      toastHook({
+        variant: "destructive",
+        title: "Deletion failed",
         description: error.message,
       });
     }
@@ -328,7 +346,7 @@ const AdminStudents = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
@@ -550,7 +568,7 @@ const AdminStudents = () => {
                         <div className="flex flex-wrap gap-2">
                           {(() => {
                             const parentStatus = getParentOnboardingStatus(student);
-                            
+
                             switch (parentStatus.type) {
                               case 'docs_received':
                                 return (
@@ -559,7 +577,7 @@ const AdminStudents = () => {
                                     Docs received
                                   </Badge>
                                 );
-                                
+
                               case 'parent_linked':
                                 return (
                                   <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
@@ -567,7 +585,7 @@ const AdminStudents = () => {
                                     Parent linked
                                   </Badge>
                                 );
-                                
+
                               case 'invite_pending':
                                 return (
                                   <div className="flex items-center gap-2">
@@ -586,7 +604,7 @@ const AdminStudents = () => {
                                     </Button>
                                   </div>
                                 );
-                                
+
                               case 'needs_invite':
                                 return (
                                   <Button
@@ -615,6 +633,15 @@ const AdminStudents = () => {
                           >
                             <Edit className="h-4 w-4 mr-2" />
                             Edit
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="h-9 w-9"
+                            onClick={() => handleDeleteStudent(student)}
+                            title="Block Student"
+                          >
+                            <Trash2 className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="outline"
@@ -731,6 +758,5 @@ const AdminStudents = () => {
       )}
     </div>
   );
-};
-
+}
 export default AdminStudents;

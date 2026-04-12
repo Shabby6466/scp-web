@@ -104,7 +104,7 @@ export function SchoolAdminInviteSection({ schoolId, schoolName, isApproved }: S
 
   const getStatusBadge = (status: string, expiresAt: string) => {
     const isExpired = new Date(expiresAt) < new Date();
-    
+
     if (status === "accepted") {
       return <Badge variant="default" className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Accepted</Badge>;
     }
@@ -129,7 +129,7 @@ export function SchoolAdminInviteSection({ schoolId, schoolName, isApproved }: S
           Invite School Administrator
         </CardTitle>
         <CardDescription>
-          Send an invitation to the person who will manage {schoolName} on LittleLedger
+          Send an invitation to the person who will manage {schoolName} on SCP
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

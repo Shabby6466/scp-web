@@ -1,9 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { 
-  checkPersistentRateLimit, 
-  createRateLimitResponse, 
+import {
+  checkPersistentRateLimit,
+  createRateLimitResponse,
   getRateLimitIdentifier,
-  sanitizeErrorMessage 
+  sanitizeErrorMessage
 } from '../_shared/rate-limit.ts';
 
 const corsHeaders = {
@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     const rateLimit = await checkPersistentRateLimit(
       supabaseClient, identifier, 'send-parent-invitation', 5, 60000
     );
-    
+
     if (!rateLimit.allowed) {
       console.log(`Rate limit exceeded for ${identifier}`);
       return createRateLimitResponse(60, corsHeaders);
@@ -60,7 +60,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { parentEmail, schoolId, studentId, parentFirstName, parentLastName, branchId }: InvitationRequest = await req.json();
+    const { parentEmail, schoolId, studentId, parentFirstName, parentLastName, branchId }: InvitationRequest = await reqon();
 
     console.log('Creating invitation for:', parentEmail, 'from school:', schoolId);
 
@@ -79,8 +79,8 @@ Deno.serve(async (req) => {
       .eq('user_id', user.id)
       .single();
 
-    if (roleError || !userRole || userRole.school_id !== schoolId || 
-        !['school', 'school_staff', 'director'].includes(userRole.role)) {
+    if (roleError || !userRole || userRole.school_id !== schoolId ||
+      !['school', 'school_staff', 'director'].includes(userRole.role)) {
       return new Response(
         JSON.stringify({ error: 'Forbidden: You do not have permission to send invitations for this school' }),
         { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -155,7 +155,7 @@ Deno.serve(async (req) => {
 
     // Send email using Resend (if API key is configured)
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    
+
     if (resendApiKey) {
       try {
         const emailResponse = await fetch('https://api.resend.com/emails', {
@@ -165,9 +165,9 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'LittleLedger <onboarding@resend.dev>',
+            from: 'SCP <onboarding@resend.dev>',
             to: [parentEmail],
-            subject: `${school.name} invites you to enroll your child on LittleLedger`,
+            subject: `${school.name} invites you to enroll your child on SCP`,
             html: `
               <!DOCTYPE html>
               <html>
@@ -195,7 +195,7 @@ Deno.serve(async (req) => {
                               </tr>
                               <tr>
                                 <td align="center">
-                                  <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">LittleLedger</h1>
+                                  <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">SCP</h1>
                                   <p style="margin: 8px 0 0; color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 500;">Secure Document Management for Preschools</p>
                                 </td>
                               </tr>
@@ -226,7 +226,7 @@ Deno.serve(async (req) => {
                             </h2>
                             
                             <p style="margin: 0 0 24px; color: #4a5568; font-size: 16px; line-height: 1.7; text-align: center;">
-                              <strong style="color: #1e3a5f;">${school.name}</strong> has invited you to join LittleLedger to securely manage your child's enrollment documents.
+                              <strong style="color: #1e3a5f;">${school.name}</strong> has invited you to join SCP to securely manage your child's enrollment documents.
                             </p>
                             
                             <!-- Features Box -->
@@ -234,7 +234,7 @@ Deno.serve(async (req) => {
                               <tr>
                                 <td style="padding: 28px;">
                                   <p style="margin: 0 0 16px; color: #1e3a5f; font-size: 15px; font-weight: 600;">
-                                    With LittleLedger, you can:
+                                    With SCP, you can:
                                   </p>
                                   <table width="100%" cellpadding="0" cellspacing="0">
                                     <tr><td style="padding: 8px 0;"><table cellpadding="0" cellspacing="0"><tr><td style="width: 28px; vertical-align: top;"><span style="color: #e5a31c; font-size: 16px;">&#10003;</span></td><td style="color: #4a5568; font-size: 14px; line-height: 1.5;">Securely upload and store enrollment documents</td></tr></table></td></tr>
@@ -275,10 +275,10 @@ Deno.serve(async (req) => {
                         <!-- Footer -->
                         <tr>
                           <td style="background-color: #1e3a5f; padding: 32px 40px; text-align: center;">
-                            <p style="margin: 0 0 8px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">LittleLedger</p>
+                            <p style="margin: 0 0 8px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">SCP</p>
                             <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 12px; line-height: 1.6;">
                               Secure document management for preschools.<br>
-                              &copy; ${new Date().getFullYear()} LittleLedger. All rights reserved.
+                              &copy; ${new Date().getFullYear()} SCP. All rights reserved.
                             </p>
                           </td>
                         </tr>
@@ -290,7 +290,7 @@ Deno.serve(async (req) => {
                         <tr>
                           <td style="padding: 24px 40px; text-align: center;">
                             <p style="margin: 0; color: #718096; font-size: 12px;">
-                              Questions? Contact us at <a href="mailto:support@littleledger.com" style="color: #1e3a5f; text-decoration: underline;">support@littleledger.com</a>
+                              Questions? Contact us at <a href="mailto:support@SCP.com" style="color: #1e3a5f; text-decoration: underline;">support@SCP.com</a>
                             </p>
                           </td>
                         </tr>
@@ -320,8 +320,8 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         invitation,
         enrollmentLink,
         emailSent: !!resendApiKey

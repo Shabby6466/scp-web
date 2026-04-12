@@ -53,7 +53,7 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       console.error("Auth error:", authError?.message || "No user found");
       return new Response(
@@ -83,7 +83,7 @@ serve(async (req) => {
 
     console.log(`${roleData.role} access verified for user:`, user.id, isSchoolScoped ? `(school: ${scopedSchoolId})` : '');
 
-    const { threshold = 30, schoolId } = await req.json();
+    const { threshold = 30, schoolId } = await reqon();
 
     // Get expiring documents
     const { data: allExpiringDocs, error: docsError } = await supabase
@@ -93,7 +93,7 @@ serve(async (req) => {
 
     // Filter by school if school-scoped role or if schoolId is provided
     const filterSchoolId = isSchoolScoped ? scopedSchoolId : schoolId;
-    const expiringDocs = filterSchoolId 
+    const expiringDocs = filterSchoolId
       ? allExpiringDocs?.filter((doc: ExpiringDocument) => doc.school_id === filterSchoolId)
       : allExpiringDocs;
 
@@ -119,7 +119,7 @@ serve(async (req) => {
         if (student && student.profiles) {
           const parentId = student.parent_id;
           const profile = student.profiles as any;
-          
+
           if (!parentDocsMap.has(parentId)) {
             parentDocsMap.set(parentId, {
               parent_id: parentId,
@@ -149,23 +149,23 @@ serve(async (req) => {
         ${criticalDocs.length > 0 ? `
           <h3 style="color: #dc2626;">Critical (≤7 days):</h3>
           <ul>
-            ${criticalDocs.map(doc => 
-              `<li><strong>${doc.entity_name}</strong> - ${doc.document_type.replace(/_/g, ' ')} (expires in ${doc.days_until_expiry} days)</li>`
-            ).join('')}
+            ${criticalDocs.map(doc =>
+        `<li><strong>${doc.entity_name}</strong> - ${doc.document_type.replace(/_/g, ' ')} (expires in ${doc.days_until_expiry} days)</li>`
+      ).join('')}
           </ul>
         ` : ''}
         
         ${urgentDocs.length > 0 ? `
           <h3 style="color: #f97316;">Urgent (8-30 days):</h3>
           <ul>
-            ${urgentDocs.map(doc => 
-              `<li><strong>${doc.entity_name}</strong> - ${doc.document_type.replace(/_/g, ' ')} (expires in ${doc.days_until_expiry} days)</li>`
-            ).join('')}
+            ${urgentDocs.map(doc =>
+        `<li><strong>${doc.entity_name}</strong> - ${doc.document_type.replace(/_/g, ' ')} (expires in ${doc.days_until_expiry} days)</li>`
+      ).join('')}
           </ul>
         ` : ''}
         
         <p>Please log in to your dashboard to upload updated documents.</p>
-        <p>Thank you,<br>LittleLedger Team</p>
+        <p>Thank you,<br>SCP Team</p>
       `;
 
       try {
@@ -176,7 +176,7 @@ serve(async (req) => {
             "Authorization": `Bearer ${resendApiKey}`,
           },
           body: JSON.stringify({
-            from: "LittleLedger <onboarding@resend.dev>",
+            from: "SCP <onboarding@resend.dev>",
             to: [parentData.email],
             subject: `Document Expiration Reminder - ${parentData.documents.length} document${parentData.documents.length > 1 ? 's' : ''} expiring soon`,
             html: emailHtml,
@@ -187,7 +187,7 @@ serve(async (req) => {
           sentCount++;
           console.log(`Sent reminder to ${parentData.email}`);
         } else {
-          const errorData = await response.json();
+          const errorData = await responseon();
           console.error(`Failed to send email to ${parentData.email}:`, errorData);
         }
       } catch (emailError) {
@@ -196,7 +196,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         message: `Sent ${sentCount} reminder emails`,
         sent: sentCount,
         total_expiring: expiringDocs.length
@@ -208,7 +208,7 @@ serve(async (req) => {
     console.error("Error in send-expiration-reminders:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
+      {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
       }

@@ -60,7 +60,7 @@ export default function AcceptSchoolInvite() {
         admin_name: inviteData.admin_name,
         school_name: inviteData.school_name,
       });
-      
+
       setEmail(inviteData.admin_email);
       if (inviteData.admin_name) {
         setFullName(inviteData.admin_name);
@@ -95,8 +95,8 @@ export default function AcceptSchoolInvite() {
         fullName,
         password,
       });
-      
-      toast.success("Account created successfully! Welcome to LittleLedger.");
+
+      toast.success("Account created successfully! Welcome to SCP.");
       navigate("/school-dashboard");
     } catch (err: any) {
       console.error("Error accepting invitation:", err);
@@ -150,7 +150,7 @@ export default function AcceptSchoolInvite() {
           <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
             <Building2 className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl">Welcome to LittleLedger</CardTitle>
+          <CardTitle className="text-2xl">Welcome to SCP</CardTitle>
           <CardDescription>
             Create your account to manage <strong>{invitation.school_name}</strong>
           </CardDescription>

@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { parentName, parentEmail, schoolId }: WelcomeRequest = await req.json();
+    const { parentName, parentEmail, schoolId }: WelcomeRequest = await reqon();
 
     // Security check: Only allow sending welcome email to the authenticated user's own email
     if (user.email?.toLowerCase() !== parentEmail?.toLowerCase()) {
@@ -68,14 +68,14 @@ Deno.serve(async (req) => {
         .select('name')
         .eq('id', schoolId)
         .single();
-      
+
       if (school) {
         schoolName = school.name;
       }
     }
 
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    
+
     if (!resendApiKey) {
       console.log('RESEND_API_KEY not configured, skipping welcome email');
       return new Response(
@@ -93,9 +93,9 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'LittleLedger <onboarding@resend.dev>',
+        from: 'SCP <onboarding@resend.dev>',
         to: [parentEmail],
-        subject: `Welcome to LittleLedger, ${parentName.split(' ')[0]}! 🎉`,
+        subject: `Welcome to SCP, ${parentName.split(' ')[0]}! 🎉`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
                           </tr>
                           <tr>
                             <td align="center">
-                              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">Welcome to LittleLedger!</h1>
+                              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">Welcome to SCP!</h1>
                               <p style="margin: 12px 0 0; color: rgba(255,255,255,0.9); font-size: 18px; font-weight: 500;">Hi ${parentName.split(' ')[0]}, we're excited to have you!</p>
                             </td>
                           </tr>
@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
                           <tr>
                             <td style="padding: 20px;">
                               <p style="margin: 0; color: #0369a1; font-size: 14px; line-height: 1.6;">
-                                <strong>Need help?</strong> If you have any questions about uploading documents or using LittleLedger, don't hesitate to reach out to your school or contact our support team.
+                                <strong>Need help?</strong> If you have any questions about uploading documents or using SCP, don't hesitate to reach out to your school or contact our support team.
                               </p>
                             </td>
                           </tr>
@@ -271,10 +271,10 @@ Deno.serve(async (req) => {
                     <!-- Footer -->
                     <tr>
                       <td style="background-color: #1e3a5f; padding: 32px 40px; text-align: center;">
-                        <p style="margin: 0 0 8px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">LittleLedger</p>
+                        <p style="margin: 0 0 8px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">SCP</p>
                         <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 12px; line-height: 1.6;">
                           Secure document management for preschools.<br>
-                          &copy; ${new Date().getFullYear()} LittleLedger. All rights reserved.
+                          &copy; ${new Date().getFullYear()} SCP. All rights reserved.
                         </p>
                       </td>
                     </tr>
@@ -286,7 +286,7 @@ Deno.serve(async (req) => {
                     <tr>
                       <td style="padding: 24px 40px; text-align: center;">
                         <p style="margin: 0; color: #718096; font-size: 12px;">
-                          Questions? Contact us at <a href="mailto:support@littleledger.com" style="color: #1e3a5f; text-decoration: underline;">support@littleledger.com</a>
+                          Questions? Contact us at <a href="mailto:support@SCP.com" style="color: #1e3a5f; text-decoration: underline;">support@SCP.com</a>
                         </p>
                       </td>
                     </tr>

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Search, UserPlus, Edit, FileText, AlertTriangle, CheckCircle, Calendar, Mail, Phone, School as SchoolIcon, Upload, Users } from 'lucide-react';
+import { Search, UserPlus, Edit, FileText, AlertTriangle, CheckCircle, Calendar, Mail, Phone, School as SchoolIcon, Upload, Users, Trash2 } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import TeacherDocumentUpload from './TeacherDocumentUpload';
@@ -218,6 +218,24 @@ const AdminTeachers = () => {
     }
   };
 
+  const handleDeleteTeacher = async (teacher: Teacher) => {
+    if (!confirm(`Are you sure you want to block/delete ${teacher.first_name} ${teacher.last_name}? This will prevent them from logging in.`)) return;
+    try {
+      await userService.remove(teacher.id);
+      toast({
+        title: "Teacher blocked",
+        description: "Teacher has been removed from active view.",
+      });
+      fetchTeachers();
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Deletion failed",
+        description: error.message,
+      });
+    }
+  };
+
   const getComplianceStatus = (teacher: Teacher) => {
     const today = new Date();
     const certExpiry = teacher.certification_expiry ? new Date(teacher.certification_expiry) : null;
@@ -292,7 +310,7 @@ const AdminTeachers = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 selection:bg-primary/20">
       <TeacherExpirationAlerts />
       
       <PendingTeacherInvitations onInvitationChange={fetchTeachers} />
@@ -359,7 +377,7 @@ const AdminTeachers = () => {
               <Input
                 placeholder="Search by name, email, or school..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -472,6 +490,15 @@ const AdminTeachers = () => {
                             <FileText className="h-4 w-4 mr-2" />
                             View Checklist
                           </Button>
+                          <Button
+                            variant="destructive"
+                            size="icon"
+                            className="h-9 w-9"
+                            onClick={() => handleDeleteTeacher(teacher)}
+                            title="Block Teacher"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                           <Button 
                             variant="outline" 
                             size="sm"
@@ -509,7 +536,7 @@ const AdminTeachers = () => {
               <Label>School *</Label>
               <Select
                 value={newTeacher.school_id}
-                onValueChange={(value) => setNewTeacher({ ...newTeacher, school_id: value })}
+                onValueChange={(value: string) => setNewTeacher({ ...newTeacher, school_id: value })}
                 required
               >
                 <SelectTrigger>
@@ -529,7 +556,7 @@ const AdminTeachers = () => {
                 <Label>First Name *</Label>
                 <Input
                   value={newTeacher.first_name}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, first_name: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTeacher({ ...newTeacher, first_name: e.target.value })}
                   required
                 />
               </div>
@@ -537,7 +564,7 @@ const AdminTeachers = () => {
                 <Label>Last Name *</Label>
                 <Input
                   value={newTeacher.last_name}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, last_name: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTeacher({ ...newTeacher, last_name: e.target.value })}
                   required
                 />
               </div>
@@ -548,7 +575,7 @@ const AdminTeachers = () => {
                 <Input
                   type="email"
                   value={newTeacher.email}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTeacher({ ...newTeacher, email: e.target.value })}
                   required
                 />
               </div>
@@ -557,7 +584,7 @@ const AdminTeachers = () => {
                 <Input
                   type="tel"
                   value={newTeacher.phone}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, phone: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTeacher({ ...newTeacher, phone: e.target.value })}
                 />
               </div>
             </div>
@@ -567,14 +594,14 @@ const AdminTeachers = () => {
                 <Input
                   type="date"
                   value={newTeacher.hire_date}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, hire_date: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTeacher({ ...newTeacher, hire_date: e.target.value })}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Certification Type</Label>
                 <Input
                   value={newTeacher.certification_type}
-                  onChange={(e) => setNewTeacher({ ...newTeacher, certification_type: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTeacher({ ...newTeacher, certification_type: e.target.value })}
                   placeholder="e.g., Early Childhood Education"
                 />
               </div>
@@ -584,7 +611,7 @@ const AdminTeachers = () => {
               <Input
                 type="date"
                 value={newTeacher.certification_expiry}
-                onChange={(e) => setNewTeacher({ ...newTeacher, certification_expiry: e.target.value })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewTeacher({ ...newTeacher, certification_expiry: e.target.value })}
               />
             </div>
             <div className="flex justify-end gap-2">
@@ -610,7 +637,7 @@ const AdminTeachers = () => {
                   <Label>First Name</Label>
                   <Input
                     value={editingTeacher.first_name}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setEditingTeacher({ ...editingTeacher, first_name: e.target.value })
                     }
                     required
@@ -620,7 +647,7 @@ const AdminTeachers = () => {
                   <Label>Last Name</Label>
                   <Input
                     value={editingTeacher.last_name}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setEditingTeacher({ ...editingTeacher, last_name: e.target.value })
                     }
                     required
@@ -633,7 +660,7 @@ const AdminTeachers = () => {
                   <Input
                     type="email"
                     value={editingTeacher.email}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setEditingTeacher({ ...editingTeacher, email: e.target.value })
                     }
                     required
@@ -644,7 +671,7 @@ const AdminTeachers = () => {
                   <Input
                     type="tel"
                     value={editingTeacher.phone || ''}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setEditingTeacher({ ...editingTeacher, phone: e.target.value })
                     }
                   />
@@ -656,7 +683,7 @@ const AdminTeachers = () => {
                   <Input
                     type="date"
                     value={editingTeacher.hire_date || ''}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setEditingTeacher({ ...editingTeacher, hire_date: e.target.value })
                     }
                   />
@@ -665,7 +692,7 @@ const AdminTeachers = () => {
                   <Label>Employment Status</Label>
                   <Select
                     value={editingTeacher.employment_status}
-                    onValueChange={(value) =>
+                    onValueChange={(value: string) =>
                       setEditingTeacher({ ...editingTeacher, employment_status: value })
                     }
                   >
@@ -685,7 +712,7 @@ const AdminTeachers = () => {
                   <Label>Certification Type</Label>
                   <Input
                     value={editingTeacher.certification_type || ''}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setEditingTeacher({ ...editingTeacher, certification_type: e.target.value })
                     }
                   />
@@ -695,7 +722,7 @@ const AdminTeachers = () => {
                   <Input
                     type="date"
                     value={editingTeacher.certification_expiry || ''}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setEditingTeacher({ ...editingTeacher, certification_expiry: e.target.value })
                     }
                   />
@@ -707,7 +734,7 @@ const AdminTeachers = () => {
                   <Input
                     type="date"
                     value={editingTeacher.background_check_date || ''}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setEditingTeacher({ ...editingTeacher, background_check_date: e.target.value })
                     }
                   />
@@ -717,7 +744,7 @@ const AdminTeachers = () => {
                   <Input
                     type="date"
                     value={editingTeacher.background_check_expiry || ''}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setEditingTeacher({ ...editingTeacher, background_check_expiry: e.target.value })
                     }
                   />

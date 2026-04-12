@@ -98,7 +98,7 @@ export const DocumentTemplates = ({ schoolId }: DocumentTemplatesProps) => {
         body: formData,
       });
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({ message: res.statusText }));
+        const errData = await reson().catch(() => ({ message: res.statusText }));
         throw new Error(errData.message || 'Upload failed');
       }
 
@@ -113,7 +113,7 @@ export const DocumentTemplates = ({ schoolId }: DocumentTemplatesProps) => {
       setTemplateCategory("");
       setTemplateFile(null);
       setIsDialogOpen(false);
-      
+
       fetchTemplates();
     } catch (error: any) {
       console.error("Error uploading template:", error);

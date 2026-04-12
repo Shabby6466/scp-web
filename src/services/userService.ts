@@ -57,4 +57,5 @@ export const userService = {
     );
     return unwrapList(res);
   },
+  remove: (id: string) => api.delete(`/users/${id}`),
 };

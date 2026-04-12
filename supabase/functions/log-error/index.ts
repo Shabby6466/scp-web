@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const body: ErrorLogRequest = await req.json();
+    const body: ErrorLogRequest = await reqon();
 
     // Validate required fields
     if (!body.function_name || !body.error_type || !body.error_message) {
@@ -76,8 +76,8 @@ Deno.serve(async (req) => {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              from: "LittleLedger Alerts <onboarding@resend.dev>",
-              to: ["alerts@littleledger.com"], // Configure this
+              from: "SCP Alerts <onboarding@resend.dev>",
+              to: ["alerts@SCP.com"], // Configure this
               subject: `🚨 CRITICAL ERROR: ${body.function_name}`,
               html: `
                 <h2>Critical Error Alert</h2>

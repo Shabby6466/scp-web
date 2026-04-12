@@ -15,16 +15,16 @@ const rateLimiter = new Map<string, { count: number; resetTime: number }>();
 function checkRateLimit(identifier: string, maxRequests: number, windowMs: number): boolean {
   const now = Date.now();
   const record = rateLimiter.get(identifier);
-  
+
   if (!record || now > record.resetTime) {
     rateLimiter.set(identifier, { count: 1, resetTime: now + windowMs });
     return true;
   }
-  
+
   if (record.count >= maxRequests) {
     return false;
   }
-  
+
   record.count++;
   return true;
 }
@@ -70,7 +70,7 @@ serve(async (req) => {
       );
     }
 
-    const { imageUrl, documentType } = await req.json();
+    const { imageUrl, documentType } = await reqon();
 
     // Rate limiting: 10 requests per minute (per authenticated user)
     if (!checkRateLimit(user.id, 10, 60000)) {
@@ -88,11 +88,11 @@ serve(async (req) => {
 
     // Check if the document is a PDF - AI vision doesn't support PDFs
     const isPdf = isPdfUrl(imageUrl);
-    
+
     if (isPdf) {
       console.log('PDF document detected - returning manual review required');
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           success: true,
           analysis: {
             authenticityScore: 50,
@@ -119,28 +119,28 @@ serve(async (req) => {
     // Retry logic for AI requests
     let retries = 2;
     let response: Response | undefined;
-    
+
     while (retries >= 0) {
       try {
         response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-        body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are an expert document forensics and authentication specialist. Analyze documents with extreme precision and identify any signs of forgery, tampering, or manipulation. Return ONLY valid JSON with no markdown formatting.'
-            },
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: `Perform comprehensive forensic authentication of this ${documentType} document:
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are an expert document forensics and authentication specialist. Analyze documents with extreme precision and identify any signs of forgery, tampering, or manipulation. Return ONLY valid JSON with no markdown formatting.'
+              },
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'text',
+                    text: `Perform comprehensive forensic authentication of this ${documentType} document:
 
 ANALYSIS REQUIREMENTS:
 1. **Authenticity Score** (0-100): Likelihood document is genuine
@@ -181,24 +181,24 @@ Return ONLY this JSON structure (no markdown):
   "confidence": "high|medium|low",
   "criticalFindings": ["most serious issues if any"]
 }`
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: imageUrl
-                }
-                }
-              ]
-            }
-          ],
-          max_completion_tokens: 2000
-        }),
+                  },
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: imageUrl
+                    }
+                  }
+                ]
+              }
+            ],
+            max_completion_tokens: 2000
+          }),
         });
 
         if (!response.ok) {
           const error = await response.text();
           console.error('Lovable AI API error:', response.status, error);
-          
+
           if (response.status === 429) {
             if (retries > 0) {
               console.log(`Rate limited, retrying... (${retries} attempts left)`);
@@ -207,7 +207,7 @@ Return ONLY this JSON structure (no markdown):
               continue;
             }
             return new Response(
-              JSON.stringify({ 
+              JSON.stringify({
                 success: false,
                 error: "Rate limit exceeded. Please try again in a moment.",
                 analysis: {
@@ -228,10 +228,10 @@ Return ONLY this JSON structure (no markdown):
               }
             );
           }
-          
+
           if (response.status === 402) {
             return new Response(
-              JSON.stringify({ 
+              JSON.stringify({
                 success: false,
                 error: "AI credits exhausted. Please add credits to continue.",
                 analysis: {
@@ -252,12 +252,12 @@ Return ONLY this JSON structure (no markdown):
               }
             );
           }
-          
+
           // Check for unsupported format errors (400)
           if (response.status === 400 && error.includes('mimetype')) {
             console.log('Unsupported file format detected from API error');
             return new Response(
-              JSON.stringify({ 
+              JSON.stringify({
                 success: true,
                 analysis: {
                   authenticityScore: 50,
@@ -279,17 +279,17 @@ Return ONLY this JSON structure (no markdown):
               }
             );
           }
-          
+
           if (retries > 0) {
             console.log(`AI error, retrying... (${retries} attempts left)`);
             await new Promise(resolve => setTimeout(resolve, 1000));
             retries--;
             continue;
           }
-          
+
           throw new Error(`AI API error: ${response.status}`);
         }
-        
+
         break; // Success, exit retry loop
       } catch (fetchError) {
         if (retries > 0) {
@@ -306,7 +306,7 @@ Return ONLY this JSON structure (no markdown):
       throw new Error("Failed to get response from AI after retries");
     }
 
-    const data = await response.json();
+    const data = await responseon();
     const analysisText = data.choices[0].message.content;
 
     console.log('AI Authentication Analysis received, parsing...');
@@ -320,15 +320,15 @@ Return ONLY this JSON structure (no markdown):
         .replace(/```\n?/g, "")
         .replace(/^```/gm, "")
         .trim();
-      
+
       // Strategy 2: Extract JSON object if wrapped in text
       const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         cleanContent = jsonMatch[0];
       }
-      
+
       analysis = JSON.parse(cleanContent);
-      
+
       // Validate and normalize required fields
       if (typeof analysis.authenticityScore !== 'number') {
         analysis.authenticityScore = 50;
@@ -345,14 +345,14 @@ Return ONLY this JSON structure (no markdown):
       if (!analysis.recommendation) {
         analysis.recommendation = 'REVIEW';
       }
-      
+
       console.log('Successfully parsed authentication analysis:', {
         score: analysis.authenticityScore,
         authentic: analysis.isAuthentic,
         recommendation: analysis.recommendation,
         user_id: user.id
       });
-      
+
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
       if (parseError instanceof Error) {
@@ -374,9 +374,9 @@ Return ONLY this JSON structure (no markdown):
     }
 
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: true,
-        analysis 
+        analysis
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -386,7 +386,7 @@ Return ONLY this JSON structure (no markdown):
     console.error('Error in authenticate-document:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
         error: errorMessage,
         analysis: {

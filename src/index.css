@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* 
- * LittleLedger Premium Design System v2.0
+ * SCP Premium Design System v2.0
  * Enterprise-grade SaaS aesthetic
  * Navy / Cream / Gold / Deep Red palette
  */
@@ -13,25 +13,40 @@
     /* ═══════════════════════════════════════════════════════════════
        BRAND COLORS - Core Identity (Exact values from brief)
        ═══════════════════════════════════════════════════════════════ */
-    --brand-navy: 216 72% 11%;            /* #0A1A2F */
-    --brand-cream: 38 47% 95%;            /* #F8F4EC */
-    --brand-gold: 43 75% 52%;             /* Muted amber - more premium */
-    --brand-red: 359 53% 41%;             /* #A03032 */
-    
+    --brand-navy: 216 72% 11%;
+    /* #0A1A2F */
+    --brand-cream: 38 47% 95%;
+    /* #F8F4EC */
+    --brand-gold: 43 75% 52%;
+    /* Muted amber - more premium */
+    --brand-red: 359 53% 41%;
+    /* #A03032 */
+
     /* ═══════════════════════════════════════════════════════════════
        NEUTRAL SCALE - Premium Greys
        ═══════════════════════════════════════════════════════════════ */
-    --neutral-50: 0 0% 98%;               /* #FAFAFA */
-    --neutral-100: 0 0% 96%;              /* #F5F5F5 */
-    --neutral-200: 0 0% 91%;              /* #E8E8E8 */
-    --neutral-300: 0 0% 82%;              /* #D0D0D0 */
-    --neutral-400: 0 0% 65%;              /* #A6A6A6 */
-    --neutral-500: 0 0% 45%;              /* #737373 */
-    --neutral-600: 0 0% 35%;              /* #5A5A5A */
-    --neutral-700: 0 0% 25%;              /* #404040 */
-    --neutral-800: 0 0% 15%;              /* #262626 */
-    --neutral-900: 0 0% 9%;               /* #171717 */
-    --neutral-950: 0 0% 4%;               /* #0A0A0A */
+    --neutral-50: 0 0% 98%;
+    /* #FAFAFA */
+    --neutral-100: 0 0% 96%;
+    /* #F5F5F5 */
+    --neutral-200: 0 0% 91%;
+    /* #E8E8E8 */
+    --neutral-300: 0 0% 82%;
+    /* #D0D0D0 */
+    --neutral-400: 0 0% 65%;
+    /* #A6A6A6 */
+    --neutral-500: 0 0% 45%;
+    /* #737373 */
+    --neutral-600: 0 0% 35%;
+    /* #5A5A5A */
+    --neutral-700: 0 0% 25%;
+    /* #404040 */
+    --neutral-800: 0 0% 15%;
+    /* #262626 */
+    --neutral-900: 0 0% 9%;
+    /* #171717 */
+    --neutral-950: 0 0% 4%;
+    /* #0A0A0A */
 
     /* ═══════════════════════════════════════════════════════════════
        SEMANTIC COLORS - Muted & Premium
@@ -39,15 +54,15 @@
     --success: 152 50% 38%;
     --success-light: 152 40% 96%;
     --success-foreground: 152 60% 20%;
-    
+
     --warning: 38 80% 48%;
     --warning-light: 40 80% 95%;
     --warning-foreground: 38 80% 24%;
-    
+
     --info: 210 70% 50%;
     --info-light: 210 80% 96%;
     --info-foreground: 210 70% 24%;
-    
+
     --error: 359 50% 48%;
     --error-light: 359 50% 96%;
     --error-foreground: 359 50% 24%;
@@ -55,15 +70,18 @@
     /* ═══════════════════════════════════════════════════════════════
        CORE UI COLORS - Light Mode
        ═══════════════════════════════════════════════════════════════ */
-    --background: 38 47% 97%;             /* Soft cream background */
-    --foreground: 216 72% 11%;            /* Navy text */
-    --foreground-muted: 0 0% 35%;         /* Muted grey text */
-    
+    --background: 38 47% 97%;
+    /* Soft cream background */
+    --foreground: 216 72% 11%;
+    /* Navy text */
+    --foreground-muted: 0 0% 35%;
+    /* Muted grey text */
+
     /* Card & Elevated Surfaces */
     --card: 0 0% 100%;
     --card-foreground: 216 72% 11%;
     --card-elevated: 0 0% 100%;
-    
+
     /* Popover/Dropdown */
     --popover: 0 0% 100%;
     --popover-foreground: 216 72% 11%;
@@ -72,7 +90,7 @@
     --primary: 216 72% 11%;
     --primary-foreground: 0 0% 100%;
     --primary-hover: 216 72% 16%;
-    
+
     /* Secondary = Muted Amber (CTAs, highlights) - more premium, less yellow */
     --secondary: 43 75% 52%;
     --secondary-foreground: 216 72% 8%;
@@ -120,11 +138,11 @@
     --shadow-lg: 0 12px 24px -4px rgb(10 26 47 / 0.08), 0 8px 16px -4px rgb(10 26 47 / 0.05);
     --shadow-xl: 0 20px 40px -8px rgb(10 26 47 / 0.10), 0 8px 16px -4px rgb(10 26 47 / 0.05);
     --shadow-2xl: 0 24px 48px -12px rgb(10 26 47 / 0.15);
-    
+
     /* Card-specific shadows */
     --card-shadow: 0 1px 3px 0 rgb(10 26 47 / 0.03), 0 1px 2px -1px rgb(10 26 47 / 0.02);
     --card-shadow-hover: 0 10px 24px -6px rgb(10 26 47 / 0.08), 0 4px 8px -2px rgb(10 26 47 / 0.04);
-    
+
     /* Focus ring shadow */
     --shadow-focus: 0 0 0 3px hsl(43 90% 61% / 0.3);
 
@@ -169,10 +187,10 @@
     --space-xl: 2rem;
     --space-2xl: 3rem;
     --space-3xl: 4rem;
-    
+
     --container-max: 80rem;
     --content-max: 72rem;
-    
+
     /* ═══════════════════════════════════════════════════════════════
        TRANSITIONS
        ═══════════════════════════════════════════════════════════════ */
@@ -229,7 +247,7 @@
 
     --card-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.4);
     --card-shadow-hover: 0 16px 32px -8px rgb(0 0 0 / 0.5);
-    
+
     --sidebar-background: 216 60% 8%;
     --sidebar-foreground: 38 30% 95%;
     --sidebar-primary: 43 90% 61%;
@@ -269,12 +287,17 @@
   /* ═══════════════════════════════════════════════════════════════
      TYPOGRAPHY SCALE - Premium SaaS (Linear/Notion-inspired)
      ═══════════════════════════════════════════════════════════════ */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-display);
     @apply text-foreground font-semibold;
     letter-spacing: -0.025em;
   }
-  
+
   /* Display - Hero headlines - 2.75rem / 600 */
   .text-display {
     font-family: var(--font-display);
@@ -284,19 +307,19 @@
     letter-spacing: -0.035em;
     @apply text-foreground;
   }
-  
+
   @media (min-width: 640px) {
     .text-display {
       font-size: 3.5rem;
     }
   }
-  
+
   @media (min-width: 1024px) {
     .text-display {
       font-size: 4rem;
     }
   }
-  
+
   /* H1 - 2rem / 600 */
   h1 {
     font-size: 2rem;
@@ -304,13 +327,13 @@
     line-height: 1.15;
     letter-spacing: -0.03em;
   }
-  
+
   @media (min-width: 640px) {
     h1 {
       font-size: 2.5rem;
     }
   }
-  
+
   /* H2 - 1.5rem / 500 */
   h2 {
     font-size: 1.5rem;
@@ -318,13 +341,13 @@
     line-height: 1.25;
     letter-spacing: -0.025em;
   }
-  
+
   @media (min-width: 640px) {
     h2 {
       font-size: 1.875rem;
     }
   }
-  
+
   /* H3 - 1.25rem / 500 */
   h3 {
     font-size: 1.25rem;
@@ -332,7 +355,7 @@
     line-height: 1.3;
     letter-spacing: -0.02em;
   }
-  
+
   /* H4 */
   h4 {
     font-size: 1.125rem;
@@ -340,7 +363,7 @@
     line-height: 1.35;
     letter-spacing: -0.015em;
   }
-  
+
   /* H5 */
   h5 {
     font-size: 1rem;
@@ -348,7 +371,7 @@
     line-height: 1.4;
     letter-spacing: -0.01em;
   }
-  
+
   /* H6 */
   h6 {
     font-size: 0.875rem;
@@ -356,37 +379,37 @@
     line-height: 1.4;
     letter-spacing: 0;
   }
-  
+
   p {
     @apply text-muted-foreground;
     line-height: 1.65;
   }
-  
+
   /* Text utilities */
   .text-body-lg {
     font-size: 1rem;
     line-height: 1.7;
     @apply text-muted-foreground;
   }
-  
+
   .text-body {
     font-size: 0.875rem;
     line-height: 1.65;
     @apply text-muted-foreground;
   }
-  
+
   .text-body-sm {
     font-size: 0.8125rem;
     line-height: 1.6;
     @apply text-muted-foreground;
   }
-  
+
   .text-caption {
     font-size: 0.75rem;
     line-height: 1.5;
     @apply text-muted-foreground;
   }
-  
+
   .text-overline {
     font-size: 0.6875rem;
     font-weight: 600;
@@ -417,32 +440,33 @@
    COMPONENT STYLES
    ═══════════════════════════════════════════════════════════════════════ */
 @layer components {
+
   /* ═══════════════════════════════════════════════════════════════
      CONTAINERS
      ═══════════════════════════════════════════════════════════════ */
   .container-narrow {
     @apply max-w-3xl mx-auto px-4 sm:px-6;
   }
-  
+
   .container-content {
     @apply max-w-5xl mx-auto px-4 sm:px-6 lg:px-8;
   }
-  
+
   .container-wide {
     @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
   }
-  
+
   /* ═══════════════════════════════════════════════════════════════
      SECTION SPACING
      ═══════════════════════════════════════════════════════════════ */
   .section-padding {
     @apply py-16 md:py-20 lg:py-24;
   }
-  
+
   .section-padding-lg {
     @apply py-20 md:py-28 lg:py-32;
   }
-  
+
   .section-padding-sm {
     @apply py-10 md:py-12 lg:py-16;
   }
@@ -454,23 +478,23 @@
     @apply bg-card rounded-xl border border-border/70;
     box-shadow: var(--card-shadow);
     transition: box-shadow var(--transition-base) var(--ease-out),
-                transform var(--transition-base) var(--ease-out),
-                border-color var(--transition-base) var(--ease-out);
+      transform var(--transition-base) var(--ease-out),
+      border-color var(--transition-base) var(--ease-out);
   }
-  
+
   .card-premium:hover {
     box-shadow: var(--card-shadow-hover);
     @apply border-border;
   }
-  
+
   .card-interactive {
     @apply card-premium cursor-pointer;
   }
-  
+
   .card-interactive:hover {
     transform: translateY(-2px);
   }
-  
+
   .card-elevated {
     @apply bg-card rounded-xl border-0;
     box-shadow: var(--shadow-md);
@@ -483,15 +507,15 @@
     @apply bg-card rounded-xl border border-border/70 overflow-hidden;
     box-shadow: var(--card-shadow);
   }
-  
+
   .dashboard-card-header {
     @apply px-5 py-4 border-b border-border/50 flex items-center justify-between;
   }
-  
+
   .dashboard-card-title {
     @apply text-sm font-medium text-foreground;
   }
-  
+
   .dashboard-card-body {
     @apply p-5;
   }
@@ -504,35 +528,35 @@
     box-shadow: var(--card-shadow);
     transition: all var(--transition-base) var(--ease-out);
   }
-  
+
   .stat-card:hover {
     box-shadow: var(--card-shadow-hover);
     @apply border-border;
   }
-  
+
   .stat-card-value {
     font-size: 1.875rem;
     font-weight: 600;
     letter-spacing: -0.02em;
     @apply text-foreground;
   }
-  
+
   .stat-card-label {
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.02em;
     @apply text-muted-foreground uppercase;
   }
-  
+
   .stat-card-change {
     font-size: 0.75rem;
     font-weight: 500;
   }
-  
+
   .stat-card-change.positive {
     @apply text-success;
   }
-  
+
   .stat-card-change.negative {
     @apply text-destructive;
   }
@@ -543,23 +567,23 @@
   .status-badge {
     @apply inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium;
   }
-  
+
   .status-badge-success {
     @apply status-badge bg-success-light text-success-foreground;
   }
-  
+
   .status-badge-warning {
     @apply status-badge bg-warning-light text-warning-foreground;
   }
-  
+
   .status-badge-error {
     @apply status-badge bg-error-light text-error-foreground;
   }
-  
+
   .status-badge-info {
     @apply status-badge bg-info-light text-info-foreground;
   }
-  
+
   .status-badge-neutral {
     @apply status-badge bg-muted text-muted-foreground;
   }
@@ -581,7 +605,7 @@
     box-shadow: var(--shadow-xs);
     transition: all var(--transition-fast) var(--ease-out);
   }
-  
+
   .trust-badge:hover {
     box-shadow: var(--shadow-sm);
     @apply border-border;
@@ -593,29 +617,29 @@
   .table-premium {
     @apply w-full;
   }
-  
+
   .table-premium thead {
     @apply bg-muted/40;
   }
-  
+
   .table-premium th {
     @apply px-4 py-3.5 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground;
     @apply border-b border-border;
   }
-  
+
   .table-premium td {
     @apply px-4 py-4 text-sm text-foreground;
     @apply border-b border-border/50;
   }
-  
+
   .table-premium tbody tr {
     transition: background-color var(--transition-fast) var(--ease-out);
   }
-  
+
   .table-premium tbody tr:hover {
     @apply bg-muted/30;
   }
-  
+
   .table-premium tbody tr:last-child td {
     @apply border-b-0;
   }
@@ -630,11 +654,11 @@
   .form-label {
     @apply text-sm font-medium text-foreground mb-1.5 block;
   }
-  
+
   .form-hint {
     @apply text-xs text-muted-foreground mt-1.5;
   }
-  
+
   .form-error {
     @apply text-xs text-destructive mt-1.5;
   }
@@ -645,15 +669,15 @@
   .empty-state {
     @apply flex flex-col items-center justify-center py-16 text-center;
   }
-  
+
   .empty-state-icon {
     @apply w-12 h-12 mb-4 text-muted-foreground/40;
   }
-  
+
   .empty-state-title {
     @apply text-base font-medium text-foreground mb-2;
   }
-  
+
   .empty-state-description {
     @apply text-sm text-muted-foreground max-w-sm mb-6;
   }
@@ -664,24 +688,24 @@
   .page-header {
     @apply mb-8;
   }
-  
+
   .page-title {
     font-size: 1.5rem;
     font-weight: 600;
     letter-spacing: -0.025em;
     @apply text-foreground;
   }
-  
+
   @media (min-width: 640px) {
     .page-title {
       font-size: 1.875rem;
     }
   }
-  
+
   .page-subtitle {
     @apply text-sm text-muted-foreground mt-1;
   }
-  
+
   .page-actions {
     @apply flex items-center gap-3 mt-4 sm:mt-0;
   }
@@ -692,7 +716,7 @@
   .action-bar {
     @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6;
   }
-  
+
   .action-bar-group {
     @apply flex items-center gap-2;
   }
@@ -703,7 +727,7 @@
   .divider {
     @apply border-t border-border my-6;
   }
-  
+
   .divider-subtle {
     @apply border-t border-border/50 my-4;
   }
@@ -713,27 +737,28 @@
    ANIMATION UTILITIES
    ═══════════════════════════════════════════════════════════════════════ */
 @layer utilities {
+
   /* Fade animations */
   .animate-fade-in {
     animation: fadeIn var(--transition-slow) var(--ease-out) forwards;
   }
-  
+
   .animate-fade-in-up {
     animation: fadeInUp var(--transition-slow) var(--ease-out) forwards;
   }
-  
+
   .animate-fade-in-down {
     animation: fadeInDown var(--transition-slow) var(--ease-out) forwards;
   }
-  
+
   .animate-slide-up {
     animation: slideUp 350ms var(--ease-out) forwards;
   }
-  
+
   .animate-slide-down {
     animation: slideDown 350ms var(--ease-out) forwards;
   }
-  
+
   .animate-scale-in {
     animation: scaleIn var(--transition-base) var(--ease-out) forwards;
   }
@@ -752,7 +777,7 @@
   .hover-lift {
     transition: transform var(--transition-base) var(--ease-out);
   }
-  
+
   .hover-lift:hover {
     transform: translateY(-2px);
   }
@@ -761,83 +786,105 @@
   .transition-default {
     transition: all var(--transition-base) var(--ease-out);
   }
-  
+
   .transition-fast {
     transition: all var(--transition-fast) var(--ease-out);
   }
-  
+
   .transition-slow {
     transition: all var(--transition-slow) var(--ease-out);
   }
 
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
   }
-  
+
   @keyframes fadeInUp {
     from {
       opacity: 0;
       transform: translateY(10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
   @keyframes fadeInDown {
     from {
       opacity: 0;
       transform: translateY(-10px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
   @keyframes slideUp {
     from {
       opacity: 0;
       transform: translateY(16px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
   @keyframes slideDown {
     from {
       opacity: 0;
       transform: translateY(-16px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
-  
+
   @keyframes scaleIn {
     from {
       opacity: 0;
       transform: scale(0.96);
     }
+
     to {
       opacity: 1;
       transform: scale(1);
     }
   }
-  
+
   @keyframes skeleton {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+
+    0%,
+    100% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 0.4;
+    }
   }
-  
+
   @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
   }
 }
 
@@ -849,21 +896,21 @@
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--border)) transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
     border-radius: 3px;
   }
-  
+
   .scrollbar-thin::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground) / 0.25);
   }

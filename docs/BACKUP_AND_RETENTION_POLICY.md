@@ -1,8 +1,8 @@
-# LittleLedger Backup Strategy & Data Retention Policy
+# SCP Backup Strategy & Data Retention Policy
 
 ## Overview
 
-This document outlines the backup strategy and data retention policies for LittleLedger's preschool compliance management platform. Given the sensitive nature of student records, staff credentials, and compliance documentation, this policy ensures data integrity, availability, and regulatory compliance.
+This document outlines the backup strategy and data retention policies for SCP's preschool compliance management platform. Given the sensitive nature of student records, staff credentials, and compliance documentation, this policy ensures data integrity, availability, and regulatory compliance.
 
 ---
 
@@ -192,10 +192,10 @@ For CCPA/GDPR compliance:
 ## 7. Contact Information
 
 **Data Protection Inquiries:**
-- Email: privacy@littleledger.com
+- Email: privacy@SCP.com
 
 **Technical Support:**
-- Email: support@littleledger.com
+- Email: support@SCP.com
 
 **Emergency Recovery:**
 - Contact platform administrator immediately
@@ -205,4 +205,4 @@ For CCPA/GDPR compliance:
 **Document Version:** 1.0  
 **Last Updated:** December 2024  
 **Next Review:** March 2025  
-**Approved By:** LittleLedger Operations Team
+**Approved By:** SCP Operations Team

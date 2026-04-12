@@ -1,10 +1,10 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import { 
-  checkPersistentRateLimit, 
-  createRateLimitResponse, 
+import {
+  checkPersistentRateLimit,
+  createRateLimitResponse,
   getRateLimitIdentifier,
-  sanitizeErrorMessage 
+  sanitizeErrorMessage
 } from '../_shared/rate-limit.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     const rateLimit = await checkPersistentRateLimit(
       supabase, identifier, 'send-teacher-invitation', 20, 60000
     );
-    
+
     if (!rateLimit.allowed) {
       console.log(`Rate limit exceeded for ${identifier}`);
       return createRateLimitResponse(60, corsHeaders);
@@ -54,7 +54,7 @@ Deno.serve(async (req) => {
 
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: authError } = await supabase.auth.getUser(token);
-    
+
     if (authError || !user) {
       console.error("Auth error:", authError);
       return new Response(
@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { invitationId }: TeacherInvitationRequest = await req.json();
+    const { invitationId }: TeacherInvitationRequest = await reqon();
     console.log("Processing invitation:", invitationId);
 
     // Fetch invitation to validate school_id access
@@ -126,12 +126,12 @@ Deno.serve(async (req) => {
 
     const schoolName = invitation.schools?.name || "Your School";
     const branchName = invitation.branches?.branch_name || "";
-    const inviteUrl = `${req.headers.get("origin") || "https://littleledger.lovable.app"}/accept-teacher-invite?token=${invitation.invitation_token}`;
+    const inviteUrl = `${req.headers.get("origin") || "https://SCP.lovable.app"}/accept-teacher-invite?token=${invitation.invitation_token}`;
 
     const emailResponse = await resend.emails.send({
-      from: "LittleLedger <onboarding@resend.dev>",
+      from: "SCP <onboarding@resend.dev>",
       to: [invitation.email],
-      subject: `You're invited to join ${schoolName} on LittleLedger`,
+      subject: `You're invited to join ${schoolName} on SCP`,
       html: `
         <!DOCTYPE html>
         <html>
@@ -151,13 +151,13 @@ Deno.serve(async (req) => {
         <body>
           <div class="container">
             <div class="header">
-              <h1>LittleLedger</h1>
+              <h1>SCP</h1>
               <p>Document Management for Schools</p>
             </div>
             <div class="content">
               <h2>You're Invited!</h2>
               <p>Hello ${invitation.first_name},</p>
-              <p><strong>${schoolName}</strong> has invited you to join their team on LittleLedger as a staff member.</p>
+              <p><strong>${schoolName}</strong> has invited you to join their team on SCP as a staff member.</p>
               
               <div class="details">
                 <p><strong>Name:</strong> ${invitation.first_name} ${invitation.last_name}</p>
@@ -173,7 +173,7 @@ Deno.serve(async (req) => {
             </div>
             <div class="footer">
               <p>If you didn't expect this invitation, you can safely ignore this email.</p>
-              <p>&copy; ${new Date().getFullYear()} LittleLedger. All rights reserved.</p>
+              <p>&copy; ${new Date().getFullYear()} SCP. All rights reserved.</p>
             </div>
           </div>
         </body>

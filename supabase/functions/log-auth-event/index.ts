@@ -16,7 +16,7 @@ const corsHeaders = {
 // Allowed auth event types (whitelist to prevent abuse)
 const ALLOWED_EVENT_TYPES = [
   'sign_up',
-  'sign_in', 
+  'sign_in',
   'sign_out',
   'password_reset_request',
   'password_reset_complete',
@@ -51,7 +51,7 @@ serve(async (req) => {
       return createRateLimitResponse(60, corsHeaders);
     }
 
-    const { event_type, email, user_id, metadata } = await req.json();
+    const { event_type, email, user_id, metadata } = await reqon();
 
     // Strict validation of event_type (whitelist only)
     if (!event_type || !ALLOWED_EVENT_TYPES.includes(event_type)) {

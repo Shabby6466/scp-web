@@ -43,7 +43,7 @@ EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Insert default settings
 INSERT INTO public.platform_settings (key, value, description) VALUES
-('general', '{"maintenanceMode": false, "platformName": "LittleLedger"}', 'General platform settings'),
+('general', '{"maintenanceMode": false, "platformName": "SCP"}', 'General platform settings'),
 ('registration', '{"allowSchoolSelfRegistration": true, "allowParentSelfRegistration": true, "autoConfirmEmails": true, "requireSchoolApproval": true}', 'Registration and approval settings'),
 ('notifications', '{"emailNotificationsEnabled": true, "sendWelcomeEmails": true, "sendExpirationReminders": true, "reminderDaysBeforeExpiry": 30}', 'Notification settings'),
 ('security', '{"sessionTimeout": 60, "maxLoginAttempts": 5}', 'Security settings');

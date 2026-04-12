@@ -54,10 +54,10 @@ const Auth = () => {
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt="LittleLedger" className="h-10 brightness-0 invert" />
-            <span className="text-xl font-semibold text-white">LittleLedger</span>
+            <img src={logo} alt="SCP" className="h-10 brightness-0 invert" />
+            <span className="text-xl font-semibold text-white">SCP</span>
           </Link>
-          
+
           <div className="max-w-md">
             <h1 className="text-4xl font-semibold text-white leading-tight">
               Preschool compliance, simplified.
@@ -67,7 +67,7 @@ const Auth = () => {
             </p>
           </div>
 
-          <p className="text-white/40 text-sm">© 2024 LittleLedger</p>
+          <p className="text-white/40 text-sm">© 2024 SCP</p>
         </div>
       </div>
 
@@ -75,8 +75,8 @@ const Auth = () => {
       <div className="flex-1 flex flex-col">
         <div className="lg:hidden p-6">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="LittleLedger" className="h-8" />
-            <span className="font-semibold text-foreground">LittleLedger</span>
+            <img src={logo} alt="SCP" className="h-8" />
+            <span className="font-semibold text-foreground">SCP</span>
           </Link>
         </div>
 

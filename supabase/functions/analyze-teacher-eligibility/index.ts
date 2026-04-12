@@ -79,7 +79,7 @@ serve(async (req) => {
   }
 
   try {
-    const { teacherId, profile, positions } = await req.json() as {
+    const { teacherId, profile, positions } = await reqon() as {
       teacherId: string;
       profile: TeacherProfile;
       positions: Position[];
@@ -115,21 +115,21 @@ Education: ${profile.education_level || 'Not specified'} in ${profile.education_
 Credits: ${profile.total_credits || 0} total, ${profile.ece_credits || 0} ECE
 Experience: ${profile.years_experience || 0} years
 Certifications: ${[
-      profile.cda_credential ? 'CDA' : null,
-      profile.state_certification || null,
-      profile.first_aid_certified ? 'First Aid' : null,
-      profile.cpr_certified ? 'CPR' : null,
-    ].filter(Boolean).join(', ') || 'None'}
+        profile.cda_credential ? 'CDA' : null,
+        profile.state_certification || null,
+        profile.first_aid_certified ? 'First Aid' : null,
+        profile.cpr_certified ? 'CPR' : null,
+      ].filter(Boolean).join(', ') || 'None'}
     `.trim();
 
-    const positionsSummary = positions.map(p => 
+    const positionsSummary = positions.map(p =>
       `${p.name}: ${p.min_education_level || 'Any'} education, ${p.min_credits || 0} credits, ${p.min_ece_credits || 0} ECE, ${p.min_years_experience || 0}+ years${p.requires_cda ? ', CDA required' : ''}${p.requires_state_cert ? ', State cert required' : ''}`
     ).join('\n');
 
     // Check for AI API key - support multiple providers
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
     const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY');
-    
+
     // Try AI analysis if any key is available
     let aiInsights = { strengths: [], gaps: [], suggestions: [] };
     let aiEnabled = false;
@@ -137,7 +137,7 @@ Certifications: ${[
     if (OPENAI_API_KEY) {
       aiEnabled = true;
       console.log('Using OpenAI for analysis');
-      
+
       try {
         const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
@@ -181,9 +181,9 @@ Format your response as JSON:
         });
 
         if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
+          const aiData = await aiResponseon();
           const aiContent = aiData.choices?.[0]?.message?.content || '';
-          
+
           try {
             const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
@@ -201,7 +201,7 @@ Format your response as JSON:
     } else if (ANTHROPIC_API_KEY) {
       aiEnabled = true;
       console.log('Using Anthropic for analysis');
-      
+
       try {
         const aiResponse = await fetch('https://api.anthropic.com/v1/messages', {
           method: 'POST',
@@ -241,9 +241,9 @@ Respond ONLY with JSON:
         });
 
         if (aiResponse.ok) {
-          const aiData = await aiResponse.json();
+          const aiData = await aiResponseon();
           const aiContent = aiData.content?.[0]?.text || '';
-          
+
           try {
             const jsonMatch = aiContent.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
@@ -263,13 +263,13 @@ Respond ONLY with JSON:
     // If no AI available, return rules-based analysis only
     if (!aiEnabled) {
       console.log('No AI API key configured - returning rules-based analysis only');
-      
+
       // Generate basic insights from rules
       const rulesGaps = positionAnalysis
         .filter(p => !p.meets_requirements)
         .flatMap(p => p.gaps)
         .slice(0, 3);
-      
+
       const analysis = {
         recommended_positions: recommendedPositions,
         strengths: ['Profile data collected for review'],
@@ -286,14 +286,14 @@ Respond ONLY with JSON:
     // Combine rules-based and AI analysis
     const analysis = {
       recommended_positions: recommendedPositions,
-      strengths: aiInsights.strengths?.length > 0 
-        ? aiInsights.strengths 
+      strengths: aiInsights.strengths?.length > 0
+        ? aiInsights.strengths
         : ['Profile data collected for review'],
-      gaps: aiInsights.gaps?.length > 0 
-        ? aiInsights.gaps 
+      gaps: aiInsights.gaps?.length > 0
+        ? aiInsights.gaps
         : positionAnalysis.filter(p => !p.meets_requirements).flatMap(p => p.gaps).slice(0, 3),
-      suggestions: aiInsights.suggestions?.length > 0 
-        ? aiInsights.suggestions 
+      suggestions: aiInsights.suggestions?.length > 0
+        ? aiInsights.suggestions
         : ['Complete all qualification fields for more accurate analysis'],
       ai_enabled: true,
     };
@@ -304,8 +304,8 @@ Respond ONLY with JSON:
 
   } catch (error) {
     console.error('Error in analyze-teacher-eligibility:', error);
-    return new Response(JSON.stringify({ 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    return new Response(JSON.stringify({
+      error: error instanceof Error ? error.message : 'Unknown error'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

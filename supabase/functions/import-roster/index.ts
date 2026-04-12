@@ -167,7 +167,7 @@ serve(async (req) => {
       );
     }
 
-    const body: ImportRequest = await req.json();
+    const body: ImportRequest = await reqon();
     const { branchId, fileName, importType, duplicateHandling, rows } = body;
     schoolId = body.schoolId;
 

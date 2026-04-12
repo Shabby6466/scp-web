@@ -161,7 +161,7 @@ export default function AcceptDirectorInvite() {
             <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <UserCog className="h-8 w-8 text-primary" />
             </div>
-            <CardTitle className="text-2xl">Welcome to LittleLedger</CardTitle>
+            <CardTitle className="text-2xl">Welcome to SCP</CardTitle>
             <CardDescription>
               You've been invited to join <strong>{invitation.school_name}</strong> as a{" "}
               <strong>Branch Director</strong> for <strong>{invitation.branch_name}</strong>.

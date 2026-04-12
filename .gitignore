@@ -6,7 +6,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+.dist
+/dist
 
+./dist
+dist/
+.dist/
 node_modules
 dist
 dist-ssr
@@ -14,7 +19,7 @@ dist-ssr
 
 # Editor directories and files
 .vscode/*
-!.vscode/extensions.json
+!.vscode/extensionson
 .idea
 .DS_Store
 *.suo

@@ -252,9 +252,9 @@ const AcceptParentInvite = () => {
     <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
       <Card className="max-w-md w-full">
         <CardHeader className="text-center">
-          <img src={logoImage} alt="LittleLedger" className="h-12 mx-auto mb-4" />
+          <img src={logoImage} alt="SCP" className="h-12 mx-auto mb-4" />
           <CardTitle className="text-2xl">Parent Enrollment</CardTitle>
-          <CardDescription>You've been invited to join LittleLedger</CardDescription>
+          <CardDescription>You've been invited to join SCP</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="bg-muted/50 rounded-lg p-4 space-y-3">

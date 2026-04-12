@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const { invitationToken, parentName, parentEmail }: NotificationRequest = await req.json();
+    const { invitationToken, parentName, parentEmail }: NotificationRequest = await reqon();
 
     console.log('Processing parent acceptance notification for:', parentEmail, 'by user:', user.id);
 
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     // Mark invitation as accepted
     const { error: updateError } = await supabaseClient
       .from('parent_invitations')
-      .update({ 
+      .update({
         status: 'accepted',
         accepted_at: new Date().toISOString()
       })
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
 
     // Send notification email using Resend
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
-    
+
     if (resendApiKey) {
       try {
         const emailResponse = await fetch('https://api.resend.com/emails', {
@@ -134,9 +134,9 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'LittleLedger <onboarding@resend.dev>',
+            from: 'SCP <onboarding@resend.dev>',
             to: [inviterEmail],
-            subject: `${parentName || parentEmail} has joined ${schoolName} on LittleLedger`,
+            subject: `${parentName || parentEmail} has joined ${schoolName} on SCP`,
             html: `
               <!DOCTYPE html>
               <html>
@@ -164,7 +164,7 @@ Deno.serve(async (req) => {
                               </tr>
                               <tr>
                                 <td align="center">
-                                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">LittleLedger</h1>
+                                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">SCP</h1>
                                 </td>
                               </tr>
                             </table>
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
                             </h2>
                             
                             <p style="margin: 0 0 24px; color: #4a5568; font-size: 16px; line-height: 1.7; text-align: center;">
-                              A parent has accepted your invitation and created their account on LittleLedger.
+                              A parent has accepted your invitation and created their account on SCP.
                             </p>
                             
                             <!-- Parent Details Box -->
@@ -246,10 +246,10 @@ Deno.serve(async (req) => {
                         <!-- Footer -->
                         <tr>
                           <td style="background-color: #1e3a5f; padding: 28px 40px; text-align: center;">
-                            <p style="margin: 0 0 8px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">LittleLedger</p>
+                            <p style="margin: 0 0 8px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 600;">SCP</p>
                             <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 12px; line-height: 1.6;">
                               Secure document management for preschools.<br>
-                              &copy; ${new Date().getFullYear()} LittleLedger. All rights reserved.
+                              &copy; ${new Date().getFullYear()} SCP. All rights reserved.
                             </p>
                           </td>
                         </tr>
@@ -278,8 +278,8 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: 'Parent acceptance notification processed'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

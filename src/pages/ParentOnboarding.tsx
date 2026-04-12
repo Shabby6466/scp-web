@@ -249,7 +249,7 @@ const ParentOnboarding = () => {
 
           {currentStep === 1 && (
             <div className="text-center mb-8">
-              <h1 className="text-4xl font-display font-bold mb-4">Welcome to LittleLedger!</h1>
+              <h1 className="text-4xl font-display font-bold mb-4">Welcome to SCP!</h1>
               <p className="text-lg text-muted-foreground">Let's get you set up in just a few steps</p>
             </div>
           )}

@@ -50,7 +50,7 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const body: LogEventRequest = await req.json();
+    const body: LogEventRequest = await reqon();
     const { event_type, entity_type, entity_id, metadata } = body;
 
     if (!event_type || !entity_type) {

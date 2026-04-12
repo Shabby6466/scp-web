@@ -13,16 +13,16 @@ const rateLimiter = new Map<string, { count: number; resetTime: number }>();
 function checkRateLimit(identifier: string, maxRequests: number, windowMs: number): boolean {
   const now = Date.now();
   const record = rateLimiter.get(identifier);
-  
+
   if (!record || now > record.resetTime) {
     rateLimiter.set(identifier, { count: 1, resetTime: now + windowMs });
     return true;
   }
-  
+
   if (record.count >= maxRequests) {
     return false;
   }
-  
+
   record.count++;
   return true;
 }
@@ -58,7 +58,7 @@ serve(async (req) => {
       );
     }
 
-    const { imageBase64, documentCategory } = await req.json();
+    const { imageBase64, documentCategory } = await reqon();
 
     // Rate limiting: 20 requests per minute (per authenticated user)
     if (!checkRateLimit(user.id, 20, 60000)) {
@@ -92,7 +92,7 @@ serve(async (req) => {
     // Use vision model to analyze the document with retry logic
     let retries = 2;
     let response: Response | undefined;
-    
+
     while (retries >= 0) {
       try {
         response = await fetch(
@@ -242,17 +242,17 @@ Return ONLY this JSON structure (no markdown):
           }
           const errorText = await response.text();
           console.error("AI gateway error:", response.status, errorText);
-          
+
           if (retries > 0) {
             console.log(`AI error, retrying... (${retries} attempts left)`);
             await new Promise(resolve => setTimeout(resolve, 1000));
             retries--;
             continue;
           }
-          
+
           throw new Error(`AI processing failed: ${response.status}`);
         }
-        
+
         break; // Success, exit retry loop
       } catch (fetchError) {
         if (retries > 0) {
@@ -269,7 +269,7 @@ Return ONLY this JSON structure (no markdown):
       throw new Error("Failed to get response from AI after retries");
     }
 
-    const aiResponse = await response.json();
+    const aiResponse = await responseon();
     const content = aiResponse.choices[0].message.content;
 
     console.log("AI Response received, parsing...");
@@ -283,15 +283,15 @@ Return ONLY this JSON structure (no markdown):
         .replace(/```\n?/g, "")
         .replace(/^```/gm, "")
         .trim();
-      
+
       // Strategy 2: Extract JSON object if wrapped in text
       const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         cleanContent = jsonMatch[0];
       }
-      
+
       scanResult = JSON.parse(cleanContent);
-      
+
       // Validate required fields
       if (!scanResult.documentType) {
         scanResult.documentType = documentCategory || "unknown";
@@ -305,7 +305,7 @@ Return ONLY this JSON structure (no markdown):
       if (typeof scanResult.confidence !== 'number') {
         scanResult.confidence = 75;
       }
-      
+
       console.log("Successfully parsed scan result:", {
         type: scanResult.documentType,
         confidence: scanResult.confidence,
@@ -313,16 +313,16 @@ Return ONLY this JSON structure (no markdown):
         hasPersonalInfo: !!(scanResult.studentName?.fullName || scanResult.address?.fullAddress),
         user_id: user.id
       });
-      
+
     } catch (parseError) {
       console.error("JSON parsing error:", parseError);
       console.error("Raw content:", content);
       if (parseError instanceof Error) {
         console.error("Parse error details:", parseError.message);
       }
-      
+
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: "Failed to parse AI response. The AI returned invalid data.",
           details: "Please try scanning the document again or contact support if the issue persists.",
         }),
@@ -345,8 +345,8 @@ Return ONLY this JSON structure (no markdown):
   } catch (error) {
     console.error("Error in scan-document function:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : "Unknown error occurred" 
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Unknown error occurred"
       }),
       {
         status: 500,

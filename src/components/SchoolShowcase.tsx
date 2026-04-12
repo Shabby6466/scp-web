@@ -30,7 +30,7 @@ const SchoolShowcase = () => {
             Join forward-thinking schools that are transforming their document management. Save time, space and stay compliant to focus on what matters most.
           </p>
         </div>
-        
+
         <Card className="max-w-4xl mx-auto border border-border shadow-xl">
           <CardContent className="p-8 md:p-12">
             <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -39,21 +39,21 @@ const SchoolShowcase = () => {
                   <Building2 className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="text-3xl font-serif font-bold mb-4 text-foreground">
-                  Why Schools Choose LittleLedger
+                  Why Schools Choose SCP
                 </h3>
                 <p className="text-muted-foreground mb-8 leading-relaxed">
-                  Designed specifically for preschools and early childhood education centers, LittleLedger eliminates paperwork chaos and ensures compliance with ease.
+                  Designed specifically for preschools and early childhood education centers, SCP eliminates paperwork chaos and ensures compliance with ease.
                 </p>
-                <Button 
-                  size="lg" 
-                  className="w-full md:w-auto font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/90" 
+                <Button
+                  size="lg"
+                  className="w-full md:w-auto font-semibold bg-secondary text-secondary-foreground hover:bg-secondary/90"
                   onClick={() => navigate('/school-register')}
                 >
                   Start Registration
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </div>
-              
+
               <div className="space-y-3">
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
@@ -65,13 +65,13 @@ const SchoolShowcase = () => {
             </div>
           </CardContent>
         </Card>
-        
+
         <div className="text-center mt-12">
           <p className="text-lg font-semibold text-foreground mb-2">
             Questions about getting started?
           </p>
           <p className="text-base text-muted-foreground">
-            Contact our team to learn how LittleLedger can transform your school's operations
+            Contact our team to learn how SCP can transform your school's operations
           </p>
         </div>
       </div>

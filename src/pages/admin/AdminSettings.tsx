@@ -75,7 +75,7 @@ interface AllSettings {
 const defaultSettings: AllSettings = {
   general: {
     maintenanceMode: false,
-    platformName: 'LittleLedger',
+    platformName: 'SCP',
   },
   registration: {
     allowSchoolSelfRegistration: true,
@@ -386,7 +386,7 @@ const AdminSettings = () => {
                     id="platformName"
                     value={settings.general.platformName}
                     onChange={(e) => updateGeneralSetting('platformName', e.target.value)}
-                    placeholder="LittleLedger"
+                    placeholder="SCP"
                   />
                   <p className="text-sm text-muted-foreground">
                     The name displayed across the platform
@@ -406,7 +406,7 @@ const AdminSettings = () => {
                   />
                 </div>
                 <Separator />
-                
+
                 <div className="space-y-4">
                   <h3 className="font-semibold">Quick Links</h3>
                   <div className="grid gap-3 sm:grid-cols-2">

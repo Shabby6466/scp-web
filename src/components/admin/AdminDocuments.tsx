@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { FileText, Eye, Search, Filter, Shield } from 'lucide-react';
 import { documentService } from '@/services/documentService';
+import { Skeleton } from '@/components/ui/skeleton';
+import { User, GraduationCap, Briefcase } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<string, string> = {
   all: 'All Categories',
@@ -112,15 +114,38 @@ const AdminDocuments = () => {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent"></div>
-        <p className="mt-4 text-muted-foreground">Loading documents...</p>
+      <div className="space-y-6 animate-in fade-in duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="backdrop-blur-sm bg-white/50 border-border/40">
+              <CardHeader className="pb-3">
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-8 w-16" />
+              </CardHeader>
+            </Card>
+          ))}
+        </div>
+        <div className="space-y-4">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i} className="backdrop-blur-sm bg-white/50 border-border/40">
+              <CardContent className="p-6">
+                <div className="flex gap-4">
+                  <Skeleton className="h-12 w-12 rounded" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-1/3" />
+                    <Skeleton className="h-4 w-1/4" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 selection:bg-primary/20">
       <DocumentReviewDialog
         document={selectedDocument}
         open={reviewDialogOpen}
@@ -137,28 +162,28 @@ const AdminDocuments = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Total Documents</CardDescription>
-            <CardTitle className="text-3xl">{stats.total}</CardTitle>
+        <Card className="backdrop-blur-md bg-white/60 dark:bg-black/40 border-border/40">
+          <CardHeader className="pb-3 text-center">
+            <CardDescription className="font-medium">Total Documents</CardDescription>
+            <CardTitle className="text-4xl font-display font-bold">{stats.total}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Pending Review</CardDescription>
-            <CardTitle className="text-3xl text-secondary">{stats.pending}</CardTitle>
+        <Card className="backdrop-blur-md bg-white/60 dark:bg-black/40 border-border/40">
+          <CardHeader className="pb-3 text-center">
+            <CardDescription className="font-medium">Pending Review</CardDescription>
+            <CardTitle className="text-4xl font-display font-bold text-amber-600">{stats.pending}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardDescription>Approved</CardDescription>
-            <CardTitle className="text-3xl text-primary">{stats.approved}</CardTitle>
+        <Card className="backdrop-blur-md bg-white/60 dark:bg-black/40 border-border/40">
+          <CardHeader className="pb-3 text-center">
+            <CardDescription className="font-medium">Approved</CardDescription>
+            <CardTitle className="text-4xl font-display font-bold text-green-600">{stats.approved}</CardTitle>
           </CardHeader>
         </Card>
-        <Card>
+        <Card className="backdrop-blur-md bg-white/60 dark:bg-black/40 border-border/40 text-center">
           <CardHeader className="pb-3">
-            <CardDescription>Rejected</CardDescription>
-            <CardTitle className="text-3xl text-destructive">{stats.rejected}</CardTitle>
+            <CardDescription className="font-medium">Rejected</CardDescription>
+            <CardTitle className="text-4xl font-display font-bold text-destructive">{stats.rejected}</CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -232,45 +257,71 @@ const AdminDocuments = () => {
       ) : (
         <div className="space-y-4">
           {filteredDocuments.map((doc) => (
-            <Card key={doc.id}>
-              <CardHeader>
+            <Card key={doc.id} className="backdrop-blur-sm bg-white/40 dark:bg-black/20 border-border/40 hover:shadow-lg transition-all duration-300 group">
+              <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <FileText className="h-5 w-5" />
-                      <CardTitle className="text-lg">{doc.file_name}</CardTitle>
-                      <Badge variant={STATUS_COLORS[doc.status]}>
-                        {doc.status}
-                      </Badge>
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg font-display font-semibold">{doc.file_name}</CardTitle>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <Badge variant={STATUS_COLORS[doc.status] || 'secondary'} className="capitalize font-medium">
+                            {doc.status}
+                          </Badge>
+                          <Badge variant="outline" className="text-[10px] py-0 px-1.5 h-4.5">
+                            {CATEGORY_LABELS[doc.category] || doc.category}
+                          </Badge>
+                        </div>
+                      </div>
                     </div>
                     <CardDescription>
-                      <div className="space-y-1">
-                        <div>Category: {CATEGORY_LABELS[doc.category]}</div>
-                        {doc.students && (
-                          <div>
-                            Student: {doc.students.first_name} {doc.students.last_name}
-                            {doc.students.grade_level && ` (${doc.students.grade_level})`}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 mt-3">
+                        {doc.students ? (
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <GraduationCap className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">Student: <strong>{doc.students.first_name} {doc.students.last_name}</strong></span>
+                            {doc.students.grade_level && <span className="text-xs text-muted-foreground">({doc.students.grade_level})</span>}
+                          </div>
+                        ) : doc.teachers ? (
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <Briefcase className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">Teacher: <strong>{doc.teachers.first_name} {doc.teachers.last_name}</strong></span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <User className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm italic">No subject linked</span>
                           </div>
                         )}
-                        <div className="text-xs">
-                          Uploaded: {new Date(doc.created_at).toLocaleDateString()}
+                        <div className="text-xs text-muted-foreground flex items-center gap-2">
+                          <Shield className="h-3 w-3" />
+                          Uploaded: {new Date(doc.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}
                         </div>
                       </div>
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 {doc.notes && (
-                  <p className="text-sm text-muted-foreground mb-4">{doc.notes}</p>
+                  <div className="bg-muted/30 p-2.5 rounded text-sm text-foreground/70 mb-4 border-l-2 border-primary/20 italic">
+                    "{doc.notes}"
+                  </div>
                 )}
-                <div className="flex gap-2">
+                <div className="flex items-center justify-between mt-2">
+                  <div className="text-[10px] text-muted-foreground">
+                    ID: {doc.id.split('-')[0]}...
+                  </div>
                   <Button
                     variant="default"
                     size="sm"
                     onClick={() => openReviewDialog(doc)}
+                    className="shadow-sm hover:translate-x-1 transition-transform"
                   >
-                    <Shield className="h-4 w-4 mr-2" />
+                    <Eye className="h-4 w-4 mr-2" />
                     Review & Authenticate
                   </Button>
                 </div>

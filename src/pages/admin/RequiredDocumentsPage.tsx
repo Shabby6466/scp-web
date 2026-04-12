@@ -159,7 +159,7 @@ export default function RequiredDocumentsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6 animate-in fade-in slide-in-from-bottom-4 duration-700 selection:bg-primary/20 text-foreground">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>

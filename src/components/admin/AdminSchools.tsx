@@ -5,12 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CheckCircle, XCircle, School, MapPin, Mail, Phone, Search, ExternalLink, Eye, Send } from 'lucide-react';
+import { CheckCircle, XCircle, School, MapPin, Mail, Phone, Search, ExternalLink, Eye, Send, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useAuth } from '@/contexts/AuthContext';
 import { schoolService } from '@/services/schoolService';
 import { invitationService } from '@/services/invitationService';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 
 const AdminSchools = () => {
   const { user } = useAuth();
@@ -20,6 +22,16 @@ const AdminSchools = () => {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newSchool, setNewSchool] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip_code: '',
+  });
 
   useEffect(() => {
     fetchSchools();
@@ -130,6 +142,40 @@ const AdminSchools = () => {
     }
   };
 
+  const handleAddSchool = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await schoolService.create({
+        ...newSchool,
+        is_approved: true, // Manual creation by Platform Admin is pre-approved
+        approved_at: new Date().toISOString(),
+      });
+
+      toast({
+        title: 'School Created',
+        description: 'New school has been created and pre-approved.',
+      });
+
+      setIsAddDialogOpen(false);
+      setNewSchool({
+        name: '',
+        email: '',
+        phone: '',
+        address: '',
+        city: '',
+        state: '',
+        zip_code: '',
+      });
+      await fetchSchools();
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Creation failed',
+        description: error.message,
+      });
+    }
+  };
+
   const stats = {
     total: schools.length,
     pending: schools.filter(s => !s.is_approved).length,
@@ -146,12 +192,106 @@ const AdminSchools = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-2">School Management</h2>
-        <p className="text-muted-foreground">
-          Review and approve school registrations
-        </p>
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold mb-2">School Management</h2>
+          <p className="text-muted-foreground">
+            Review and approve school registrations
+          </p>
+        </div>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add School
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Add New School</DialogTitle>
+              <DialogDescription>
+                Manually register and approve a new school in the platform.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddSchool} className="space-y-4 pt-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">School Name *</Label>
+                  <Input 
+                    id="name" 
+                    value={newSchool.name} 
+                    onChange={e => setNewSchool({...newSchool, name: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email *</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={newSchool.email} 
+                    onChange={e => setNewSchool({...newSchool, email: e.target.value})} 
+                    required 
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Phone *</Label>
+                <Input 
+                  id="phone" 
+                  value={newSchool.phone} 
+                  onChange={e => setNewSchool({...newSchool, phone: e.target.value})} 
+                  required 
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="address">Address *</Label>
+                <Input 
+                  id="address" 
+                  value={newSchool.address} 
+                  onChange={e => setNewSchool({...newSchool, address: e.target.value})} 
+                  required 
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
+                  <Input 
+                    id="city" 
+                    value={newSchool.city} 
+                    onChange={e => setNewSchool({...newSchool, city: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State *</Label>
+                  <Input 
+                    id="state" 
+                    value={newSchool.state} 
+                    onChange={e => setNewSchool({...newSchool, state: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="zip">ZIP Code *</Label>
+                  <Input 
+                    id="zip" 
+                    value={newSchool.zip_code} 
+                    onChange={e => setNewSchool({...newSchool, zip_code: e.target.value})} 
+                    required 
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit">Create & Approve</Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats */}
