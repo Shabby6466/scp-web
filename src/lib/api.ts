@@ -1,4 +1,16 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+/**
+ * API root only — e.g. `http://localhost:4000/api`.
+ * If `VITE_API_URL` is wrongly set to a school path like `.../api/schools/school`,
+ * then `/users` becomes `.../schools/school/users`, Nest treats `school` as a UUID, and Postgres errors.
+ */
+function normalizeApiBase(raw: string): string {
+  const trimmed = raw.replace(/\/+$/, '');
+  return trimmed.replace(/\/schools\/[^/]+$/i, '');
+}
+
+const API_BASE = normalizeApiBase(
+  import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
+);
 
 function getToken(): string | null {
   return localStorage.getItem('access_token');
