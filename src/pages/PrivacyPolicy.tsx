@@ -27,7 +27,7 @@ const PrivacyPolicy = () => {
             <div>
               <h2 className="text-2xl font-display font-bold mb-4 text-foreground">Introduction</h2>
               <p className="text-muted-foreground leading-relaxed">
-                SCP ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our document management platform. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.
+                Compli-ed ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our document management platform. Please read this privacy policy carefully. If you do not agree with the terms of this privacy policy, please do not access the application.
               </p>
             </div>
 
@@ -78,7 +78,7 @@ const PrivacyPolicy = () => {
             <div>
               <h2 className="text-2xl font-display font-bold mb-4 text-foreground">HIPAA Compliance</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                SCP is committed to maintaining HIPAA compliance for Protected Health Information (PHI). We implement appropriate administrative, physical, and technical safeguards to protect PHI, including:
+                Compli-ed is committed to maintaining HIPAA compliance for Protected Health Information (PHI). We implement appropriate administrative, physical, and technical safeguards to protect PHI, including:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
                 <li>End-to-end encryption for data in transit and at rest</li>
@@ -152,9 +152,9 @@ const PrivacyPolicy = () => {
               </p>
               <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                 <p className="text-muted-foreground">
-                  <strong className="text-foreground">Email:</strong> privacy@SCP.com<br />
+                  <strong className="text-foreground">Email:</strong> privacy@compli-ed.com<br />
                   <strong className="text-foreground">Phone:</strong> (888) 555-1234<br />
-                  <strong className="text-foreground">Mail:</strong> SCP Privacy Team, 123 Document Lane, Suite 100, New York, NY 10001
+                  <strong className="text-foreground">Mail:</strong> Compli-ed Privacy Team, 123 Document Lane, Suite 100, New York, NY 10001
                 </p>
               </div>
             </div>

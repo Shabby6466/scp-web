@@ -7,10 +7,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import logo from "@/assets/logo-nobg.png";
+
 interface HeaderProps {
   hideParentPortal?: boolean;
 }
+
 const Header = ({
   hideParentPortal = false
 }: HeaderProps) => {
@@ -63,10 +66,11 @@ const Header = ({
   };
   const dashboardInfo = getDashboardInfo();
   const DashboardIcon = dashboardInfo.icon;
+  
   return <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-sm border-b border-border/40 shadow-xs">
     <div className="container flex h-16 items-center justify-between">
       <Link to="/" className="flex items-center">
-        <img alt="SCP" src={logo} style={{
+        <img alt="Compli-ed" src={logo} style={{
           mixBlendMode: 'multiply'
         }} className="h-16 md:h-15 w-auto border-none object-fill" />
       </Link>
@@ -121,6 +125,7 @@ const Header = ({
           </Select>}
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <div className="text-right">
               <p className="text-sm font-medium text-foreground">
                 {(user as any)?.name || (user as any)?.email}
@@ -203,13 +208,16 @@ const Header = ({
               </div>}
 
               <div className="pt-4 border-t border-border">
-                <div className="mb-4">
-                  <p className="text-sm font-medium text-foreground">
-                    {(user as any)?.name || (user as any)?.email}
-                  </p>
-                  <Badge variant="secondary" className="text-xs mt-1">
-                    {getRoleDisplayName()}
-                  </Badge>
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm font-medium text-foreground">
+                      {(user as any)?.name || (user as any)?.email}
+                    </p>
+                    <Badge variant="secondary" className="text-xs mt-1">
+                      {getRoleDisplayName()}
+                    </Badge>
+                  </div>
+                  <ThemeToggle />
                 </div>
                 <Button variant="outline" size="sm" className="w-full" onClick={() => {
                   setMobileMenuOpen(false);
@@ -226,4 +234,5 @@ const Header = ({
     </div>
   </header>;
 };
+
 export default Header;

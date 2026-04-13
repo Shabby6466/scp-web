@@ -75,7 +75,7 @@ interface AllSettings {
 const defaultSettings: AllSettings = {
   general: {
     maintenanceMode: false,
-    platformName: 'SCP',
+    platformName: 'Compli-ed',
   },
   registration: {
     allowSchoolSelfRegistration: true,
@@ -386,7 +386,7 @@ const AdminSettings = () => {
                     id="platformName"
                     value={settings.general.platformName}
                     onChange={(e) => updateGeneralSetting('platformName', e.target.value)}
-                    placeholder="SCP"
+                    placeholder="Compli-ed"
                   />
                   <p className="text-sm text-muted-foreground">
                     The name displayed across the platform

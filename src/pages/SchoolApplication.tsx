@@ -233,7 +233,7 @@ export default function SchoolApplication() {
 
                 {/* Timeline */}
                 <div className="space-y-4">
-                  <Label>When do you need to start using SCP? *</Label>
+                  <Label>When do you need to start using Compli-ed? *</Label>
                   <RadioGroup
                     required
                     value={formData.timeline}

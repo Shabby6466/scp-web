@@ -17,8 +17,10 @@ const buttonVariants = cva(
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive-hover shadow-sm hover:shadow-md active:scale-[0.98]",
         // Outline = Clean border with subtle hover
         outline: "border border-border bg-background text-foreground hover:bg-muted/50 hover:border-border/80 active:scale-[0.98]",
+        primary: "bg-[#000A1E] text-white hover:bg-[#000A1E]/90 shadow-sm hover:shadow-md active:scale-[0.95] rounded-full",
         // Secondary = Muted background
-        secondary: "bg-muted text-foreground hover:bg-muted/70 active:scale-[0.98]",
+        secondary: "bg-[#E8E8E8] text-slate-900 hover:bg-[#E8E8E8]/90 shadow-sm hover:shadow-md active:scale-[0.95] rounded-full",
+        signal: "bg-[#FF4500] text-white hover:bg-[#FF4500]/90 shadow-sm hover:shadow-md active:scale-[0.95] rounded-full",
         // Ghost = Minimal with subtle feedback
         ghost: "text-foreground hover:bg-muted/50 active:bg-muted/70",
         // Link style
@@ -39,7 +41,7 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "default",
     },
   },

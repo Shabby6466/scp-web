@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,11 +22,17 @@ const Auth = () => {
   const { signIn, user, loading: authLoading } = useAuth();
   const { loading: roleLoading, getDashboardPath } = useUserRole();
   const navigate = useNavigate();
+  const [shutterActive, setShutterActive] = useState(false);
 
   const signInForm = useForm<SignInFormData>({
     resolver: zodResolver(signInSchema),
     defaultValues: { email: '', password: '' }
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShutterActive(true), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (authLoading || (user && roleLoading)) return;
@@ -50,23 +56,31 @@ const Auth = () => {
   return (
     <div className="min-h-screen flex bg-background">
       {/* Left - Minimal Branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-primary relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80" />
+      <div className="hidden lg:flex lg:w-1/2 bg-primary relative overflow-hidden">
+        {/* Shutter Layer */}
+        <div 
+          className={`absolute inset-0 bg-[#4169E1] transition-transform duration-[1200ms] ease-in-out z-1 ${
+            shutterActive ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80 z-0" />
+        
         <div className="relative z-10 flex flex-col justify-between p-12 w-full">
           
-            <span className="text-xl font-semibold text-white">SCP</span>
+            <span className="text-xl font-semibold text-white">Compli-ed</span>
           
 
           <div className="max-w-md">
             <h1 className="text-4xl font-semibold text-white leading-tight">
-              Preschool compliance, simplified.
+              Compli-ed
             </h1>
             <p className="mt-4 text-white/70 text-lg">
-              Documents, staff credentials, and inspections — all in one place.
+              Preschool compliance, simplified.
             </p>
           </div>
 
-          <p className="text-white/40 text-sm">© 2026 SCP</p>
+          <p className="text-white/40 text-sm">© 2026 Compli-ed</p>
         </div>
       </div>
 
@@ -74,8 +88,8 @@ const Auth = () => {
       <div className="flex-1 flex flex-col">
         <div className="lg:hidden p-6">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="SCP" className="h-8" />
-            <span className="font-semibold text-foreground">SCP</span>
+            <img src={logo} alt="Compli-ed" className="h-8" />
+            <span className="font-semibold text-foreground">Compli-ed</span>
           </Link>
         </div>
 

@@ -9,11 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  School, Users, FileText, UserCheck, Clock, CheckCircle, 
-  Shield, FolderOpen, Search, ChevronRight, ChevronDown, 
+import {
+  School, Users, FileText, UserCheck, Clock, CheckCircle,
+  Shield, FolderOpen, Search, ChevronRight, ChevronDown,
   ChevronUp, GraduationCap, Trash2, ShieldAlert, Activity,
-  UserPlus as UserPlusIcon, Upload, AlertCircle, Info, Settings 
+  UserPlus as UserPlusIcon, Upload, AlertCircle, Info, Settings
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import TeacherExpirationAlerts from './TeacherExpirationAlerts';
@@ -107,7 +107,7 @@ const AdminOverview = () => {
   const fetchActivity = async () => {
     try {
       setActivityLoading(true);
-      const data = await auditService.list({ limit: 8 });
+      const data = await auditService.list({ limit: 8 }) as AuditEvent[];
       setRecentActivity(data || []);
     } catch (error) {
       console.error('Error fetching activity:', error);
@@ -376,310 +376,310 @@ const AdminOverview = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Student Files Section */}
-      <Card>
-        <Collapsible open={studentFilesOpen} onOpenChange={setStudentFilesOpen}>
-          <CardHeader className="pb-3">
-            <CollapsibleTrigger asChild>
-              <div className="flex items-center justify-between cursor-pointer group">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <FolderOpen className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Student Files</CardTitle>
-                    <CardDescription>All documents organized within student files</CardDescription>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{studentFiles.length} files</Badge>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    {studentFilesOpen ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CollapsibleTrigger>
-          </CardHeader>
-          <CollapsibleContent>
-            <CardContent>
-              <div className="flex gap-3 mb-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search student files..."
-                    value={studentSearchQuery}
-                    onChange={(e) => setStudentSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <Select value={studentSchoolFilter} onValueChange={setStudentSchoolFilter}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Filter by school" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Schools</SelectItem>
-                    {schools.map((school) => (
-                      <SelectItem key={school.id} value={school.id}>
-                        {school.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={studentSort} onValueChange={setStudentSort}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="name-asc">Name A-Z</SelectItem>
-                    <SelectItem value="name-desc">Name Z-A</SelectItem>
-                    <SelectItem value="docs-desc">Most Docs</SelectItem>
-                    <SelectItem value="docs-asc">Least Docs</SelectItem>
-                    <SelectItem value="pending-desc">Most Pending</SelectItem>
-                    <SelectItem value="pending-asc">Least Pending</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <ScrollArea className="h-[280px]">
-                <div className="space-y-2">
-                  {filteredStudentFiles.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">No student files found</p>
-                  ) : (
-                    filteredStudentFiles.map((student) => (
-                      <div
-                        key={student.id}
-                        className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 group relative"
-                      >
-                        <div className="flex items-center gap-3 flex-1" onClick={() => navigate(`/admin/student/${student.id}`)}>
-                          <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                            <FolderOpen className="h-4 w-4 text-primary" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{student.last_name}, {student.first_name}</p>
-                            <p className="text-xs text-muted-foreground">{student.school_name || 'No school assigned'}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right mr-2" onClick={() => navigate(`/admin/student/${student.id}`)}>
-                            <p className="text-sm font-medium">{student.document_count} docs</p>
-                            {student.pending_count > 0 && (
-                              <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-200">
-                                {student.pending_count} pending
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteUser(student.id, `${student.first_name} ${student.last_name}`);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                          </div>
-                        </div>
+          <Card>
+            <Collapsible open={studentFilesOpen} onOpenChange={setStudentFilesOpen}>
+              <CardHeader className="pb-3">
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center justify-between cursor-pointer group">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <FolderOpen className="h-5 w-5 text-primary" />
                       </div>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </CollapsibleContent>
-        </Collapsible>
-      </Card>
-
-      {/* Teacher Files Section */}
-      <Card>
-        <Collapsible open={teacherFilesOpen} onOpenChange={setTeacherFilesOpen}>
-          <CardHeader className="pb-3">
-            <CollapsibleTrigger asChild>
-              <div className="flex items-center justify-between cursor-pointer group">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center">
-                    <GraduationCap className="h-5 w-5 text-secondary-foreground" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg">Teacher Files</CardTitle>
-                    <CardDescription>Staff documents and certifications</CardDescription>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary">{teacherFiles.length} files</Badge>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    {teacherFilesOpen ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CollapsibleTrigger>
-          </CardHeader>
-          <CollapsibleContent>
-            <CardContent>
-              <div className="flex gap-3 mb-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search teacher files..."
-                    value={teacherSearchQuery}
-                    onChange={(e) => setTeacherSearchQuery(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
-                <Select value={teacherSchoolFilter} onValueChange={setTeacherSchoolFilter}>
-                  <SelectTrigger className="w-[160px]">
-                    <SelectValue placeholder="Filter by school" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Schools</SelectItem>
-                    {schools.map((school) => (
-                      <SelectItem key={school.id} value={school.id}>
-                        {school.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Select value={teacherSort} onValueChange={setTeacherSort}>
-                  <SelectTrigger className="w-[140px]">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="name-asc">Name A-Z</SelectItem>
-                    <SelectItem value="name-desc">Name Z-A</SelectItem>
-                    <SelectItem value="docs-desc">Most Docs</SelectItem>
-                    <SelectItem value="docs-asc">Least Docs</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <ScrollArea className="h-[280px]">
-                <div className="space-y-2">
-                  {filteredTeacherFiles.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-8">No teacher files found</p>
-                  ) : (
-                    filteredTeacherFiles.map((teacher) => (
-                      <div
-                        key={teacher.id}
-                        className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 group relative"
-                      >
-                        <div className="flex items-center gap-3 flex-1" onClick={() => navigate(`/admin/teacher/${teacher.id}`)}>
-                          <div className="h-9 w-9 rounded-full bg-secondary/50 flex items-center justify-center">
-                            <GraduationCap className="h-4 w-4 text-secondary-foreground" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{teacher.last_name}, {teacher.first_name}</p>
-                            <p className="text-xs text-muted-foreground">{teacher.school_name || 'No school assigned'}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right mr-2" onClick={() => navigate(`/admin/teacher/${teacher.id}`)}>
-                            <p className="text-sm font-medium">{teacher.document_count} docs</p>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteUser(teacher.id, `${teacher.first_name} ${teacher.last_name}`);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                          </div>
-                        </div>
+                      <div>
+                        <CardTitle className="text-lg">Student Files</CardTitle>
+                        <CardDescription>All documents organized within student files</CardDescription>
                       </div>
-                    ))
-                  )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{studentFiles.length} files</Badge>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        {studentFilesOpen ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </CollapsibleTrigger>
+              </CardHeader>
+              <CollapsibleContent>
+                <CardContent>
+                  <div className="flex gap-3 mb-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search student files..."
+                        value={studentSearchQuery}
+                        onChange={(e) => setStudentSearchQuery(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Select value={studentSchoolFilter} onValueChange={setStudentSchoolFilter}>
+                      <SelectTrigger className="w-[160px]">
+                        <SelectValue placeholder="Filter by school" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Schools</SelectItem>
+                        {schools.map((school) => (
+                          <SelectItem key={school.id} value={school.id}>
+                            {school.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={studentSort} onValueChange={setStudentSort}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name-asc">Name A-Z</SelectItem>
+                        <SelectItem value="name-desc">Name Z-A</SelectItem>
+                        <SelectItem value="docs-desc">Most Docs</SelectItem>
+                        <SelectItem value="docs-asc">Least Docs</SelectItem>
+                        <SelectItem value="pending-desc">Most Pending</SelectItem>
+                        <SelectItem value="pending-asc">Least Pending</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <ScrollArea className="h-[280px]">
+                    <div className="space-y-2">
+                      {filteredStudentFiles.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-8">No student files found</p>
+                      ) : (
+                        filteredStudentFiles.map((student) => (
+                          <div
+                            key={student.id}
+                            className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 group relative"
+                          >
+                            <div className="flex items-center gap-3 flex-1" onClick={() => navigate(`/admin/student/${student.id}`)}>
+                              <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
+                                <FolderOpen className="h-4 w-4 text-primary" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{student.last_name}, {student.first_name}</p>
+                                <p className="text-xs text-muted-foreground">{student.school_name || 'No school assigned'}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right mr-2" onClick={() => navigate(`/admin/student/${student.id}`)}>
+                                <p className="text-sm font-medium">{student.document_count} docs</p>
+                                {student.pending_count > 0 && (
+                                  <Badge variant="outline" className="text-xs bg-amber-500/10 text-amber-600 border-amber-200">
+                                    {student.pending_count} pending
+                                  </Badge>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteUser(student.id, `${student.first_name} ${student.last_name}`);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
+
+          {/* Teacher Files Section */}
+          <Card>
+            <Collapsible open={teacherFilesOpen} onOpenChange={setTeacherFilesOpen}>
+              <CardHeader className="pb-3">
+                <CollapsibleTrigger asChild>
+                  <div className="flex items-center justify-between cursor-pointer group">
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center">
+                        <GraduationCap className="h-5 w-5 text-secondary-foreground" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">Teacher Files</CardTitle>
+                        <CardDescription>Staff documents and certifications</CardDescription>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{teacherFiles.length} files</Badge>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        {teacherFilesOpen ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </CollapsibleTrigger>
+              </CardHeader>
+              <CollapsibleContent>
+                <CardContent>
+                  <div className="flex gap-3 mb-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Search teacher files..."
+                        value={teacherSearchQuery}
+                        onChange={(e) => setTeacherSearchQuery(e.target.value)}
+                        className="pl-9"
+                      />
+                    </div>
+                    <Select value={teacherSchoolFilter} onValueChange={setTeacherSchoolFilter}>
+                      <SelectTrigger className="w-[160px]">
+                        <SelectValue placeholder="Filter by school" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Schools</SelectItem>
+                        {schools.map((school) => (
+                          <SelectItem key={school.id} value={school.id}>
+                            {school.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select value={teacherSort} onValueChange={setTeacherSort}>
+                      <SelectTrigger className="w-[140px]">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name-asc">Name A-Z</SelectItem>
+                        <SelectItem value="name-desc">Name Z-A</SelectItem>
+                        <SelectItem value="docs-desc">Most Docs</SelectItem>
+                        <SelectItem value="docs-asc">Least Docs</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <ScrollArea className="h-[280px]">
+                    <div className="space-y-2">
+                      {filteredTeacherFiles.length === 0 ? (
+                        <p className="text-sm text-muted-foreground text-center py-8">No teacher files found</p>
+                      ) : (
+                        filteredTeacherFiles.map((teacher) => (
+                          <div
+                            key={teacher.id}
+                            className="flex items-center justify-between p-3 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 group relative"
+                          >
+                            <div className="flex items-center gap-3 flex-1" onClick={() => navigate(`/admin/teacher/${teacher.id}`)}>
+                              <div className="h-9 w-9 rounded-full bg-secondary/50 flex items-center justify-center">
+                                <GraduationCap className="h-4 w-4 text-secondary-foreground" />
+                              </div>
+                              <div>
+                                <p className="font-medium">{teacher.last_name}, {teacher.first_name}</p>
+                                <p className="text-xs text-muted-foreground">{teacher.school_name || 'No school assigned'}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right mr-2" onClick={() => navigate(`/admin/teacher/${teacher.id}`)}>
+                                <p className="text-sm font-medium">{teacher.document_count} docs</p>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteUser(teacher.id, `${teacher.first_name} ${teacher.last_name}`);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
+
+          {/* Quick Actions */}
+          <Card className="backdrop-blur-md bg-white/60 dark:bg-black/40 border-border/40">
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+              <CardDescription>Platform governance and system utilities</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {stats.pendingSchools > 0 && (
+                  <div
+                    className="p-4 rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-100/50 cursor-pointer transition-all duration-200 shadow-sm"
+                    onClick={() => navigate('/admin?tab=schools')}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center shadow-inner">
+                        <School className="h-5 w-5 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-amber-900 dark:text-amber-100">{stats.pendingSchools} Schools Awaiting Approval</p>
+                        <p className="text-sm text-amber-700/80 dark:text-amber-300/80">Action required: Critical</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div
+                  className="p-4 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 shadow-sm"
+                  onClick={() => navigate('/admin?tab=documents')}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center shadow-inner">
+                      <FileText className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">{stats.pendingDocuments} Documents Pending</p>
+                      <p className="text-sm text-muted-foreground">Global verification queue</p>
+                    </div>
+                  </div>
                 </div>
-              </ScrollArea>
+
+                <div
+                  className="p-4 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 shadow-sm"
+                  onClick={() => navigate('/compliance')}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center shadow-inner">
+                      <CheckCircle className="h-5 w-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Compliance Hub</p>
+                      <p className="text-sm text-muted-foreground">Overall system health</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  className="p-4 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 shadow-sm"
+                  onClick={() => navigate('/admin/settings')}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center shadow-inner">
+                      <ShieldAlert className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Security Settings</p>
+                      <p className="text-sm text-muted-foreground">Manage roles & access</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
-          </CollapsibleContent>
-        </Collapsible>
-      </Card>
-
-      {/* Quick Actions */}
-      <Card className="backdrop-blur-md bg-white/60 dark:bg-black/40 border-border/40">
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Platform governance and system utilities</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {stats.pendingSchools > 0 && (
-              <div 
-                className="p-4 rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 hover:bg-amber-100/50 cursor-pointer transition-all duration-200 shadow-sm"
-                onClick={() => navigate('/admin?tab=schools')}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center shadow-inner">
-                    <School className="h-5 w-5 text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-amber-900 dark:text-amber-100">{stats.pendingSchools} Schools Awaiting Approval</p>
-                    <p className="text-sm text-amber-700/80 dark:text-amber-300/80">Action required: Critical</p>
-                  </div>
-                </div>
-              </div>
-            )}
-            
-            <div 
-              className="p-4 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 shadow-sm"
-              onClick={() => navigate('/admin?tab=documents')}
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center shadow-inner">
-                  <FileText className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-semibold">{stats.pendingDocuments} Documents Pending</p>
-                  <p className="text-sm text-muted-foreground">Global verification queue</p>
-                </div>
-              </div>
-            </div>
-
-            <div 
-              className="p-4 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 shadow-sm"
-              onClick={() => navigate('/compliance')}
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center shadow-inner">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-semibold">Compliance Hub</p>
-                  <p className="text-sm text-muted-foreground">Overall system health</p>
-                </div>
-              </div>
-            </div>
-
-            <div 
-              className="p-4 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 shadow-sm"
-              onClick={() => navigate('/admin/settings')}
-            >
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center shadow-inner">
-                  <ShieldAlert className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="font-semibold">Security Settings</p>
-                  <p className="text-sm text-muted-foreground">Manage roles & access</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </Card>
 
         </div>
 

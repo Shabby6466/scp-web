@@ -17,7 +17,7 @@ const AboutUs = () => {
         <div className="container relative z-10 px-4">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h1 className="text-5xl md:text-6xl font-display font-bold mb-6 text-foreground">
-              About SCP
+              About Compli-ed
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed font-medium">
               We're on a mission to simplify document management for preschools and early childhood education centers,
@@ -136,11 +136,11 @@ const AboutUs = () => {
             <h2 className="text-4xl font-display font-bold mb-8 text-foreground text-center">Our Story</h2>
             <div className="space-y-6 text-muted-foreground leading-relaxed">
               <p className="text-lg">
-                SCP was born from firsthand experience with the administrative challenges faced by preschools and early childhood education centers.
+                Compli-ed was born from firsthand experience with the administrative challenges faced by preschools and early childhood education centers.
                 We witnessed educators spending countless hours managing paperwork instead of teaching, and parents struggling to keep track of required documents.
               </p>
               <p className="text-lg">
-                We knew there had to be a better way. Drawing on our expertise in education technology and early childhood institutions we created SCP, a platform designed specifically for the unique needs of early childhood education.
+                We knew there had to be a better way. Drawing on our expertise in education technology and early childhood institutions we created Compli-ed, a platform designed specifically for the unique needs of early childhood education.
               </p>
               <p className="text-lg">
                 Today, we're proud to partner with schools across the country, helping them streamline operations, maintain compliance, and create better

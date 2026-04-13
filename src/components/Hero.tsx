@@ -42,7 +42,7 @@ const Hero = () => {
 
               {/* Headline with gradient text */}
               <h1
-                className="animate-fade-in-up"
+                className="animate-fade-in-up font-display"
                 style={{ animationDelay: '0.1s' }}
               >
                 <span className="text-display block">
@@ -58,7 +58,7 @@ const Hero = () => {
                 className="text-lg text-muted-foreground leading-relaxed max-w-lg animate-fade-in-up"
                 style={{ animationDelay: '0.2s' }}
               >
-                Upload once. Track everything. Stay DOH compliant. SCP streamlines document management for schools and families.
+                Upload once. Track everything. Stay DOH compliant. Compli-ed streamlines document management for schools and families.
               </p>
 
               {/* CTAs with enhanced styling */}
@@ -121,7 +121,7 @@ const Hero = () => {
                 <div className="relative rounded-xl overflow-hidden border border-border/30 shadow-2xl bg-card">
                   <img
                     src={parentDashboard}
-                    alt="SCP dashboard showing student documents and compliance status"
+                    alt="Compli-ed dashboard showing student documents and compliance status"
                     className="w-full h-auto"
                   />
                   {/* Subtle overlay gradient */}

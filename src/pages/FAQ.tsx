@@ -13,12 +13,12 @@ import Footer from "@/components/Footer";
 const FAQ = () => {
   const faqs = [
     {
-      question: "What is SCP?",
-      answer: "SCP is a comprehensive document management system designed specifically for preschools and early childhood education centers. We help you digitize, organize, and manage student documents securely while staying compliant with regulations."
+      question: "What is Compli-ed?",
+      answer: "Compli-ed is a comprehensive document management system designed specifically for preschools and early childhood education centers. We help you digitize, organize, and manage student documents securely while staying compliant with regulations."
     },
     {
-      question: "Is SCP HIPAA compliant?",
-      answer: "Yes! SCP is fully HIPAA compliant. We use industry-leading security measures including end-to-end encryption, secure data centers, and strict access controls to protect sensitive student and family information."
+      question: "Is Compli-ed HIPAA compliant?",
+      answer: "Yes! Compli-ed is fully HIPAA compliant. We use industry-leading security measures including end-to-end encryption, secure data centers, and strict access controls to protect sensitive student and family information."
     },
     {
       question: "How do parents access their documents?",
@@ -29,11 +29,11 @@ const FAQ = () => {
       answer: "You can store all types of student documents including immunization records, health forms, emergency contacts, birth certificates, proof of residence, medical records, and more. We support PDF, images, and other common file formats."
     },
     {
-      question: "How much does SCP cost?",
+      question: "How much does Compli-ed cost?",
       answer: "We offer flexible pricing plans based on your school's size and needs. Visit our Pricing page or contact us for a customized quote. All plans include secure storage, parent access, and compliance features."
     },
     {
-      question: "Can I try SCP before committing?",
+      question: "Can I try Compli-ed before committing?",
       answer: "Absolutely! We offer a free trial period so you can experience all features before making a decision. Contact us to get started with your trial."
     },
     {
@@ -68,7 +68,7 @@ const FAQ = () => {
               Frequently Asked Questions
             </h1>
             <p className="text-xl text-muted-foreground leading-relaxed font-medium">
-              Find answers to common questions about SCP. Can't find what you're looking for? Contact our support team.
+              Find answers to common questions about Compli-ed. Can't find what you're looking for? Contact our support team.
             </p>
           </div>
         </div>
@@ -105,7 +105,7 @@ const FAQ = () => {
               Still Have Questions?
             </h2>
             <p className="text-lg text-muted-foreground mb-8 font-medium">
-              Our support team is here to help you get the most out of SCP.
+              Our support team is here to help you get the most out of Compli-ed.
             </p>
 
             <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto mb-8">
@@ -113,8 +113,8 @@ const FAQ = () => {
                 <CardContent className="p-6 text-center">
                   <Mail className="h-8 w-8 text-primary mx-auto mb-3" />
                   <h3 className="font-bold mb-2 text-foreground">Email Support</h3>
-                  <a href="mailto:support@SCP.com" className="text-primary hover:underline font-medium">
-                    support@SCP.com
+                  <a href="mailto:support@compli-ed.com" className="text-primary hover:underline font-medium">
+                    support@compli-ed.com
                   </a>
                 </CardContent>
               </Card>
@@ -130,7 +130,7 @@ const FAQ = () => {
               </Card>
             </div>
 
-            <Button size="lg" className="bg-brandred text-white hover:bg-brandred/90" onClick={() => window.location.href = 'mailto:support@SCP.com'}>
+            <Button size="lg" className="bg-brandred text-white hover:bg-brandred/90" onClick={() => window.location.href = 'mailto:support@compli-ed.com'}>
               Contact Support Team
             </Button>
           </div>

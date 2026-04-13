@@ -2,14 +2,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-
 import ProtectedRoute from "@/components/ProtectedRoute";
 import AdminRoute from "@/components/AdminRoute";
 import { ParentRoute, SchoolRoute, DirectorRoute } from "@/components/routes";
 import { AppShellLayout } from "@/components/layout";
 import { useEffect } from "react";
+import { AuthenticatedThemeProvider } from "@/components/AuthenticatedThemeProvider";
 
 // Public Pages
 import Index from "./pages/Index";
@@ -117,284 +117,286 @@ const ScrollToHash = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-            <ScrollToHash />
-            <Routes>
-              {/* ==================== PUBLIC ROUTES (no sidebar) ==================== */}
-              <Route path="/" element={<Index />} />
-              <Route path="/get-started" element={<RoleSelection />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/admin-auth" element={<AdminAuth />} />
-              <Route path="/institution-auth" element={<InstitutionAuth />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/about" element={<AboutUs />} />
-              <Route path="/faq" element={<FAQ />} />
-              <Route path="/privacy" element={<PrivacyPolicy />} />
-              <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/how-it-works" element={<HowItWorksPage />} />
-              <Route path="/accept-school-invite" element={<AcceptSchoolInvite />} />
-              <Route path="/accept-teacher-invite" element={<AcceptTeacherInvite />} />
-              <Route path="/accept-director-invite" element={<AcceptDirectorInvite />} />
-              <Route path="/accept-parent-invite" element={<AcceptParentInvite />} />
-              <Route path="/not-authorized" element={<NotAuthorized />} />
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+              <ScrollToHash />
+              <Routes>
+                {/* ... existing routes ... */}
+                <Route path="/" element={<Index />} />
+                <Route path="/get-started" element={<RoleSelection />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/admin-auth" element={<AdminAuth />} />
+                <Route path="/institution-auth" element={<InstitutionAuth />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/about" element={<AboutUs />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/how-it-works" element={<HowItWorksPage />} />
+                <Route path="/accept-school-invite" element={<AcceptSchoolInvite />} />
+                <Route path="/accept-teacher-invite" element={<AcceptTeacherInvite />} />
+                <Route path="/accept-director-invite" element={<AcceptDirectorInvite />} />
+                <Route path="/accept-parent-invite" element={<AcceptParentInvite />} />
+                <Route path="/not-authorized" element={<NotAuthorized />} />
 
-              {/* ==================== PARENT ROUTES (separate layout) ==================== */}
-              <Route path="/dashboard" element={
-                <ParentRoute>
-                  <Dashboard />
-                </ParentRoute>
-              } />
-              <Route path="/onboarding" element={
-                <ParentRoute>
-                  <ParentOnboarding />
-                </ParentRoute>
-              } />
-              <Route path="/child/:childId" element={
-                <ParentRoute>
-                  <ChildFilePage />
-                </ParentRoute>
-              } />
-              <Route path="/profile" element={
-                <ParentRoute>
-                  <ParentProfilePage />
-                </ParentRoute>
-              } />
-              <Route path="/parent/child-documents/:studentId" element={
-                <ParentRoute>
-                  <ChildDocumentUpload />
-                </ParentRoute>
-              } />
+                {/* ==================== PARENT ROUTES (separate layout) ==================== */}
+                <Route element={<AuthenticatedThemeProvider><Outlet /></AuthenticatedThemeProvider>}>
+                  <Route path="/dashboard" element={
+                    <ParentRoute>
+                      <Dashboard />
+                    </ParentRoute>
+                  } />
+                  <Route path="/onboarding" element={
+                    <ParentRoute>
+                      <ParentOnboarding />
+                    </ParentRoute>
+                  } />
+                  <Route path="/child/:childId" element={
+                    <ParentRoute>
+                      <ChildFilePage />
+                    </ParentRoute>
+                  } />
+                  <Route path="/profile" element={
+                    <ParentRoute>
+                      <ParentProfilePage />
+                    </ParentRoute>
+                  } />
+                  <Route path="/parent/child-documents/:studentId" element={
+                    <ParentRoute>
+                      <ChildDocumentUpload />
+                    </ParentRoute>
+                  } />
+                </Route>
 
-              {/* ==================== SCHOOL REGISTRATION ROUTES ==================== */}
-              <Route path="/school-register" element={
-                <ProtectedRoute>
-                  <SchoolRegister />
-                </ProtectedRoute>
-              } />
-              <Route path="/school-application" element={
-                <ProtectedRoute>
-                  <SchoolApplication />
-                </ProtectedRoute>
-              } />
-              <Route path="/school-approval-status" element={
-                <ProtectedRoute>
-                  <SchoolApprovalStatus />
-                </ProtectedRoute>
-              } />
-
-              {/* ==================== APP SHELL ROUTES (with sidebar) ==================== */}
-              {/* All routes inside this group share the DashboardLayout with persistent sidebar */}
-              <Route element={<AppShellLayout />}>
-                
-                {/* School Dashboard Routes */}
-                <Route path="/school-dashboard" element={
-                  <SchoolRoute>
-                    <SchoolDashboard />
-                  </SchoolRoute>
+                {/* ==================== SCHOOL REGISTRATION ROUTES ==================== */}
+                <Route path="/school-register" element={
+                  <ProtectedRoute>
+                    <SchoolRegister />
+                  </ProtectedRoute>
                 } />
-                <Route path="/school/pending-documents" element={
-                  <SchoolRoute>
-                    <PendingDocuments />
-                  </SchoolRoute>
+                <Route path="/school-application" element={
+                  <ProtectedRoute>
+                    <SchoolApplication />
+                  </ProtectedRoute>
                 } />
-                <Route path="/school/expiring-documents" element={
-                  <SchoolRoute>
-                    <ExpiringDocuments />
-                  </SchoolRoute>
-                } />
-                <Route path="/school/teacher-compliance" element={
-                  <SchoolRoute>
-                    <TeacherCompliance />
-                  </SchoolRoute>
-                } />
-                <Route path="/school/branches" element={
-                  <SchoolRoute>
-                    <SchoolBranches />
-                  </SchoolRoute>
-                } />
-                <Route path="/school/settings" element={
-                  <SchoolRoute>
-                    <SchoolSettings />
-                  </SchoolRoute>
-                } />
-                <Route path="/school/setup/required-documents" element={
-                  <SchoolRoute>
-                    <SetupRequiredDocuments />
-                  </SchoolRoute>
-                } />
-                <Route path="/school/setup/staff" element={
-                  <SchoolRoute>
-                    <SetupStaff />
-                  </SchoolRoute>
-                } />
-                <Route path="/school/setup/students" element={
-                  <SchoolRoute>
-                    <SetupStudents />
-                  </SchoolRoute>
-                } />
-                <Route path="/school/setup/invitations" element={
-                  <SchoolRoute>
-                    <SetupInvitations />
-                  </SchoolRoute>
-                } />
-                <Route path="/school/file" element={
-                  <SchoolRoute>
-                    <SchoolFilePage />
-                  </SchoolRoute>
+                <Route path="/school-approval-status" element={
+                  <ProtectedRoute>
+                    <SchoolApprovalStatus />
+                  </ProtectedRoute>
                 } />
 
-                {/* All Documents CRM Page */}
-                <Route path="/all-documents" element={
-                  <SchoolRoute>
-                    <AllDocumentsPage />
-                  </SchoolRoute>
-                } />
-                <Route path="/person-file/:type/:personId" element={
-                  <SchoolRoute>
-                    <PersonFilePage />
-                  </SchoolRoute>
-                } />
+                {/* ==================== APP SHELL ROUTES (with sidebar) ==================== */}
+                {/* All routes inside this group share the DashboardLayout with persistent sidebar */}
+                <Route element={<AppShellLayout />}>
+                  
+                  {/* School Dashboard Routes */}
+                  <Route path="/school-dashboard" element={
+                    <SchoolRoute>
+                      <SchoolDashboard />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/pending-documents" element={
+                    <SchoolRoute>
+                      <PendingDocuments />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/expiring-documents" element={
+                    <SchoolRoute>
+                      <ExpiringDocuments />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/teacher-compliance" element={
+                    <SchoolRoute>
+                      <TeacherCompliance />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/branches" element={
+                    <SchoolRoute>
+                      <SchoolBranches />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/settings" element={
+                    <SchoolRoute>
+                      <SchoolSettings />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/setup/required-documents" element={
+                    <SchoolRoute>
+                      <SetupRequiredDocuments />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/setup/staff" element={
+                    <SchoolRoute>
+                      <SetupStaff />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/setup/students" element={
+                    <SchoolRoute>
+                      <SetupStudents />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/setup/invitations" element={
+                    <SchoolRoute>
+                      <SetupInvitations />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/file" element={
+                    <SchoolRoute>
+                      <SchoolFilePage />
+                    </SchoolRoute>
+                  } />
 
-                {/* Roster Import Review */}
-                <Route path="/roster/import/:jobId/review" element={
-                  <SchoolRoute>
-                    <ImportReviewPage />
-                  </SchoolRoute>
-                } />
+                  {/* All Documents CRM Page */}
+                  <Route path="/all-documents" element={
+                    <SchoolRoute>
+                      <AllDocumentsPage />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/person-file/:type/:personId" element={
+                    <SchoolRoute>
+                      <PersonFilePage />
+                    </SchoolRoute>
+                  } />
 
-                {/* Director Dashboard */}
-                <Route path="/director-dashboard" element={
-                  <DirectorRoute>
-                    <DirectorDashboard />
-                  </DirectorRoute>
-                } />
+                  {/* Roster Import Review */}
+                  <Route path="/roster/import/:jobId/review" element={
+                    <SchoolRoute>
+                      <ImportReviewPage />
+                    </SchoolRoute>
+                  } />
 
-                {/* Compliance Center Routes */}
-                <Route path="/compliance-center" element={
-                  <SchoolRoute>
-                    <ComplianceCenterLanding />
-                  </SchoolRoute>
-                } />
-                <Route path="/compliance-center/doh" element={
-                  <SchoolRoute>
-                    <DOHSection />
-                  </SchoolRoute>
-                } />
-                <Route path="/compliance-center/facility" element={
-                  <SchoolRoute>
-                    <FacilitySafetySection />
-                  </SchoolRoute>
-                } />
-                <Route path="/compliance-center/certifications" element={
-                  <SchoolRoute>
-                    <CertificationsSection />
-                  </SchoolRoute>
-                } />
-                
-                {/* Legacy compliance routes - redirect to new paths */}
-                <Route path="/compliance" element={<Navigate to="/compliance-center" replace />} />
-                <Route path="/compliance-dashboard" element={
-                  <SchoolRoute>
-                    <ComplianceDashboard />
-                  </SchoolRoute>
-                } />
-                <Route path="/doh-compliance" element={
-                  <SchoolRoute>
-                    <DOHCompliance />
-                  </SchoolRoute>
-                } />
+                  {/* Director Dashboard */}
+                  <Route path="/director-dashboard" element={
+                    <DirectorRoute>
+                      <DirectorDashboard />
+                    </DirectorRoute>
+                  } />
 
-                {/* Teacher Eligibility Portal */}
-                <Route path="/eligibility" element={
-                  <SchoolRoute>
-                    <EligibilityPortal />
-                  </SchoolRoute>
-                } />
-                <Route path="/eligibility/:teacherId" element={
-                  <SchoolRoute>
-                    <TeacherEligibilityProfile />
-                  </SchoolRoute>
-                } />
-                
-                {/* School Admin Management Routes */}
-                <Route path="/admin/required-documents" element={
-                  <SchoolRoute>
-                    <RequiredDocumentsPage />
-                  </SchoolRoute>
-                } />
-                <Route path="/admin/student/:studentId" element={
-                  <SchoolRoute>
-                    <StudentDetailPage />
-                  </SchoolRoute>
-                } />
-                <Route path="/admin/staff-requirements" element={
-                  <SchoolRoute>
-                    <StaffRequiredDocumentsPage />
-                  </SchoolRoute>
-                } />
-                <Route path="/admin/teacher/:teacherId" element={
-                  <SchoolRoute>
-                    <TeacherDetailPage />
-                  </SchoolRoute>
-                } />
-                <Route path="/admin/messages" element={
-                  <SchoolRoute>
-                    <MessageCenter />
-                  </SchoolRoute>
-                } />
+                  {/* Compliance Center Routes */}
+                  <Route path="/compliance-center" element={
+                    <SchoolRoute>
+                      <ComplianceCenterLanding />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/compliance-center/doh" element={
+                    <SchoolRoute>
+                      <DOHSection />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/compliance-center/facility" element={
+                    <SchoolRoute>
+                      <FacilitySafetySection />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/compliance-center/certifications" element={
+                    <SchoolRoute>
+                      <CertificationsSection />
+                    </SchoolRoute>
+                  } />
+                  
+                  {/* Legacy compliance routes - redirect to new paths */}
+                  <Route path="/compliance" element={<Navigate to="/compliance-center" replace />} />
+                  <Route path="/compliance-dashboard" element={
+                    <SchoolRoute>
+                      <ComplianceDashboard />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/doh-compliance" element={
+                    <SchoolRoute>
+                      <DOHCompliance />
+                    </SchoolRoute>
+                  } />
 
-                {/* Platform Admin Routes */}
-                <Route path="/admin" element={
-                  <AdminRoute>
-                    <Admin />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/audit-logs" element={
-                  <AdminRoute>
-                    <AuditEventsPage />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/school/:schoolId" element={
-                  <AdminRoute>
-                    <SchoolDetailPage />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/reminders" element={
-                  <AdminRoute>
-                    <ReminderManagement />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/privacy-settings" element={
-                  <AdminRoute>
-                    <PrivacyPolicySettings />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/settings" element={
-                  <AdminRoute>
-                    <AdminSettings />
-                  </AdminRoute>
-                } />
+                  {/* Teacher Eligibility Portal */}
+                  <Route path="/eligibility" element={
+                    <SchoolRoute>
+                      <EligibilityPortal />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/eligibility/:teacherId" element={
+                    <SchoolRoute>
+                      <TeacherEligibilityProfile />
+                    </SchoolRoute>
+                  } />
+                  
+                  {/* School Admin Management Routes */}
+                  <Route path="/admin/required-documents" element={
+                    <SchoolRoute>
+                      <RequiredDocumentsPage />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/admin/student/:studentId" element={
+                    <SchoolRoute>
+                      <StudentDetailPage />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/admin/staff-requirements" element={
+                    <SchoolRoute>
+                      <StaffRequiredDocumentsPage />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/admin/teacher/:teacherId" element={
+                    <SchoolRoute>
+                      <TeacherDetailPage />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/admin/messages" element={
+                    <SchoolRoute>
+                      <MessageCenter />
+                    </SchoolRoute>
+                  } />
 
-                {/* In-layout access denied */}
-                <Route path="/access-denied" element={<NotAuthorizedInLayout />} />
-                
-                {/* Catch-all 404 inside the app shell (sidebar visible) */}
-                <Route path="*" element={<NotFoundInLayout />} />
-              </Route>
+                  {/* Platform Admin Routes */}
+                  <Route path="/admin" element={
+                    <AdminRoute>
+                      <Admin />
+                    </AdminRoute>
+                  } />
+                  <Route path="/admin/audit-logs" element={
+                    <AdminRoute>
+                      <AuditEventsPage />
+                    </AdminRoute>
+                  } />
+                  <Route path="/admin/school/:schoolId" element={
+                    <AdminRoute>
+                      <SchoolDetailPage />
+                    </AdminRoute>
+                  } />
+                  <Route path="/admin/reminders" element={
+                    <AdminRoute>
+                      <ReminderManagement />
+                    </AdminRoute>
+                  } />
+                  <Route path="/admin/privacy-settings" element={
+                    <AdminRoute>
+                      <PrivacyPolicySettings />
+                    </AdminRoute>
+                  } />
+                  <Route path="/admin/settings" element={
+                    <AdminRoute>
+                      <AdminSettings />
+                    </AdminRoute>
+                  } />
 
-              {/* ==================== CATCH-ALL (public 404) ==================== */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+                  {/* In-layout access denied */}
+                  <Route path="/access-denied" element={<NotAuthorizedInLayout />} />
+                  
+                  {/* Catch-all 404 inside the app shell (sidebar visible) */}
+                  <Route path="*" element={<NotFoundInLayout />} />
+                </Route>
+
+                {/* ==================== CATCH-ALL (public 404) ==================== */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
 );
 
 export default App;

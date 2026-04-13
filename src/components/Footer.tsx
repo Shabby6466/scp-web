@@ -11,7 +11,7 @@ const Footer = () => {
             <div className="flex items-center mb-4">
               <img
                 src={logo}
-                alt="SCP"
+                alt="Compli-ed"
                 className="h-10 w-auto object-contain rounded-md"
               />
             </div>
@@ -76,10 +76,10 @@ const Footer = () => {
             <ul className="space-y-2.5 text-sm">
               <li>
                 <a
-                  href="mailto:support@SCP.com"
+                  href="mailto:support@compli-ed.com"
                   className="text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  support@SCP.com
+                  support@compli-ed.com
                 </a>
               </li>
               <li>
@@ -97,7 +97,7 @@ const Footer = () => {
         {/* Footer Bottom */}
         <div className="pt-6 border-t border-border/50">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-            <p>© 2026 SCP. All rights reserved.</p>
+            <p>© 2026 Compli-ed. All rights reserved.</p>
             <div className="flex items-center gap-5">
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-success" />

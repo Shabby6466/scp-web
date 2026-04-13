@@ -19,7 +19,7 @@ const HowItWorksPage = () => {
                 Ready to Simplify Your Compliance?
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Join hundreds of preschools already using SCP to streamline document management and stay DOH compliant.
+                Join hundreds of preschools already using Compli-ed to streamline document management and stay DOH compliant.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">

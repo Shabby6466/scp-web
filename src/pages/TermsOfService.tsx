@@ -31,7 +31,7 @@ const TermsOfService = () => {
               <div>
                 <h2 className="text-2xl font-display font-bold mb-4 text-foreground">Agreement to Terms</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  These Terms of Service constitute a legally binding agreement between you and SCP ("Company," "we," "us," or "our") concerning your access to and use of the SCP platform. By accessing or using our services, you agree that you have read, understood, and agree to be bound by these Terms. If you do not agree, you must not access or use our services.
+                  These Terms of Service constitute a legally binding agreement between you and Compli-ed ("Company," "we," "us," or "our") concerning your access to and use of the Compli-ed platform. By accessing or using our services, you agree that you have read, understood, and agree to be bound by these Terms. If you do not agree, you must not access or use our services.
                 </p>
               </div>
 
@@ -102,7 +102,7 @@ const TermsOfService = () => {
               <div>
                 <h2 className="text-2xl font-display font-bold mb-4 text-foreground">Intellectual Property Rights</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  The service and its original content (excluding User Content), features, and functionality are owned by SCP and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws. You may not copy, modify, distribute, sell, or lease any part of our services or software without our express written permission.
+                  The service and its original content (excluding User Content), features, and functionality are owned by Compli-ed and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws. You may not copy, modify, distribute, sell, or lease any part of our services or software without our express written permission.
                 </p>
               </div>
 
@@ -123,14 +123,14 @@ const TermsOfService = () => {
               <div>
                 <h2 className="text-2xl font-display font-bold mb-4 text-foreground">Limitation of Liability</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  TO THE MAXIMUM EXTENT PERMITTED BY LAW, SCP SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID US IN THE TWELVE MONTHS PRECEDING THE CLAIM.
+                  TO THE MAXIMUM EXTENT PERMITTED BY LAW, Compli-ed SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID US IN THE TWELVE MONTHS PRECEDING THE CLAIM.
                 </p>
               </div>
 
               <div>
                 <h2 className="text-2xl font-display font-bold mb-4 text-foreground">Indemnification</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  You agree to indemnify, defend, and hold harmless SCP and its officers, directors, employees, and agents from any claims, liabilities, damages, losses, and expenses arising out of or related to your use of the service, violation of these Terms, or infringement of any rights of another party.
+                  You agree to indemnify, defend, and hold harmless Compli-ed and its officers, directors, employees, and agents from any claims, liabilities, damages, losses, and expenses arising out of or related to your use of the service, violation of these Terms, or infringement of any rights of another party.
                 </p>
               </div>
 
@@ -169,9 +169,9 @@ const TermsOfService = () => {
                 </p>
                 <div className="mt-4 p-4 bg-muted/50 rounded-lg">
                   <p className="text-muted-foreground">
-                    <strong className="text-foreground">Email:</strong> legal@SCP.com<br />
+                    <strong className="text-foreground">Email:</strong> legal@compli-ed.com<br />
                     <strong className="text-foreground">Phone:</strong> (888) 555-1234<br />
-                    <strong className="text-foreground">Mail:</strong> SCP Legal Department, 123 Document Lane, Suite 100, New York, NY 10001
+                    <strong className="text-foreground">Mail:</strong> Compli-ed Legal Department, 123 Document Lane, Suite 100, New York, NY 10001
                   </p>
                 </div>
               </div>

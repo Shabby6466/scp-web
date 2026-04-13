@@ -10,17 +10,10 @@
 
 @layer base {
   :root {
-    /* ═══════════════════════════════════════════════════════════════
-       BRAND COLORS - Core Identity (Exact values from brief)
-       ═══════════════════════════════════════════════════════════════ */
-    --brand-navy: 216 72% 11%;
-    /* #0A1A2F */
-    --brand-cream: 38 47% 95%;
-    /* #F8F4EC */
-    --brand-gold: 43 75% 52%;
-    /* Muted amber - more premium */
-    --brand-red: 359 53% 41%;
-    /* #A03032 */
+    --brand-navy: 210 74% 17%;    /* #0B2A4A */
+    --brand-red: 18 100% 50%;     /* #FF4D00 */
+    --brand-charcoal: 0 0% 10%;   /* #1A1A1A */
+    --brand-white: 0 0% 96%;      /* #F5F5F5 */
 
     /* ═══════════════════════════════════════════════════════════════
        NEUTRAL SCALE - Premium Greys
@@ -67,54 +60,39 @@
     --error-light: 359 50% 96%;
     --error-foreground: 359 50% 24%;
 
-    /* ═══════════════════════════════════════════════════════════════
-       CORE UI COLORS - Light Mode
-       ═══════════════════════════════════════════════════════════════ */
-    --background: 38 47% 97%;
-    /* Soft cream background */
-    --foreground: 216 72% 11%;
-    /* Navy text */
-    --foreground-muted: 0 0% 35%;
-    /* Muted grey text */
+    --background: 0 0% 96%;
+    --foreground: 222 47% 11%;
+    --foreground-muted: 215 14% 46%;
 
-    /* Card & Elevated Surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 216 72% 11%;
+    --card-foreground: 222 47% 11%;
     --card-elevated: 0 0% 100%;
 
-    /* Popover/Dropdown */
     --popover: 0 0% 100%;
-    --popover-foreground: 216 72% 11%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary = Navy (main brand) */
-    --primary: 216 72% 11%;
+    --primary: 18 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 216 72% 16%;
+    --primary-hover: 18 100% 45%;
 
-    /* Secondary = Muted Amber (CTAs, highlights) - more premium, less yellow */
-    --secondary: 43 75% 52%;
-    --secondary-foreground: 216 72% 8%;
-    --secondary-hover: 43 75% 46%;
+    --secondary: 0 0% 97%;
+    --secondary-foreground: 222 47% 11%;
+    --secondary-hover: 0 0% 94%;
 
-    /* Muted backgrounds */
-    --muted: 220 10% 96%;
-    --muted-foreground: 220 8% 46%;
+    --muted: 0 0% 97%;
+    --muted-foreground: 215 14% 46%;
 
-    /* Accent = Subtle warm tint */
-    --accent: 43 65% 56%;
-    --accent-foreground: 216 72% 8%;
+    --accent: 18 100% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Destructive = Deep Red - muted */
-    --destructive: 359 50% 45%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-hover: 359 50% 38%;
 
-    /* Borders & Inputs - softer */
-    --border: 220 10% 90%;
-    --border-subtle: 220 10% 94%;
-    --input: 220 10% 92%;
-    --input-focus: 220 10% 88%;
-    --ring: 216 72% 20%;
+    --border: 220 13% 91%;
+    --border-subtle: 220 13% 94%;
+    --input: 0 0% 97%;
+    --input-focus: 0 0% 94%;
+    --ring: 18 100% 50%;
 
     /* ═══════════════════════════════════════════════════════════════
        RADIUS - Softer, more refined corners
@@ -149,17 +127,17 @@
     /* ═══════════════════════════════════════════════════════════════
        SIDEBAR - Premium High-Tech Styling
        ═══════════════════════════════════════════════════════════════ */
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 216 72% 11%;
-    --sidebar-primary: 216 72% 11%;
+    --sidebar-background: 210 74% 17%; /* Oxford Blue */
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 18 100% 50%; /* Signal Red */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 43 75% 52%;
-    --sidebar-accent-foreground: 216 72% 8%;
-    --sidebar-border: 220 10% 92%;
-    --sidebar-ring: 216 72% 20%;
-    --sidebar: 0 0% 100%;
-    --sidebar-muted: 220 10% 96%;
-    --sidebar-glow: 216 72% 11%;
+    --sidebar-accent: 18 100% 50%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 210 74% 20%;
+    --sidebar-ring: 18 100% 50%;
+    --sidebar: 210 74% 17%;
+    --sidebar-muted: 210 74% 14%;
+    --sidebar-glow: 18 100% 50%;
 
     /* ═══════════════════════════════════════════════════════════════
        CHART COLORS
@@ -173,7 +151,7 @@
     /* ═══════════════════════════════════════════════════════════════
        TYPOGRAPHY
        ═══════════════════════════════════════════════════════════════ */
-    --font-display: 'Inter Tight', 'Inter', system-ui, -apple-system, sans-serif;
+    --font-display: 'Instrument Serif', serif;
     --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'SF Mono', 'Fira Code', Menlo, Monaco, monospace;
 
@@ -201,62 +179,49 @@
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* ═══════════════════════════════════════════════════════════════
-     DARK MODE
-     ═══════════════════════════════════════════════════════════════ */
   .dark {
-    --background: 216 72% 6%;
-    --foreground: 38 30% 95%;
-    --foreground-muted: 0 0% 60%;
+    --background: 0 0% 4%;        /* Deep Charcoal */
+    --foreground: 210 20% 98%;
+    --foreground-muted: 240 5% 65%;
 
-    --card: 216 60% 10%;
-    --card-foreground: 38 30% 95%;
-    --card-elevated: 216 55% 12%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 100%;
+    --card-elevated: 0 0% 8%;
 
-    --popover: 216 60% 10%;
-    --popover-foreground: 38 30% 95%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 43 90% 61%;
-    --primary-foreground: 216 72% 6%;
-    --primary-hover: 43 90% 55%;
+    --primary: 30 100% 50%;       /* Vibrant Orange */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 30 100% 45%;
 
-    --secondary: 216 50% 16%;
-    --secondary-foreground: 43 90% 65%;
-    --secondary-hover: 216 50% 20%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 216 50% 14%;
-    --muted-foreground: 0 0% 55%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 43 85% 60%;
-    --accent-foreground: 216 72% 6%;
+    --accent: 30 100% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 359 50% 48%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-hover: 359 50% 42%;
 
-    --border: 216 40% 18%;
-    --border-subtle: 216 40% 14%;
-    --input: 216 40% 16%;
-    --input-focus: 216 40% 20%;
-    --ring: 43 90% 61%;
+    --border: 0 0% 12%;
+    --border-subtle: 0 0% 10%;
+    --input: 0 0% 8%;
+    --input-focus: 0 0% 12%;
+    --ring: 30 100% 50%;
 
-    --success-light: 152 50% 12%;
-    --warning-light: 40 70% 12%;
-    --info-light: 210 70% 12%;
-    --error-light: 359 50% 12%;
-
-    --card-shadow: 0 2px 8px -2px rgb(0 0 0 / 0.4);
-    --card-shadow-hover: 0 16px 32px -8px rgb(0 0 0 / 0.5);
-
-    --sidebar-background: 216 60% 8%;
-    --sidebar-foreground: 38 30% 95%;
-    --sidebar-primary: 43 90% 61%;
-    --sidebar-primary-foreground: 216 72% 6%;
-    --sidebar-accent: 359 50% 48%;
+    --sidebar-background: 0 0% 0%;  /* Pure Black */
+    --sidebar-foreground: 214 32% 91%;
+    --sidebar-primary: 30 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 100% 50%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 216 40% 16%;
-    --sidebar-ring: 43 90% 61%;
-    --sidebar: 216 60% 7%;
+    --sidebar-border: 0 0% 8%;
+    --sidebar-ring: 30 100% 50%;
+    --sidebar: 0 0% 0%;
   }
 }
 
@@ -293,8 +258,13 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-display);
+    font-family: var(--font-sans);
     @apply text-foreground font-semibold;
+    letter-spacing: -0.02em;
+  }
+
+  .font-display {
+    font-family: var(--font-display);
     letter-spacing: -0.025em;
   }
 

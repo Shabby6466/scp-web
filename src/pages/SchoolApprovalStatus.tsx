@@ -117,7 +117,7 @@ export default function SchoolApprovalStatus() {
               <div className="flex flex-col items-center text-center py-8">
                 {getStatusIcon()}
                 <h3 className="text-xl font-semibold mt-4 mb-2">
-                  {school?.isApproved ? "Welcome to SCP!" : "Application Under Review"}
+                  {school?.isApproved ? "Welcome to Compli-ed!" : "Application Under Review"}
                 </h3>
                 <p className="text-muted-foreground max-w-md">
                   {getStatusMessage()}
@@ -141,8 +141,8 @@ export default function SchoolApprovalStatus() {
                   <ul className="text-sm text-muted-foreground space-y-2 ml-6 list-disc">
                     <li>Our team will review your application within 1-2 business days</li>
                     <li>You'll receive an email notification once approved</li>
-                    <li>After approval, you can immediately start using SCP</li>
-                    <li>Questions? Contact us at support@SCP.com</li>
+                    <li>After approval, you can immediately start using Compli-ed</li>
+                    <li>Questions? Contact us at support@compli-ed.com</li>
                   </ul>
                 </div>
               )}

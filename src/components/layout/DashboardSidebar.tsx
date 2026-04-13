@@ -296,8 +296,8 @@ export function DashboardSidebar({
         className={cn(
           "h-10 rounded-lg transition-all duration-200 group/item",
           active
-            ? "bg-secondary text-secondary-foreground font-medium shadow-sm"
-            : "hover:bg-muted text-muted-foreground hover:text-foreground"
+            ? "bg-primary text-primary-foreground font-semibold shadow-md shadow-primary/20"
+            : "hover:bg-white/10 text-white/70 hover:text-white"
         )}
       >
         <a
@@ -358,10 +358,10 @@ export function DashboardSidebar({
           {!collapsed && (
             <div className="flex flex-col min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-foreground text-sm">SCP</span>
+                <span className="font-semibold text-white text-sm">Compli-ed</span>
               </div>
               {schoolName && (
-                <span className="text-xs text-muted-foreground truncate">{schoolName}</span>
+                <span className="text-xs text-white/60 truncate">{schoolName}</span>
               )}
             </div>
           )}
@@ -371,7 +371,7 @@ export function DashboardSidebar({
       {/* Search */}
       {!collapsed && (
         <div className="px-3 py-3 border-b border-border/50">
-          <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/40 hover:bg-muted text-muted-foreground transition-colors group">
+          <button className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-white/10 text-white/70 transition-colors group cursor-text">
             <Search className="h-4 w-4 transition-transform group-hover:scale-110" />
             <span className="text-sm flex-1 text-left">Quick search...</span>
             <kbd className="text-[10px] bg-background/80 px-1.5 py-0.5 rounded border border-border/50 font-mono">⌘K</kbd>
@@ -386,7 +386,7 @@ export function DashboardSidebar({
             {group.collapsible ? (
               <Collapsible defaultOpen={group.defaultOpen}>
                 <SidebarGroupLabel asChild>
-                  <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
+                  <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-[11px] font-semibold text-white/70 uppercase tracking-wider hover:text-white transition-colors">
                     {!collapsed && (
                       <>
                         <span>{group.label}</span>
@@ -408,7 +408,7 @@ export function DashboardSidebar({
             ) : (
               <>
                 {!collapsed && (
-                  <SidebarGroupLabel className="px-3 py-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <SidebarGroupLabel className="px-3 py-2 text-[11px] font-semibold text-white/50 uppercase tracking-wider">
                     {group.label}
                   </SidebarGroupLabel>
                 )}
@@ -430,23 +430,23 @@ export function DashboardSidebar({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button className={cn(
-              "flex items-center gap-3 w-full rounded-lg p-2 hover:bg-muted transition-all duration-200 group",
+              "flex items-center gap-3 w-full rounded-xl p-2.5 bg-primary text-primary-foreground transition-all duration-200 group shadow-lg shadow-primary/20",
               collapsed && "justify-center"
             )}>
               <div className="relative">
-                <Avatar className="h-8 w-8 ring-2 ring-background shadow-sm">
-                  <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
+                <Avatar className="h-9 w-9 ring-2 ring-primary-foreground/20 shadow-sm transition-transform duration-200 group-hover:scale-105">
+                  <AvatarFallback className="bg-primary-foreground text-primary text-xs font-bold">
                     {getInitials()}
                   </AvatarFallback>
                 </Avatar>
-                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-success border-2 border-background animate-pulse" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-success border-2 border-primary animate-pulse" />
               </div>
               {!collapsed && (
                 <div className="flex-1 min-w-0 text-left">
-                  <p className="text-sm font-medium text-foreground truncate">
+                  <p className="text-sm font-semibold text-primary-foreground truncate leading-none mb-1">
                     {user?.name || user?.email?.split('@')[0]}
                   </p>
-                  <span className="text-[10px] font-medium text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+                  <span className="text-[10px] font-bold text-primary-foreground/90 bg-white/20 px-2 py-0.5 rounded-full border border-white/20">
                     {getRoleDisplayName()}
                   </span>
                 </div>

@@ -13,7 +13,7 @@ const FinalCTA = () => {
             Ready to simplify compliance?
           </h2>
           <p className="text-lg text-muted-foreground mb-10 max-w-xl mx-auto">
-            Join 50+ NYC preschools already using SCP to stay DOH-ready
+            Join 50+ NYC preschools already using Compli-ed to stay DOH-ready
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">

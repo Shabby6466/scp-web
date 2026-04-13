@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Bell, Search, HelpCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import type { UserRole } from "@/hooks/useUserRole";
 interface DashboardTopbarProps {
   schoolName?: string;
@@ -180,6 +181,9 @@ export function DashboardTopbar({
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Theme Toggle */}
+        <ThemeToggle />
 
         {/* Help */}
         <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
