@@ -538,9 +538,12 @@ const DocumentUploadDialog = ({
     setUploading(true);
 
     try {
+      const actingUserId = user.id;
+      const isChildProfile = data.studentId !== actingUserId;
       const presignData = await documentService.presign({
         documentTypeId: data.category,
-        ownerUserId: data.studentId,
+        ownerUserId: actingUserId,
+        ...(isChildProfile ? { studentProfileId: data.studentId } : {}),
         fileName: file.name,
         mimeType: file.type,
         sizeBytes: file.size,
@@ -550,7 +553,8 @@ const DocumentUploadDialog = ({
 
       await documentService.complete({
         documentTypeId: data.category,
-        ownerUserId: data.studentId,
+        ownerUserId: actingUserId,
+        ...(isChildProfile ? { studentProfileId: data.studentId } : {}),
         s3Key: presignData.s3Key,
         fileName: file.name,
         mimeType: file.type,

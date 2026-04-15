@@ -59,7 +59,14 @@ import SetupInvitations from "./pages/school/setup/SetupInvitations";
 import DirectorDashboard from "./pages/DirectorDashboard";
 
 // Admin Pages
-import Admin from "./pages/Admin";
+import AdminLayout from "./pages/admin/AdminLayout";
+import AdminOverview from "@/components/admin/AdminOverview";
+import AdminStudents from "@/components/admin/AdminStudents";
+import AdminParents from "@/components/admin/AdminParents";
+import AdminTeachers from "@/components/admin/AdminTeachers";
+import AdminSchools from "@/components/admin/AdminSchools";
+import { AdminDirectors } from "@/components/admin/AdminDirectors";
+import AdminDocumentsPage from "./pages/admin/AdminDocumentsPage";
 import DOHCompliance from "./pages/DOHCompliance";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
 import RequiredDocumentsPage from "./pages/admin/RequiredDocumentsPage";
@@ -323,7 +330,7 @@ const App = () => (
                       <TeacherEligibilityProfile />
                     </SchoolRoute>
                   } />
-                  
+
                   {/* School Admin Management Routes */}
                   <Route path="/admin/required-documents" element={
                     <SchoolRoute>
@@ -351,12 +358,23 @@ const App = () => (
                     </SchoolRoute>
                   } />
 
-                  {/* Platform Admin Routes */}
-                  <Route path="/admin" element={
-                    <AdminRoute>
-                      <Admin />
-                    </AdminRoute>
-                  } />
+                  {/* Platform Admin Routes (nested under shared layout) */}
+                  <Route
+                    path="/admin"
+                    element={
+                      <AdminRoute>
+                        <AdminLayout />
+                      </AdminRoute>
+                    }
+                  >
+                    <Route index element={<AdminOverview />} />
+                    <Route path="students" element={<AdminStudents />} />
+                    <Route path="parents" element={<AdminParents />} />
+                    <Route path="staff" element={<AdminTeachers />} />
+                    <Route path="schools" element={<AdminSchools />} />
+                    <Route path="directors" element={<AdminDirectors />} />
+                    <Route path="documents" element={<AdminDocumentsPage />} />
+                  </Route>
                   <Route path="/admin/audit-logs" element={
                     <AdminRoute>
                       <AuditEventsPage />

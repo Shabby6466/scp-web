@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { api, unwrapList } from "@/lib/api";
+import { api } from "@/lib/api";
+import { schoolService } from "@/services/schoolService";
 import { GraduationCap, Search, Command } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StudentComplianceSummary } from "./StudentComplianceSummary";
@@ -51,37 +52,38 @@ export const StudentComplianceBreakdown = ({
         setLoading(false);
         return;
       }
-      const params = new URLSearchParams();
-      params.set('role', 'STUDENT');
-      if (branchId) params.set('branchId', branchId);
-      params.set('limit', '500');
-
-      const studentsData = await api
-        .get(`/schools/${schoolId}/users?${params.toString()}`)
-        .then(unwrapList);
+      let studentsData = await schoolService.listStudents(schoolId);
+      if (branchId) {
+        studentsData = (studentsData as { branchId?: string | null }[]).filter(
+          (p) => p.branchId === branchId,
+        );
+      }
 
       const studentCompliance: StudentCompliance[] = [];
 
       for (const student of studentsData || []) {
-        const docs = await api.get(`/documents/search?ownerUserId=${student.id}`);
+        const s = student as any;
+        const docsRaw = await api.get(`/documents/owner/${s.id}`);
+        const docs = Array.isArray(docsRaw) ? docsRaw : (docsRaw as any)?.data ?? [];
 
         const expiredDocs = (docs || []).filter((d: any) => 
           d.status === 'expired' || 
-          (d.expiration_date && new Date(d.expiration_date) < new Date())
+          ((d.expiresAt || d.expiration_date) && new Date(d.expiresAt || d.expiration_date) < new Date())
         ).length;
 
         const expiringDocs = (docs || []).filter((d: any) => {
-          if (!d.expiration_date) return false;
-          const expDate = new Date(d.expiration_date);
+          const exp = d.expiresAt || d.expiration_date;
+          if (!exp) return false;
+          const expDate = new Date(exp);
           const today = new Date();
           const sixtyDays = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000);
           return expDate >= today && expDate <= sixtyDays;
         }).length;
 
         studentCompliance.push({
-          id: student.id,
-          name: `${student.first_name} ${student.last_name}`,
-          school_name: student.school_name || student.schools?.name || 'Unknown',
+          id: s.id,
+          name: `${s.firstName ?? s.first_name ?? ''} ${s.lastName ?? s.last_name ?? ''}`.trim() || 'Student',
+          school_name: s.school?.name || s.school_name || 'Unknown',
           total_docs: (docs || []).length,
           expired_docs: expiredDocs,
           expiring_docs: expiringDocs,

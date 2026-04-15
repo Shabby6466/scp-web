@@ -40,7 +40,6 @@ const getDashboardPathForRole = (role: UserRole): string => {
       return '/school-dashboard';
     case 'TEACHER':
       return '/eligibility';
-    case 'STUDENT':
     case 'PARENT':
     default:
       return '/dashboard';

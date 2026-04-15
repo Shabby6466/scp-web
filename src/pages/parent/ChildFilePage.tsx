@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
-import { userService } from "@/services/userService";
+import { studentProfileService } from "@/services/studentProfileService";
+import { documentTypeService } from "@/services/documentTypeService";
 import { documentService } from "@/services/documentService";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -93,14 +94,14 @@ function normalizeStatus(s: string) {
   return String(s || "").toLowerCase();
 }
 
-function mapApiDocument(d: any): DocumentRow {
+function mapApiDocument(d: any, profileId: string): DocumentRow {
   const cat =
     d.documentType?.category ||
     (d.documentType?.name ? slugCategory(d.documentType.name) : "");
   return {
     id: d.id,
     ownerUserId: d.ownerUserId,
-    student_id: d.ownerUserId,
+    student_id: d.studentProfileId ?? profileId,
     file_name: d.fileName,
     created_at: d.createdAt,
     category: cat,
@@ -111,21 +112,22 @@ function mapApiDocument(d: any): DocumentRow {
   };
 }
 
-function detailToStudentRow(detail: any, parentId: string): StudentRow {
-  const sp = detail.studentProfile;
-  const dob = sp?.dateOfBirth ? new Date(sp.dateOfBirth).toISOString().slice(0, 10) : "";
+function profileToStudentRow(profile: any, parentId: string): StudentRow {
+  const dob = profile?.dateOfBirth
+    ? new Date(profile.dateOfBirth).toISOString().slice(0, 10)
+    : "";
   return {
-    id: detail.id,
-    first_name: sp?.firstName ?? "",
-    last_name: sp?.lastName ?? "",
+    id: profile.id,
+    first_name: profile?.firstName ?? "",
+    last_name: profile?.lastName ?? "",
     date_of_birth: dob,
-    school_id: detail.schoolId ?? null,
-    grade_level: sp?.gradeLevel ?? null,
+    school_id: profile.schoolId ?? profile.branch?.schoolId ?? null,
+    grade_level: profile?.gradeLevel ?? null,
     parent_id: parentId,
-    branch_id: detail.branchId ?? null,
-    school_name: null,
-    created_at: detail.createdAt ?? "",
-    updated_at: detail.updatedAt ?? "",
+    branch_id: profile.branchId ?? null,
+    school_name: profile.school?.name ?? null,
+    created_at: profile.createdAt ?? "",
+    updated_at: profile.updatedAt ?? "",
     deleted_at: null,
     deleted_by: null,
   };
@@ -147,14 +149,14 @@ export default function ChildFilePage() {
       if (!user?.id) return;
       setLoading(true);
       try {
-        const detail = await userService.getDetail(id);
-        if (!detail || String(detail.role).toUpperCase() !== "STUDENT") {
+        const detail = (await studentProfileService.getById(id)) as any;
+        if (!detail?.id) {
           toast.error("Child not found or access denied");
           navigate("/dashboard");
           return;
         }
 
-        const studentRow = detailToStudentRow(detail, user.id);
+        const studentRow = profileToStudentRow(detail, user.id);
         setStudent(studentRow);
 
         if (detail.school) {
@@ -168,10 +170,24 @@ export default function ChildFilePage() {
         }
 
         const docsRaw = await documentService.listByOwner(id);
-        const docs = (Array.isArray(docsRaw) ? docsRaw : []).map(mapApiDocument);
+        const docs = (Array.isArray(docsRaw) ? docsRaw : []).map((d) =>
+          mapApiDocument(d, id),
+        );
         setDocuments(docs);
 
-        const reqTypes = (detail.requiredDocTypes || []) as any[];
+        const schoolId = detail.schoolId ?? detail.branch?.schoolId ?? null;
+        let reqTypes: any[] = [];
+        if (schoolId) {
+          try {
+            const types = await documentTypeService.list({
+              schoolId,
+              targetRole: "STUDENT",
+            });
+            reqTypes = Array.isArray(types) ? types : [];
+          } catch {
+            reqTypes = [];
+          }
+        }
         const requiredDocs: RequiredDocument[] = reqTypes
           .filter((dt) => dt.isActive !== false)
           .map((dt) => ({

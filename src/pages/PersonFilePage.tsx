@@ -25,6 +25,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { userService } from "@/services/userService";
+import { studentProfileService } from "@/services/studentProfileService";
 import { documentTypeService } from "@/services/documentTypeService";
 import { documentService } from "@/services/documentService";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -75,8 +76,71 @@ export default function PersonFilePage() {
     try {
       if (!personId) return;
 
+      if (isStudent) {
+        const prof: any = await studentProfileService.getById(personId);
+        const personSchoolId =
+          prof.schoolId ?? prof.branch?.schoolId ?? schoolId ?? undefined;
+
+        setPerson({
+          id: prof.id,
+          firstName: prof.firstName ?? '',
+          lastName: prof.lastName ?? '',
+          email: undefined,
+          phone: prof.guardianPhone ?? undefined,
+          dateOfBirth: prof.dateOfBirth ?? undefined,
+          type: "student",
+        });
+
+        const [reqRes, docsRes] = await Promise.all([
+          documentTypeService.list({
+            schoolId: personSchoolId,
+            targetRole: 'STUDENT',
+          }),
+          documentService.listByOwner(personId),
+        ]);
+
+        const requirements: any[] = Array.isArray(reqRes) ? reqRes : (reqRes as any)?.data ?? [];
+        const uploadedDocs: any[] = Array.isArray(docsRes) ? docsRes : (docsRes as any)?.data ?? [];
+
+        const docList: DocumentItem[] = requirements.map((req: any) => {
+          const uploaded = uploadedDocs.find(
+            (d: any) =>
+              d.documentTypeId === req.id ||
+              d.documentType?.name === req.name ||
+              d.documentType?.category === req.category ||
+              d.category === req.category
+          );
+          if (uploaded) {
+            const isExpired = uploaded.expirationDate && new Date(uploaded.expirationDate) < new Date();
+            const apiStatus = (uploaded.status ?? '').toLowerCase();
+            let status: DocumentItem["status"] = apiStatus === 'approved' ? 'approved'
+              : apiStatus === 'pending' ? 'pending'
+              : apiStatus === 'rejected' ? 'rejected'
+              : isExpired ? 'expired'
+              : 'uploaded';
+            return {
+              id: uploaded.id,
+              name: req.name,
+              status,
+              filePath: uploaded.filePath ?? uploaded.s3Key,
+              fileName: uploaded.fileName,
+              expirationDate: uploaded.expirationDate ?? uploaded.expiresAt,
+              uploadedAt: uploaded.createdAt,
+            };
+          }
+          return {
+            id: req.id,
+            name: req.name,
+            status: "missing" as const,
+          };
+        });
+
+        setDocuments(docList);
+        return;
+      }
+
       const detail: any = await userService.getDetail(personId);
-      const profile = isStudent ? detail.studentProfile : detail.teacherProfile;
+      const profile = detail.teacherProfile;
       const personSchoolId = detail.schoolId ?? schoolId;
 
       setPerson({
@@ -86,12 +150,11 @@ export default function PersonFilePage() {
         email: detail.email ?? undefined,
         phone: profile?.phone ?? detail.phone ?? undefined,
         dateOfBirth: profile?.dateOfBirth ?? undefined,
-        type: isStudent ? "student" : "teacher",
+        type: "teacher",
       });
 
-      const targetRole = isStudent ? 'STUDENT' : 'TEACHER';
       const [reqRes, docsRes] = await Promise.all([
-        documentTypeService.list({ schoolId: personSchoolId ?? undefined, targetRole }),
+        documentTypeService.list({ schoolId: personSchoolId ?? undefined, targetRole: 'TEACHER' }),
         documentService.listByOwner(personId),
       ]);
 

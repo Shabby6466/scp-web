@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { userService } from "@/services/userService";
+import { studentProfileService } from "@/services/studentProfileService";
 import { documentTypeService } from "@/services/documentTypeService";
 import { documentService } from "@/services/documentService";
 import { Button } from "@/components/ui/button";
@@ -59,37 +59,55 @@ export default function StudentDetailPage() {
   const loadStudentChecklist = async (id: string) => {
     setLoading(true);
     try {
-      const studentData = await userService.getDetail(id) as any;
+      const studentData = (await studentProfileService.getById(id)) as any;
 
       if (!studentData) {
         toast.error("Failed to load student");
         return;
       }
 
+      const schoolId =
+        studentData.schoolId ??
+        studentData.school_id ??
+        studentData.branch?.schoolId ??
+        null;
       const mapped: Student = {
         id: studentData.id,
-        first_name: studentData.first_name ?? studentData.name?.split(' ')[0] ?? '',
-        last_name: studentData.last_name ?? studentData.name?.split(' ').slice(1).join(' ') ?? '',
-        date_of_birth: studentData.date_of_birth ?? '',
-        school_id: studentData.school_id ?? studentData.schoolId ?? null,
-        school_name: studentData.school_name ?? null,
+        first_name: studentData.firstName ?? studentData.first_name ?? '',
+        last_name: studentData.lastName ?? studentData.last_name ?? '',
+        date_of_birth: studentData.dateOfBirth
+          ? new Date(studentData.dateOfBirth).toISOString().slice(0, 10)
+          : studentData.date_of_birth ?? '',
+        school_id: schoolId,
+        school_name: studentData.school?.name ?? studentData.school_name ?? null,
       };
       setStudent(mapped);
 
       if (!mapped.school_id) {
         setChecklist([]);
-        setStudents([studentData]);
+        setStudents([
+          {
+            id: mapped.id,
+            name: `${mapped.first_name} ${mapped.last_name}`.trim(),
+          },
+        ]);
         return;
       }
 
-      setStudents([studentData]);
+      setStudents([
+        {
+          id: mapped.id,
+          name: `${mapped.first_name} ${mapped.last_name}`.trim(),
+        },
+      ]);
 
       const [requiredDocs, docs] = await Promise.all([
         documentTypeService.list({ schoolId: mapped.school_id, targetRole: 'STUDENT' }),
-        documentService.search({ ownerUserId: id }),
+        documentService.listByOwner(id),
       ]);
 
-      const list = buildChecklist(requiredDocs ?? [], (docs as any)?.data ?? docs ?? []);
+      const docsArr = Array.isArray(docs) ? docs : (docs as any)?.data ?? [];
+      const list = buildChecklist(requiredDocs ?? [], docsArr);
       setChecklist(list);
     } catch (error) {
       console.error("Error loading checklist:", error);
@@ -104,7 +122,11 @@ export default function StudentDetailPage() {
     docs: Document[]
   ): ChecklistItem[] => {
     return requiredDocs.map((rd) => {
-      const match = docs.find((d) => d.category === rd.category);
+      const match = docs.find(
+        (d: any) =>
+          (d as any).documentTypeId === rd.id ||
+          d.category === rd.category,
+      );
       if (!match) {
         return {
           requiredDoc: rd,

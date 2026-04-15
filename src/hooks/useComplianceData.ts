@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api, unwrapList } from '@/lib/api';
+import { schoolService } from '@/services/schoolService';
 import { analyticsService } from '@/services/analyticsService';
 import { useUserRole } from './useUserRole';
 import { useAuth } from '@/contexts/AuthContext';
@@ -86,11 +87,13 @@ export const useComplianceData = (schoolId?: string, branchId?: string) => {
 
       if (branchId && targetSchoolId) {
         const [branchStudents, branchTeachers] = await Promise.all([
-          api
-            .get(
-              `/schools/${targetSchoolId}/users?role=STUDENT&branchId=${branchId}&limit=500`,
-            )
-            .then(unwrapList),
+          schoolService
+            .listStudents(targetSchoolId)
+            .then((list) =>
+              (list as { branchId?: string | null }[]).filter(
+                (p) => p.branchId === branchId,
+              ),
+            ),
           api
             .get(
               `/schools/${targetSchoolId}/users?role=TEACHER&branchId=${branchId}&limit=500`,

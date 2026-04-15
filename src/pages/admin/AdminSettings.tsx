@@ -133,17 +133,21 @@ const AdminSettings = () => {
 
   const fetchPlatformStats = async () => {
     try {
-      const [schoolsData, usersData, studentsData, teachersData, documentsData] = await Promise.all([
+      const [schoolsData, usersData, teachersData, documentsData] = await Promise.all([
         schoolService.list(),
         userService.list(),
-        userService.list({ role: 'STUDENT' }),
         userService.list({ role: 'TEACHER' }),
         documentService.search(),
       ]);
 
       const schoolsList = Array.isArray(schoolsData) ? schoolsData : (schoolsData as any)?.data ?? [];
       const usersList = Array.isArray(usersData) ? usersData : (usersData as any)?.data ?? [];
-      const studentsList = Array.isArray(studentsData) ? studentsData : (studentsData as any)?.data ?? [];
+      const studentCounts = await Promise.all(
+        schoolsList.map((sch: any) =>
+          schoolService.listStudents(sch.id).then((l) => l.length),
+        ),
+      );
+      const totalStudentProfiles = studentCounts.reduce((a, b) => a + b, 0);
       const teachersList = Array.isArray(teachersData) ? teachersData : (teachersData as any)?.data ?? [];
       const documentsList = Array.isArray(documentsData) ? documentsData : (documentsData as any)?.data ?? [];
 
@@ -152,7 +156,7 @@ const AdminSettings = () => {
         approvedSchools: schoolsList.filter((s: any) => s.is_approved).length,
         pendingSchools: schoolsList.filter((s: any) => !s.is_approved).length,
         totalUsers: usersList.length,
-        totalStudents: studentsList.length,
+        totalStudents: totalStudentProfiles,
         totalTeachers: teachersList.length,
         totalDocuments: documentsList.length,
       });

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { userService } from '@/services/userService';
+import { studentProfileService } from '@/services/studentProfileService';
 import { documentService } from '@/services/documentService';
 import { documentTypeService } from '@/services/documentTypeService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -88,32 +88,34 @@ const ChildDocumentUpload = () => {
     if (!studentId) return;
 
     try {
-      const detail = await userService.getDetail(studentId);
-      if (!detail || String(detail.role).toUpperCase() !== 'STUDENT') {
+      const detail = (await studentProfileService.getById(studentId)) as any;
+      if (!detail?.id) {
         setStudent(null);
         setLoading(false);
         return;
       }
 
-      const sp = detail.studentProfile;
-      const dob = sp?.dateOfBirth ? new Date(sp.dateOfBirth).toISOString().slice(0, 10) : '';
+      const dob = detail.dateOfBirth
+        ? new Date(detail.dateOfBirth).toISOString().slice(0, 10)
+        : '';
       const schoolName = detail.school?.name ?? null;
+      const schoolId = detail.schoolId ?? detail.branch?.schoolId ?? null;
 
       setStudent({
         id: detail.id,
-        first_name: sp?.firstName ?? '',
-        last_name: sp?.lastName ?? '',
+        first_name: detail.firstName ?? '',
+        last_name: detail.lastName ?? '',
         date_of_birth: dob,
-        school_id: detail.schoolId ?? null,
+        school_id: schoolId,
         school_name: schoolName,
         parent_id: user?.id ?? '',
         school: detail.school?.name ? { name: detail.school.name } : undefined,
       });
 
-      if (detail.schoolId) {
+      if (schoolId) {
         try {
           const types = await documentTypeService.list({
-            schoolId: detail.schoolId,
+            schoolId: schoolId,
             targetRole: 'STUDENT',
             includeInactive: false,
           });

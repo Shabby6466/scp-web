@@ -1,10 +1,24 @@
 import { api } from '@/lib/api';
 
 export const documentService = {
-  presign: (data: { documentTypeId: string; ownerUserId: string; fileName: string; mimeType: string; sizeBytes: number }) =>
-    api.post('/documents/presign', data),
-  complete: (data: { documentTypeId: string; ownerUserId: string; s3Key: string; fileName: string; mimeType: string; sizeBytes: number; notes?: string }) =>
-    api.post('/documents/complete', data),
+  presign: (data: {
+    documentTypeId: string;
+    ownerUserId: string;
+    studentProfileId?: string;
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+  }) => api.post('/documents/presign', data),
+  complete: (data: {
+    documentTypeId: string;
+    ownerUserId: string;
+    studentProfileId?: string;
+    s3Key: string;
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    notes?: string;
+  }) => api.post('/documents/complete', data),
   getById: (id: string) => api.get(`/documents/${id}`),
   getDownloadUrl: (id: string) => api.get(`/documents/${id}/download-url`),
   review: (id: string, data: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) =>

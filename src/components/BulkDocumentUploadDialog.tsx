@@ -134,9 +134,12 @@ const BulkDocumentUploadDialog = ({ students, onDocumentUploaded, children }: Bu
       updateFile(index, { status: 'uploading', progress: 0 });
 
       updateFile(index, { progress: 30 });
+      const actingUserId = user.id;
+      const isChildProfile = fileUpload.studentId !== actingUserId;
       const presignData = await documentService.presign({
         documentTypeId: fileUpload.category,
-        ownerUserId: fileUpload.studentId,
+        ownerUserId: actingUserId,
+        ...(isChildProfile ? { studentProfileId: fileUpload.studentId } : {}),
         fileName: fileUpload.file.name,
         mimeType: fileUpload.file.type,
         sizeBytes: fileUpload.file.size,
@@ -148,7 +151,8 @@ const BulkDocumentUploadDialog = ({ students, onDocumentUploaded, children }: Bu
       updateFile(index, { progress: 85 });
       await documentService.complete({
         documentTypeId: fileUpload.category,
-        ownerUserId: fileUpload.studentId,
+        ownerUserId: actingUserId,
+        ...(isChildProfile ? { studentProfileId: fileUpload.studentId } : {}),
         s3Key: presignData.s3Key,
         fileName: fileUpload.file.name,
         mimeType: fileUpload.file.type,

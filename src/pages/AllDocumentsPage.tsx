@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { userService } from "@/services/userService";
+import { schoolService } from "@/services/schoolService";
 import { documentTypeService } from "@/services/documentTypeService";
 import { useUserRole } from "@/hooks/useUserRole";
 import { PersonFileCard } from "@/components/documents/PersonFileCard";
@@ -70,26 +71,39 @@ export default function AllDocumentsPage() {
       setStudentRequirements(studentReqList.length);
       setTeacherRequirements(teacherReqList.length);
 
-      const [studentsRes, teachersRes] = await Promise.all([
-        effectiveSchoolId
-          ? userService.listStudents(effectiveSchoolId)
-          : userService.list({ role: 'STUDENT' }),
-        effectiveSchoolId
-          ? userService.listTeachers(effectiveSchoolId)
-          : userService.list({ role: 'TEACHER' }),
-      ]);
+      let studentsList: any[] = [];
+      if (effectiveSchoolId) {
+        studentsList = await schoolService.listStudents(effectiveSchoolId);
+      } else if (isAdmin) {
+        const schs = await schoolService.list();
+        const arr = Array.isArray(schs) ? schs : (schs as any)?.data ?? [];
+        for (const sch of arr) {
+          try {
+            studentsList.push(
+              ...(await schoolService.listStudents(sch.id)).map((p: any) => ({
+                ...p,
+                schoolId: p.schoolId ?? sch.id,
+              })),
+            );
+          } catch {
+            /* ignore */
+          }
+        }
+      }
 
-      const studentsList: any[] = Array.isArray(studentsRes) ? studentsRes : (studentsRes as any)?.data ?? [];
+      const teachersRes = await (effectiveSchoolId
+        ? userService.listTeachers(effectiveSchoolId)
+        : userService.list({ role: 'TEACHER' }));
       const teachersList: any[] = Array.isArray(teachersRes) ? teachersRes : (teachersRes as any)?.data ?? [];
 
       setStudents(
         studentsList.map((s: any) => ({
           id: s.id,
-          first_name: s.studentProfile?.firstName ?? s.name?.split(' ')[0] ?? '',
-          last_name: s.studentProfile?.lastName ?? s.name?.split(' ').slice(1).join(' ') ?? '',
-          school_id: s.schoolId ?? '',
+          first_name: s.firstName ?? s.studentProfile?.firstName ?? s.name?.split(' ')[0] ?? '',
+          last_name: s.lastName ?? s.studentProfile?.lastName ?? s.name?.split(' ').slice(1).join(' ') ?? '',
+          school_id: s.schoolId ?? s.school_id ?? '',
           branch_id: s.branchId ?? null,
-          date_of_birth: s.studentProfile?.dateOfBirth ?? '',
+          date_of_birth: s.dateOfBirth ?? s.studentProfile?.dateOfBirth ?? '',
           documents: s.documents ?? [],
           requiredCount: studentReqList.length,
         }))

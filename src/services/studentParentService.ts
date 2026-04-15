@@ -9,6 +9,11 @@ export const studentParentService = {
     dateOfBirth: string;
     gradeLevel?: string | null;
   }) => api.post('/student-parents/register-child', data),
-  createLink: (data: { studentId: string; parentId: string; relation?: string; isPrimary?: boolean }) => api.post('/student-parents', data),
+  createLink: (data: {
+    studentProfileId: string;
+    parentId: string;
+    relation?: string;
+    isPrimary?: boolean;
+  }) => api.post('/student-parents', data),
   removeLink: (id: string) => api.delete(`/student-parents/${id}`),
 };

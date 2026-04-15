@@ -89,14 +89,19 @@ export function DashboardSidebar({
   const navigate = useNavigate();
   const { state } = useSidebar();
   const { user, signOut } = useAuth();
-  const { role, isAdmin, isDirector, isBranchDirector, isTeacher, isStudent, isParent, getDashboardPath, getRoleDisplayName } = useUserRole();
+  const { role, isAdmin, isDirector, isBranchDirector, isTeacher, isParent, getDashboardPath, getRoleDisplayName } = useUserRole();
   const collapsed = state === "collapsed";
 
   const dashboardPath = getDashboardPath();
 
   const isActive = (path: string) => {
-    if (path === dashboardPath) return location.pathname === path;
-    return location.pathname.startsWith(path);
+    if (path === dashboardPath) {
+      if (path === '/admin') {
+        return location.pathname === '/admin' || location.pathname === '/admin/';
+      }
+      return location.pathname === path || location.pathname === `${path}/`;
+    }
+    return location.pathname === path || location.pathname.startsWith(`${path}/`);
   };
 
   const getInitials = () => {
@@ -120,8 +125,9 @@ export function DashboardSidebar({
       groups.push({
         label: "Platform",
         items: [
-          { title: "Schools", url: '/admin?tab=schools', icon: School },
-          { title: "Directors", url: '/admin?tab=directors', icon: UserCog },
+          { title: "Schools", url: '/admin/schools', icon: School },
+          { title: "Directors", url: '/admin/directors', icon: UserCog },
+          { title: "Documents", url: '/admin/documents', icon: FileText },
           { title: "Audit Logs", url: '/admin/audit-logs', icon: Shield },
           { title: "Reminders", url: '/admin/reminders', icon: Bell },
           { title: "Settings", url: '/admin/settings', icon: Settings },
@@ -133,9 +139,9 @@ export function DashboardSidebar({
       groups.push({
         label: "People",
         items: [
-          { title: "Students", url: '/admin?tab=students', icon: Users, badge: stats.studentCount },
-          { title: "Staff", url: '/admin?tab=teachers', icon: GraduationCap, badge: stats.teacherCount },
-          { title: "Parents", url: '/admin?tab=parents', icon: UserCircle, badge: stats.parentCount },
+          { title: "Students", url: '/admin/students', icon: Users, badge: stats.studentCount },
+          { title: "Staff", url: '/admin/staff', icon: GraduationCap, badge: stats.teacherCount },
+          { title: "Parents", url: '/admin/parents', icon: UserCircle, badge: stats.parentCount },
         ],
         collapsible: true,
         defaultOpen: true,
@@ -235,19 +241,6 @@ export function DashboardSidebar({
         label: "Main",
         items: [
           { title: "Eligibility Portal", url: '/eligibility', icon: ClipboardCheck },
-          { title: "My Documents", url: '/all-documents', icon: FileText },
-        ],
-      });
-
-      return groups;
-    }
-
-    // --- STUDENT sections ---
-    if (isStudent) {
-      groups.push({
-        label: "Main",
-        items: [
-          { title: "Dashboard", url: dashboardPath, icon: LayoutDashboard },
           { title: "My Documents", url: '/all-documents', icon: FileText },
         ],
       });

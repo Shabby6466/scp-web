@@ -1,4 +1,5 @@
 import { api, unwrapList } from '@/lib/api';
+import { schoolService } from '@/services/schoolService';
 
 const SCHOOL_USER_PAGE_LIMIT = '500';
 
@@ -40,10 +41,11 @@ export const userService = {
     return unwrapList(res);
   },
   listStudents: async (schoolId: string, branchId?: string) => {
-    const res = await api.get(
-      `/schools/${schoolId}/users?role=STUDENT${branchId ? `&branchId=${branchId}` : ''}&limit=${SCHOOL_USER_PAGE_LIMIT}`,
+    const list = await schoolService.listStudents(schoolId);
+    if (!branchId) return list;
+    return (list as { branchId?: string | null }[]).filter(
+      (p) => p.branchId === branchId,
     );
-    return unwrapList(res);
   },
   listBySchool: async (schoolId: string) => {
     const res = await api.get(

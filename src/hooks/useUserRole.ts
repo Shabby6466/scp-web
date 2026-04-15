@@ -14,7 +14,6 @@ export const useUserRole = () => {
     isDirector: role === 'DIRECTOR',
     isBranchDirector: role === 'BRANCH_DIRECTOR',
     isTeacher: role === 'TEACHER',
-    isStudent: role === 'STUDENT',
     isParent: role === 'PARENT',
     isSchool: role === 'DIRECTOR' || role === 'BRANCH_DIRECTOR',
     isStaff: role === 'ADMIN' || role === 'DIRECTOR',
@@ -48,7 +47,6 @@ export const useUserRole = () => {
         DIRECTOR: 'School Director',
         BRANCH_DIRECTOR: 'Branch Director',
         TEACHER: 'Teacher',
-        STUDENT: 'Student',
         PARENT: 'Parent',
       };
       return names[role ?? ''] ?? 'User';

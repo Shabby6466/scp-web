@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userService } from '@/services/userService';
+import { schoolService } from '@/services/schoolService';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,13 +52,18 @@ export function GlobalSearchDropdown({ schoolId, branchId, isDirector }: GlobalS
     try {
       const allResults: SearchResult[] = [];
 
-      const [students, parents, staff] = await Promise.all([
-        userService.list({
-          role: 'STUDENT',
-          schoolId,
-          ...(branchId && isDirector ? { branchId } : {}),
-          search: searchQuery.trim(),
-        }),
+      const q = searchQuery.trim().toLowerCase();
+      const profileRows = await schoolService.listStudents(schoolId);
+      const students = (profileRows as any[]).filter((p) => {
+        const n = `${p.firstName ?? p.first_name ?? ''} ${p.lastName ?? p.last_name ?? ''}`
+          .trim()
+          .toLowerCase();
+        if (!n.includes(q)) return false;
+        if (branchId && isDirector && p.branchId !== branchId) return false;
+        return true;
+      });
+
+      const [parents, staff] = await Promise.all([
         userService.list({
           role: 'PARENT',
           schoolId,
@@ -71,12 +77,14 @@ export function GlobalSearchDropdown({ schoolId, branchId, isDirector }: GlobalS
         }),
       ]);
 
-      (students || []).slice(0, 5).forEach((s: any) => {
+      students.slice(0, 5).forEach((s: any) => {
         allResults.push({
           id: s.id,
           type: 'student',
-          name: s.name || `${s.first_name} ${s.last_name}`,
-          route: `/admin/students/${s.id}`,
+          name:
+            `${s.firstName ?? s.first_name ?? ''} ${s.lastName ?? s.last_name ?? ''}`.trim() ||
+            'Student',
+          route: `/admin/student/${s.id}`,
         });
       });
 

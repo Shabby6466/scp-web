@@ -17,7 +17,13 @@ interface DashboardTopbarProps {
 
 // Route to breadcrumb label mapping
 const routeLabels: Record<string, string> = {
-  '/admin': 'Admin Dashboard',
+  '/admin': 'Overview',
+  '/admin/students': 'Students',
+  '/admin/parents': 'Parents',
+  '/admin/staff': 'Staff',
+  '/admin/schools': 'Schools',
+  '/admin/directors': 'Directors',
+  '/admin/documents': 'Documents',
   '/director-dashboard': 'Director Dashboard',
   '/school-dashboard': 'School Dashboard',
   '/dashboard': 'Parent Dashboard',

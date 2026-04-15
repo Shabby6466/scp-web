@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
 import { toast as toastHook } from '@/hooks/use-toast';
 import { schoolService } from '@/services/schoolService';
-import { userService } from '@/services/userService';
 import { documentService } from '@/services/documentService';
 import { studentParentService } from '@/services/studentParentService';
 import { invitationService } from '@/services/invitationService';
@@ -142,7 +141,24 @@ const AdminStudents = () => {
 
   const fetchStudents = async () => {
     try {
-      const studentsList = await userService.list({ role: 'STUDENT' }) || [];
+      const schoolsData = await schoolService.list();
+      const schoolArr = Array.isArray(schoolsData) ? schoolsData : (schoolsData as any)?.data ?? [];
+      const studentsList: any[] = [];
+      for (const sch of schoolArr) {
+        try {
+          const list = await schoolService.listStudents(sch.id);
+          for (const p of list) {
+            studentsList.push({
+              ...p,
+              school_id: sch.id,
+              school_name: sch.name,
+            });
+          }
+        } catch {
+          /* school may be inaccessible */
+        }
+      }
+
       const studentIds = studentsList.map((s: any) => s.id);
 
       if (studentIds.length === 0) {
@@ -158,13 +174,22 @@ const AdminStudents = () => {
       const docsByStudent: Record<string, Array<{ id: string; category: string; status: string }>> = {};
       const docCountsByStudent: Record<string, number> = {};
       (allDocs || []).forEach((doc: any) => {
-        if (!doc.student_id || !studentIds.includes(doc.student_id)) return;
-        if (!docsByStudent[doc.student_id]) {
-          docsByStudent[doc.student_id] = [];
-          docCountsByStudent[doc.student_id] = 0;
+        const sid = doc.studentProfileId ?? doc.student_profile_id;
+        if (!sid || !studentIds.includes(sid)) return;
+        if (!docsByStudent[sid]) {
+          docsByStudent[sid] = [];
+          docCountsByStudent[sid] = 0;
         }
-        docsByStudent[doc.student_id].push({ id: doc.id, category: doc.category, status: doc.status });
-        docCountsByStudent[doc.student_id]++;
+        const cat =
+          doc.documentType?.category ||
+          doc.category ||
+          (doc.documentType?.name ? String(doc.documentType.name).toLowerCase().replace(/\s+/g, '_') : '');
+        docsByStudent[sid].push({
+          id: doc.id,
+          category: cat,
+          status: doc.status || (doc.verifiedAt ? 'approved' : 'pending'),
+        });
+        docCountsByStudent[sid]++;
       });
 
       const linkedStudentIds = new Set<string>();
@@ -179,18 +204,29 @@ const AdminStudents = () => {
 
       const invitesByStudent: Record<string, { status: string; created_at: string }> = {};
       (allInvitations || []).forEach((inv: any) => {
-        if (inv.student_id && !invitesByStudent[inv.student_id]) {
-          invitesByStudent[inv.student_id] = { status: inv.status, created_at: inv.created_at };
+        const sid = inv.studentProfileId ?? inv.student_id;
+        if (sid && !invitesByStudent[sid]) {
+          invitesByStudent[sid] = { status: inv.status, created_at: inv.created_at };
         }
       });
 
       const studentsWithStatus: Student[] = studentsList.map((student: any) => ({
-        ...student,
-        parent: Array.isArray(student.parent) ? student.parent[0] : student.parent,
+        id: student.id,
+        first_name: student.firstName ?? student.first_name ?? '',
+        last_name: student.lastName ?? student.last_name ?? '',
+        date_of_birth: student.dateOfBirth
+          ? new Date(student.dateOfBirth).toISOString().slice(0, 10)
+          : student.date_of_birth ?? '',
+        grade_level: student.gradeLevel ?? student.grade_level ?? null,
+        school_name: student.school_name ?? null,
+        school_id: student.school_id ?? student.schoolId ?? null,
+        parent_id: '',
+        created_at: student.createdAt ?? student.created_at ?? '',
+        parent: undefined,
         documents: docsByStudent[student.id] || [],
         documentsCount: docCountsByStudent[student.id] || 0,
         hasLinkedParent: linkedStudentIds.has(student.id),
-        latestInvite: invitesByStudent[student.id]
+        latestInvite: invitesByStudent[student.id],
       }));
 
       setStudents(studentsWithStatus);
@@ -214,8 +250,8 @@ const AdminStudents = () => {
         (student) =>
           student.first_name.toLowerCase().includes(query) ||
           student.last_name.toLowerCase().includes(query) ||
-          student.parent?.full_name.toLowerCase().includes(query) ||
-          student.parent?.email.toLowerCase().includes(query)
+          (student.parent?.full_name?.toLowerCase().includes(query) ?? false) ||
+          (student.parent?.email?.toLowerCase().includes(query) ?? false)
       );
     }
 
@@ -253,48 +289,22 @@ const AdminStudents = () => {
     e.preventDefault();
     if (!editingStudent) return;
 
-    try {
-      await userService.update(editingStudent.id, {
-        first_name: editingStudent.first_name,
-        last_name: editingStudent.last_name,
-        date_of_birth: editingStudent.date_of_birth,
-        grade_level: editingStudent.grade_level,
-        school_id: editingStudent.school_id,
-        school_name: schools.find(s => s.id === editingStudent.school_id)?.name || null,
-      });
-
-      toastHook({
-        title: "Student updated",
-        description: "Student information has been updated successfully.",
-      });
-
-      setIsEditDialogOpen(false);
-      fetchStudents();
-    } catch (error: any) {
-      toastHook({
-        variant: "destructive",
-        title: "Error updating student",
-        description: error.message,
-      });
-    }
+    toastHook({
+      variant: 'destructive',
+      title: 'Editing not available here',
+      description:
+        'Children are stored as student profiles. Use roster import or parent registration to update enrollments.',
+    });
+    setIsEditDialogOpen(false);
   };
 
   const handleDeleteStudent = async (student: Student) => {
-    if (!confirm(`Are you sure you want to block/delete ${student.first_name} ${student.last_name}? This will prevent them from logging in.`)) return;
-    try {
-      await userService.remove(student.id);
-      toastHook({
-        title: "Student blocked",
-        description: "Student has been removed from active view.",
-      });
-      fetchStudents();
-    } catch (error: any) {
-      toastHook({
-        variant: "destructive",
-        title: "Deletion failed",
-        description: error.message,
-      });
-    }
+    toastHook({
+      variant: 'destructive',
+      title: 'Removal not available here',
+      description:
+        `${student.first_name} ${student.last_name} is an enrolled profile, not a login account. Manage enrollment from your school tools.`,
+    });
   };
 
   if (loading) {
