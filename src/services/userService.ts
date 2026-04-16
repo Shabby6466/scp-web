@@ -33,6 +33,9 @@ export const userService = {
   getById: (id: string) => api.get(`/users/${id}`),
   getDetail: (id: string) => api.get(`/users/${id}/detail`),
   create: (data: any) => api.post('/users', data),
+  /** Create user scoped to a school (directors / admins). */
+  createInSchool: (schoolId: string, data: any) =>
+    api.post(`/schools/${schoolId}/users`, data),
   update: (id: string, data: any) => api.patch(`/users/${id}`, data),
   listTeachers: async (schoolId: string, branchId?: string) => {
     const res = await api.get(

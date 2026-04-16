@@ -108,80 +108,83 @@ const ReminderManagement = () => {
   const expiredCount = expiredDocs?.length || 0;
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto max-w-6xl space-y-8 px-4 py-8">
+      <div>
+        <h1 className="flex items-center gap-2 text-3xl font-display font-bold">
+          <Bell className="h-8 w-8 text-primary" />
+          Reminders
+        </h1>
+        <p className="mt-1 text-muted-foreground">
+          Review expiring documents and send manual reminder emails to staff
+        </p>
+      </div>
+
       {/* Stats Cards */}
-      <div className="grid md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-destructive/10">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Expired</p>
-                <p className="text-2xl font-bold">{expiredLoading ? '-' : expiredCount}</p>
-              </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5">
+        <Card className="flex min-h-[5.5rem] flex-col">
+          <CardContent className="flex flex-1 items-center gap-4 p-6">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
+              <AlertTriangle className="h-6 w-6 text-destructive" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-muted-foreground">Expired</p>
+              <p className="text-2xl font-bold tabular-nums">{expiredLoading ? '—' : expiredCount}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-destructive/10">
-                <Bell className="h-6 w-6 text-destructive" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Critical (≤7 days)</p>
-                <p className="text-2xl font-bold">{docs7Loading ? '-' : criticalCount}</p>
-              </div>
+        <Card className="flex min-h-[5.5rem] flex-col">
+          <CardContent className="flex flex-1 items-center gap-4 p-6">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
+              <Bell className="h-6 w-6 text-destructive" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-muted-foreground">Critical (≤7 days)</p>
+              <p className="text-2xl font-bold tabular-nums">{docs7Loading ? '—' : criticalCount}</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-orange-500/10">
-                <Clock className="h-6 w-6 text-orange-500" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Urgent (8-30 days)</p>
-                <p className="text-2xl font-bold">{docs30Loading ? '-' : urgentCount}</p>
-              </div>
+        <Card className="flex min-h-[5.5rem] flex-col">
+          <CardContent className="flex flex-1 items-center gap-4 p-6">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-orange-500/10">
+              <Clock className="h-6 w-6 text-orange-500" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-muted-foreground">Urgent (8-30 days)</p>
+              <p className="text-2xl font-bold tabular-nums">{docs30Loading ? '—' : urgentCount}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Manual Trigger Sections */}
-      <div className="grid md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
         {/* 30 Days Reminder */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Mail className="h-5 w-5 text-orange-500" />
+        <Card className="flex h-full flex-col">
+          <CardHeader className="space-y-2 pb-3">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold leading-snug">
+              <Mail className="h-5 w-5 shrink-0 text-orange-500" />
               30-Day Reminder
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm leading-relaxed">
               Send reminders for documents expiring within 30 days
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                {docs30Loading ? (
-                  <Skeleton className="h-4 w-32" />
-                ) : (
-                  <>{expiringDocs30?.length || 0} documents will be included</>
-                )}
-              </div>
-              <Button 
-                onClick={handleTrigger30} 
-                disabled={isTriggering30 || (expiringDocs30?.length || 0) === 0}
-                className="w-full gap-2"
-                variant="outline"
-              >
+          <CardContent className="flex flex-1 flex-col gap-4 pt-2">
+            <div className="min-h-[1.25rem] text-sm leading-relaxed text-muted-foreground">
+              {docs30Loading ? (
+                <Skeleton className="h-4 w-36" />
+              ) : (
+                <span>{expiringDocs30?.length || 0} documents will be included</span>
+              )}
+            </div>
+            <Button
+              onClick={handleTrigger30}
+              disabled={isTriggering30 || (expiringDocs30?.length || 0) === 0}
+              className="mt-auto w-full justify-center gap-2"
+              variant="outline"
+            >
                 {isTriggering30 ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin" />
@@ -194,36 +197,34 @@ const ReminderManagement = () => {
                   </>
                 )}
               </Button>
-            </div>
           </CardContent>
         </Card>
 
         {/* 7 Days Reminder */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Mail className="h-5 w-5 text-destructive" />
+        <Card className="flex h-full flex-col">
+          <CardHeader className="space-y-2 pb-3">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold leading-snug">
+              <Mail className="h-5 w-5 shrink-0 text-destructive" />
               7-Day Reminder
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm leading-relaxed">
               Send urgent reminders for documents expiring within 7 days
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                {docs7Loading ? (
-                  <Skeleton className="h-4 w-32" />
-                ) : (
-                  <>{criticalCount} documents will be included</>
-                )}
-              </div>
-              <Button 
-                onClick={handleTrigger7} 
-                disabled={isTriggering7 || criticalCount === 0}
-                className="w-full gap-2"
-                variant="outline"
-              >
+          <CardContent className="flex flex-1 flex-col gap-4 pt-2">
+            <div className="min-h-[1.25rem] text-sm leading-relaxed text-muted-foreground">
+              {docs7Loading ? (
+                <Skeleton className="h-4 w-36" />
+              ) : (
+                <span>{criticalCount} documents will be included</span>
+              )}
+            </div>
+            <Button
+              onClick={handleTrigger7}
+              disabled={isTriggering7 || criticalCount === 0}
+              className="mt-auto w-full justify-center gap-2"
+              variant="outline"
+            >
                 {isTriggering7 ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin" />
@@ -236,36 +237,34 @@ const ReminderManagement = () => {
                   </>
                 )}
               </Button>
-            </div>
           </CardContent>
         </Card>
 
         {/* Expired Documents Reminder */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+        <Card className="flex h-full flex-col">
+          <CardHeader className="space-y-2 pb-3">
+            <CardTitle className="flex items-center gap-2 text-base font-semibold leading-snug">
+              <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
               Expired Documents
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-sm leading-relaxed">
               Send reminders for already expired documents
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="text-sm text-muted-foreground">
-                {expiredLoading ? (
-                  <Skeleton className="h-4 w-32" />
-                ) : (
-                  <>{expiredCount} documents will be included</>
-                )}
-              </div>
-              <Button 
-                onClick={handleTriggerExpired} 
-                disabled={isTriggeringExpired || expiredCount === 0}
-                className="w-full gap-2"
-                variant="destructive"
-              >
+          <CardContent className="flex flex-1 flex-col gap-4 pt-2">
+            <div className="min-h-[1.25rem] text-sm leading-relaxed text-muted-foreground">
+              {expiredLoading ? (
+                <Skeleton className="h-4 w-36" />
+              ) : (
+                <span>{expiredCount} documents will be included</span>
+              )}
+            </div>
+            <Button
+              onClick={handleTriggerExpired}
+              disabled={isTriggeringExpired || expiredCount === 0}
+              className="mt-auto w-full justify-center gap-2"
+              variant="destructive"
+            >
                 {isTriggeringExpired ? (
                   <>
                     <RefreshCw className="h-4 w-4 animate-spin" />
@@ -278,21 +277,22 @@ const ReminderManagement = () => {
                   </>
                 )}
               </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Info Card */}
-      <Card className="bg-muted/50">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-3">
-            <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
-            <div className="text-sm text-muted-foreground">
-              <p className="font-medium text-foreground mb-1">Manual Reminders Only</p>
+      <Card className="border-border/60 bg-muted/40">
+        <CardContent className="p-6 sm:p-7">
+          <div className="flex items-start gap-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-background/80 shadow-sm">
+              <Mail className="h-5 w-5 text-muted-foreground" />
+            </div>
+            <div className="min-w-0 space-y-2 text-sm leading-relaxed text-muted-foreground">
+              <p className="text-base font-semibold text-foreground">Manual reminders only</p>
               <p>
-                Reminder emails are sent manually by administrators. Use the buttons above to send 
-                reminders at 30 days before expiration, 7 days before expiration, or for already 
+                Reminder emails are sent manually by administrators. Use the buttons above to send
+                reminders at 30 days before expiration, 7 days before expiration, or for already
                 expired documents. No automatic emails are sent.
               </p>
             </div>
