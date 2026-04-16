@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { studentProfileService } from "@/services/studentProfileService";
-import { documentTypeService } from "@/services/documentTypeService";
 import { documentService } from "@/services/documentService";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -175,18 +174,12 @@ export default function ChildFilePage() {
         );
         setDocuments(docs);
 
-        const schoolId = detail.schoolId ?? detail.branch?.schoolId ?? null;
         let reqTypes: any[] = [];
-        if (schoolId) {
-          try {
-            const types = await documentTypeService.list({
-              schoolId,
-              targetRole: "STUDENT",
-            });
-            reqTypes = Array.isArray(types) ? types : [];
-          } catch {
-            reqTypes = [];
-          }
+        try {
+          const types = await studentProfileService.listRequiredDocumentTypes(id);
+          reqTypes = Array.isArray(types) ? types : (types as { data?: unknown[] })?.data ?? [];
+        } catch {
+          reqTypes = [];
         }
         const requiredDocs: RequiredDocument[] = reqTypes
           .filter((dt) => dt.isActive !== false)

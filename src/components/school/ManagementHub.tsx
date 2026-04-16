@@ -145,23 +145,13 @@ const ManagementHub = ({
               <span className="text-sm font-medium">Compliance</span>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge variant={getComplianceVariant(stats.dohCompliancePercent)}>
                 DOH: {stats.dohCompliancePercent}%
               </Badge>
               <Badge variant={getComplianceVariant(stats.facilityCompliancePercent)}>
                 Facility: {stats.facilityCompliancePercent}%
               </Badge>
-              
-              <Button 
-                size="sm"
-                variant="ghost"
-                className="h-8 ml-2"
-                onClick={() => navigate("/compliance-center")}
-              >
-                View
-                <ChevronRight className="h-3 w-3 ml-1" />
-              </Button>
             </div>
           </div>
         </div>

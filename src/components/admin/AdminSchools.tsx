@@ -10,9 +10,35 @@ import { useNavigate } from 'react-router-dom';
 import { EmptyState } from '@/components/ui/empty-state';
 import { useAuth } from '@/contexts/AuthContext';
 import { schoolService } from '@/services/schoolService';
+import { unwrapList } from '@/lib/api';
 import { invitationService } from '@/services/invitationService';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+
+/** Nest / TypeORM returns camelCase; keep snake_case fields the list UI expects. */
+function normalizeSchoolRow(raw: Record<string, unknown>) {
+  const r = raw as Record<string, any>;
+  const created = r.createdAt ?? r.created_at;
+  const approved = r.approvedAt ?? r.approved_at;
+  return {
+    ...r,
+    is_approved: !!(r.isApproved ?? r.is_approved),
+    zip_code: r.zipCode ?? r.zip_code ?? '',
+    created_at: created != null ? String(created) : '',
+    approved_at: approved != null ? String(approved) : null,
+    license_number: r.licenseNumber ?? r.license_number ?? null,
+    certification_number: r.certificationNumber ?? r.certification_number ?? null,
+    total_capacity: r.totalCapacity ?? r.total_capacity ?? null,
+    min_age: r.minAge ?? r.min_age ?? null,
+    max_age: r.maxAge ?? r.max_age ?? null,
+  };
+}
+
+function safeLocaleDateLabel(raw: unknown): string {
+  if (raw == null || raw === '') return '—';
+  const d = new Date(raw as string);
+  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
+}
 
 const AdminSchools = () => {
   const { user } = useAuth();
@@ -44,7 +70,8 @@ const AdminSchools = () => {
   const fetchSchools = async () => {
     try {
       const data = await schoolService.list();
-      setSchools(data || []);
+      const list = unwrapList<Record<string, unknown>>(data);
+      setSchools(list.map(normalizeSchoolRow));
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -122,8 +149,8 @@ const AdminSchools = () => {
   const rejectSchool = async (schoolId: string) => {
     try {
       await schoolService.update(schoolId, {
-        is_approved: false,
-        approved_at: null,
+        isApproved: false,
+        approvedAt: null,
       });
 
       toast({
@@ -423,7 +450,7 @@ const AdminSchools = () => {
                 )}
 
                 <div className="text-xs text-muted-foreground">
-                  Registered: {new Date(school.created_at).toLocaleDateString()}
+                  Registered: {safeLocaleDateLabel(school.created_at)}
                 </div>
 
                 <div className="flex gap-2 pt-2 flex-wrap">

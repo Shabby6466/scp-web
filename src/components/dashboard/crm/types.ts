@@ -4,7 +4,8 @@ export interface UrgentAction {
   count: number;
   type: 'overdue' | 'due-soon' | 'action-needed';
   ctaLabel: string;
-  route: string;
+  /** Omit when navigation should only happen from the sidebar (e.g. compliance hub). */
+  route?: string;
   icon?: string;
   priorityScore?: number;
   daysUntilDue?: number;

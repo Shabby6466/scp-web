@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { documentTypeService } from "@/services/documentTypeService";
+import { branchService } from "@/services/branchService";
+import { schoolService } from "@/services/schoolService";
+import { complianceService } from "@/services/complianceService";
+import { unwrapList } from "@/lib/api";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -17,114 +21,230 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Pencil, Trash2, Plus, FileText } from "lucide-react";
 
-type RequiredDocument = {
+type ComplianceCategoryOption = { id: string; name: string };
+type BranchOption = { id: string; name?: string; branchName?: string };
+type SchoolOption = { id: string; name: string };
+
+type DocumentTypeRow = {
   id: string;
-  category: string;
   name: string;
-  description: string | null;
-  is_mandatory: boolean;
-  applies_to_age_min: number | null;
-  applies_to_age_max: number | null;
-  school_id: string;
+  isMandatory: boolean;
+  renewalPeriod?: string;
+  branchId?: string | null;
+  schoolId?: string | null;
+  category?: ComplianceCategoryOption | null;
 };
 
+const NONE = "__none__";
+
 export default function RequiredDocumentsPage() {
-  const { canManageSchool, schoolId } = useUserRole();
-  const [docs, setDocs] = useState<RequiredDocument[]>([]);
+  const {
+    canManageSchool,
+    schoolId: userSchoolId,
+    branchId: userBranchId,
+    isAdmin,
+    isDirector,
+    isBranchDirector,
+  } = useUserRole();
+
+  const [adminSchoolId, setAdminSchoolId] = useState<string | null>(null);
+  const [schools, setSchools] = useState<SchoolOption[]>([]);
+  const [branches, setBranches] = useState<BranchOption[]>([]);
+  const [categories, setCategories] = useState<ComplianceCategoryOption[]>([]);
+
+  const effectiveSchoolId = isAdmin ? adminSchoolId : userSchoolId;
+
+  const branchLabelById = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const b of branches) {
+      const label = (b.name ?? b.branchName ?? "Branch").trim();
+      m.set(b.id, label);
+    }
+    return m;
+  }, [branches]);
+
+  const showBranchField = (isAdmin || isDirector) && !isBranchDirector;
+
+  const [docs, setDocs] = useState<DocumentTypeRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<RequiredDocument | null>(null);
+  const [editing, setEditing] = useState<DocumentTypeRow | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [docToDelete, setDocToDelete] = useState<RequiredDocument | null>(null);
+  const [docToDelete, setDocToDelete] = useState<DocumentTypeRow | null>(null);
 
   const [form, setForm] = useState({
-    category: "",
     name: "",
-    description: "",
-    is_mandatory: true,
-    ageMin: "",
-    ageMax: "",
+    complianceCategoryId: "",
+    branchId: "",
+    isMandatory: true,
   });
 
   useEffect(() => {
-    loadDocuments();
-  }, []);
+    if (!isAdmin) return;
+    (async () => {
+      try {
+        const data = await schoolService.list();
+        setSchools(unwrapList<SchoolOption>(data));
+      } catch {
+        toast.error("Failed to load schools");
+      }
+    })();
+  }, [isAdmin]);
 
-  const loadDocuments = async () => {
+  useEffect(() => {
+    if (!effectiveSchoolId) {
+      setCategories([]);
+      return;
+    }
+    (async () => {
+      try {
+        const catRes = await complianceService.listCategories(effectiveSchoolId);
+        setCategories(unwrapList<ComplianceCategoryOption>(catRes));
+      } catch {
+        toast.error("Failed to load categories");
+      }
+    })();
+  }, [effectiveSchoolId]);
+
+  useEffect(() => {
+    if (!effectiveSchoolId) {
+      setBranches([]);
+      return;
+    }
+    if (isBranchDirector && userBranchId) {
+      (async () => {
+        try {
+          const b = await branchService.getById(userBranchId);
+          setBranches([
+            {
+              id: b.id,
+              name: b.name,
+              branchName: (b as { branchName?: string }).branchName,
+            },
+          ]);
+        } catch {
+          setBranches([]);
+        }
+      })();
+      return;
+    }
+    if (isBranchDirector) {
+      setBranches([]);
+      return;
+    }
+    (async () => {
+      try {
+        const branchRes = await branchService.listBySchool(effectiveSchoolId);
+        setBranches(unwrapList<BranchOption>(branchRes));
+      } catch {
+        toast.error("Failed to load branches");
+      }
+    })();
+  }, [effectiveSchoolId, isBranchDirector, userBranchId]);
+
+  const loadDocuments = useCallback(async () => {
+    if (!effectiveSchoolId) {
+      setDocs([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
-      const data = await documentTypeService.list({ targetRole: 'STUDENT', schoolId: schoolId || undefined });
-      setDocs(data as RequiredDocument[]);
+      const data = await documentTypeService.list({
+        targetRole: "STUDENT",
+        schoolId: effectiveSchoolId,
+      });
+      setDocs(unwrapList<DocumentTypeRow>(data));
     } catch {
       toast.error("Failed to load required documents");
     }
     setLoading(false);
-  };
+  }, [effectiveSchoolId]);
+
+  useEffect(() => {
+    if (!canManageSchool) return;
+    loadDocuments();
+  }, [canManageSchool, loadDocuments]);
 
   const openNew = () => {
     setEditing(null);
     setForm({
-      category: "",
       name: "",
-      description: "",
-      is_mandatory: true,
-      ageMin: "",
-      ageMax: "",
+      complianceCategoryId: "",
+      branchId: "",
+      isMandatory: true,
     });
     setOpen(true);
   };
 
-  const openEdit = (doc: RequiredDocument) => {
+  const openEdit = (doc: DocumentTypeRow) => {
     setEditing(doc);
     setForm({
-      category: doc.category ?? "",
       name: doc.name ?? "",
-      description: doc.description ?? "",
-      is_mandatory: doc.is_mandatory,
-      ageMin: doc.applies_to_age_min?.toString() ?? "",
-      ageMax: doc.applies_to_age_max?.toString() ?? "",
+      complianceCategoryId: doc.category?.id ?? "",
+      branchId: "",
+      isMandatory: Boolean(doc.isMandatory),
     });
     setOpen(true);
   };
 
   const save = async () => {
-    if (!form.category.trim() || !form.name.trim()) {
-      toast.error("Category and name are required");
+    if (!form.name.trim()) {
+      toast.error("Name is required");
       return;
     }
 
-    if (!schoolId) {
-      toast.error("No school associated with your account");
+    if (!effectiveSchoolId) {
+      toast.error(
+        isAdmin ? "Select a school first" : "No school associated with your account",
+      );
       return;
     }
-
-    const payload = {
-      category: form.category.trim(),
-      name: form.name.trim(),
-      description: form.description.trim() || null,
-      is_mandatory: form.is_mandatory,
-      applies_to_age_min: form.ageMin ? Number(form.ageMin) : null,
-      applies_to_age_max: form.ageMax ? Number(form.ageMax) : null,
-      school_id: schoolId,
-      target_role: 'STUDENT',
-    };
 
     try {
       if (editing) {
-        const updated = await documentTypeService.update(editing.id, payload);
+        const updated = await documentTypeService.update(editing.id, {
+          name: form.name.trim(),
+          isMandatory: form.isMandatory,
+          renewalPeriod: "NONE",
+          complianceCategoryId: form.complianceCategoryId.trim()
+            ? form.complianceCategoryId.trim()
+            : null,
+        });
+        const row = updated as DocumentTypeRow;
         toast.success("Document updated");
         setDocs((prev) =>
-          prev.map((d) => (d.id === editing.id ? (updated as RequiredDocument) : d))
+          prev.map((d) => (d.id === editing.id ? { ...d, ...row } : d)),
         );
       } else {
+        const payload: Record<string, unknown> = {
+          name: form.name.trim(),
+          targetRole: "STUDENT",
+          schoolId: effectiveSchoolId,
+          renewalPeriod: "NONE",
+          isMandatory: form.isMandatory,
+        };
+        if (form.complianceCategoryId.trim()) {
+          payload.complianceCategoryId = form.complianceCategoryId.trim();
+        }
+        if (showBranchField && form.branchId.trim()) {
+          payload.branchId = form.branchId.trim();
+        }
         const created = await documentTypeService.create(payload);
         toast.success("Document added");
-        setDocs((prev) => [...prev, created as RequiredDocument]);
+        setDocs((prev) => [...prev, created as DocumentTypeRow]);
       }
       setOpen(false);
     } catch {
@@ -132,7 +252,7 @@ export default function RequiredDocumentsPage() {
     }
   };
 
-  const confirmDelete = (doc: RequiredDocument) => {
+  const confirmDelete = (doc: DocumentTypeRow) => {
     setDocToDelete(doc);
     setDeleteDialogOpen(true);
   };
@@ -160,24 +280,57 @@ export default function RequiredDocumentsPage() {
 
   return (
     <div className="space-y-6 p-6 animate-in fade-in slide-in-from-bottom-4 duration-700 selection:bg-primary/20 text-foreground">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Student Required Documents</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Define which documents parents must upload for students
           </p>
         </div>
-        <Button onClick={openNew} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Requirement
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          {isAdmin && (
+            <div className="space-y-1 sm:min-w-[220px]">
+              <Label className="text-xs text-muted-foreground">School</Label>
+              <Select
+                value={adminSchoolId ?? NONE}
+                onValueChange={(v) => setAdminSchoolId(v === NONE ? null : v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select school" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE}>Select school…</SelectItem>
+                  {schools.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <Button
+            onClick={openNew}
+            className="gap-2"
+            disabled={isAdmin && !adminSchoolId}
+          >
+            <Plus className="h-4 w-4" />
+            Add Requirement
+          </Button>
+        </div>
       </div>
 
-      {/* Content */}
       {loading ? (
         <div className="rounded-lg border">
           <TableSkeleton rows={5} columns={5} />
+        </div>
+      ) : isAdmin && !effectiveSchoolId ? (
+        <div className="rounded-lg border border-dashed p-12 text-center">
+          <FileText className="mx-auto h-12 w-12 text-muted-foreground/50" />
+          <h3 className="mt-4 text-lg font-medium">Choose a school</h3>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Select a school above to view and manage student document requirements.
+          </p>
         </div>
       ) : docs.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
@@ -186,7 +339,11 @@ export default function RequiredDocumentsPage() {
           <p className="mt-2 text-sm text-muted-foreground">
             Get started by adding your first document requirement.
           </p>
-          <Button onClick={openNew} className="mt-6 gap-2">
+          <Button
+            onClick={openNew}
+            className="mt-6 gap-2"
+            disabled={isAdmin && !adminSchoolId}
+          >
             <Plus className="h-4 w-4" />
             Add Requirement
           </Button>
@@ -199,8 +356,8 @@ export default function RequiredDocumentsPage() {
                 <tr className="border-b">
                   <th className="py-3 px-4 text-left font-medium">Category</th>
                   <th className="py-3 px-4 text-left font-medium">Name</th>
+                  <th className="py-3 px-4 text-left font-medium">Scope</th>
                   <th className="py-3 px-4 text-left font-medium">Status</th>
-                  <th className="py-3 px-4 text-left font-medium">Age Range</th>
                   <th className="py-3 px-4 text-right font-medium w-[100px]">Actions</th>
                 </tr>
               </thead>
@@ -208,29 +365,28 @@ export default function RequiredDocumentsPage() {
                 {docs.map((d) => (
                   <tr key={d.id} className="border-b last:border-b-0 hover:bg-muted/50 transition-colors">
                     <td className="py-3 px-4">
-                      <span className="font-medium">{d.category}</span>
+                      <span className="font-medium">
+                        {d.category?.name ?? "—"}
+                      </span>
                     </td>
                     <td className="py-3 px-4">
-                      <span title={d.name} className="block truncate max-w-[200px]">
+                      <span title={d.name} className="block truncate max-w-[220px]">
                         {d.name}
                       </span>
-                      {d.description && (
-                        <span className="text-xs text-muted-foreground truncate block max-w-[200px]" title={d.description}>
-                          {d.description}
-                        </span>
+                    </td>
+                    <td className="py-3 px-4 text-muted-foreground">
+                      {d.branchId ? (
+                        <Badge variant="outline">
+                          {branchLabelById.get(d.branchId) ?? "Branch"}
+                        </Badge>
+                      ) : (
+                        <span>School-wide</span>
                       )}
                     </td>
                     <td className="py-3 px-4">
-                      <Badge variant={d.is_mandatory ? "default" : "secondary"}>
-                        {d.is_mandatory ? "Required" : "Optional"}
+                      <Badge variant={d.isMandatory ? "default" : "secondary"}>
+                        {d.isMandatory ? "Required" : "Optional"}
                       </Badge>
-                    </td>
-                    <td className="py-3 px-4 text-muted-foreground">
-                      {d.applies_to_age_min != null || d.applies_to_age_max != null ? (
-                        <span>{d.applies_to_age_min ?? "0"} – {d.applies_to_age_max ?? "∞"} yrs</span>
-                      ) : (
-                        <span className="text-muted-foreground/60">All ages</span>
-                      )}
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">
@@ -260,7 +416,6 @@ export default function RequiredDocumentsPage() {
         </div>
       )}
 
-      {/* Add/Edit Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
@@ -268,22 +423,12 @@ export default function RequiredDocumentsPage() {
               {editing ? "Edit Requirement" : "Add Requirement"}
             </DialogTitle>
             <DialogDescription>
-              {editing 
+              {editing
                 ? "Update the details for this document requirement."
-                : "Define a new document that parents must upload for students."
-              }
+                : "Define a new document that parents must upload for students."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <Label htmlFor="category">Category *</Label>
-              <Input
-                id="category"
-                placeholder="e.g. Health, Legal, Allergy"
-                value={form.category}
-                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
               <Input
@@ -294,14 +439,64 @@ export default function RequiredDocumentsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input
-                id="description"
-                placeholder="Optional description for parents"
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              />
+              <Label>Compliance category</Label>
+              <Select
+                value={form.complianceCategoryId || NONE}
+                onValueChange={(v) =>
+                  setForm((f) => ({ ...f, complianceCategoryId: v === NONE ? "" : v }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Optional" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE}>None</SelectItem>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            {showBranchField && !editing && (
+              <div className="space-y-2">
+                <Label>Branch (optional)</Label>
+                <Select
+                  value={form.branchId || NONE}
+                  onValueChange={(v) =>
+                    setForm((f) => ({ ...f, branchId: v === NONE ? "" : v }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="School-wide" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NONE}>School-wide</SelectItem>
+                    {branches.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {(b.name ?? b.branchName ?? "Branch").trim()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Leave as school-wide or limit this requirement to one branch.
+                </p>
+              </div>
+            )}
+            {editing && editing.branchId && (
+              <div className="rounded-md border px-3 py-2 text-sm">
+                <span className="text-muted-foreground">Scope: </span>
+                {editing.branchId ? (
+                  <Badge variant="outline">
+                    {branchLabelById.get(editing.branchId) ?? "Branch"}
+                  </Badge>
+                ) : (
+                  <span>School-wide</span>
+                )}
+              </div>
+            )}
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <Label htmlFor="mandatory" className="font-medium">Mandatory</Label>
@@ -309,35 +504,11 @@ export default function RequiredDocumentsPage() {
               </div>
               <Switch
                 id="mandatory"
-                checked={form.is_mandatory}
+                checked={form.isMandatory}
                 onCheckedChange={(val) =>
-                  setForm((f) => ({ ...f, is_mandatory: Boolean(val) }))
+                  setForm((f) => ({ ...f, isMandatory: Boolean(val) }))
                 }
               />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="ageMin">Min Age (years)</Label>
-                <Input
-                  id="ageMin"
-                  type="number"
-                  min={0}
-                  placeholder="0"
-                  value={form.ageMin}
-                  onChange={(e) => setForm((f) => ({ ...f, ageMin: e.target.value }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="ageMax">Max Age (years)</Label>
-                <Input
-                  id="ageMax"
-                  type="number"
-                  min={0}
-                  placeholder="No limit"
-                  value={form.ageMax}
-                  onChange={(e) => setForm((f) => ({ ...f, ageMax: e.target.value }))}
-                />
-              </div>
             </div>
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setOpen(false)}>
@@ -351,13 +522,12 @@ export default function RequiredDocumentsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete requirement?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the requirement "{docToDelete?.name}". 
+              This will permanently delete the requirement &quot;{docToDelete?.name}&quot;.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

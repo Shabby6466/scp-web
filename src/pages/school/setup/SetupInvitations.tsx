@@ -489,8 +489,8 @@ const SetupInvitations = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
-            <Button onClick={() => navigate('/compliance')}>
-              Continue to Compliance
+            <Button onClick={() => navigate('/school-dashboard')}>
+              Go to dashboard
             </Button>
           </div>
         </div>

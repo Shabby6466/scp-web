@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useComplianceData } from '@/hooks/useComplianceData';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, Users, GraduationCap, Heart, AlertTriangle, XCircle, ChevronRight, TrendingUp, Shield } from 'lucide-react';
+import { Users, GraduationCap, Heart, AlertTriangle, XCircle, ChevronRight, TrendingUp, Shield } from 'lucide-react';
 import { StudentComplianceBreakdown } from '@/components/compliance/StudentComplianceBreakdown';
 import { TeacherComplianceBreakdown } from '@/components/compliance/TeacherComplianceBreakdown';
 import { ExpiringSoonList } from '@/components/compliance/ExpiringSoonList';
@@ -15,7 +14,6 @@ import { ExpiredDocumentsList } from '@/components/compliance/ExpiredDocumentsLi
 import { Skeleton } from '@/components/ui/skeleton';
 
 const DOHSection = () => {
-  const navigate = useNavigate();
   const { schoolId, isAdmin } = useUserRole();
   const { stats, expiringDocs, expiredDocs, loading } = useComplianceData(schoolId);
   const [activeTab, setActiveTab] = useState('overview');
@@ -34,16 +32,6 @@ const DOHSection = () => {
     <div className="p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="space-y-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="gap-2 text-muted-foreground hover:text-foreground -ml-2"
-          onClick={() => navigate('/compliance-center')}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
           <div className="space-y-3">
             <div className="flex items-center gap-3">

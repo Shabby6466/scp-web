@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Building2, MapPin, Phone, Mail, Globe, Users, 
   GraduationCap, FileText, CheckCircle, AlertTriangle, 
-  Clock, Settings, Calendar, Shield
+  Clock, Calendar, Shield
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -195,27 +195,21 @@ export default function SchoolFilePage() {
       <main className="flex-1 container px-4 py-8 pt-24">
         <div className="max-w-6xl mx-auto space-y-6">
           {/* Header */}
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-display font-bold">{school.name}</h1>
-                <Badge variant={school.is_approved ? "default" : "secondary"}>
-                  {school.is_approved ? (
-                    <><CheckCircle className="h-3 w-3 mr-1" /> Approved</>
-                  ) : (
-                    <><Clock className="h-3 w-3 mr-1" /> Pending</>
-                  )}
-                </Badge>
-              </div>
-              <p className="text-muted-foreground flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                {school.address}, {school.city}, {school.state} {school.zip_code}
-              </p>
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <h1 className="text-3xl font-display font-bold">{school.name}</h1>
+              <Badge variant={school.is_approved ? "default" : "secondary"}>
+                {school.is_approved ? (
+                  <><CheckCircle className="h-3 w-3 mr-1" /> Approved</>
+                ) : (
+                  <><Clock className="h-3 w-3 mr-1" /> Pending</>
+                )}
+              </Badge>
             </div>
-            <Button onClick={() => navigate("/school/settings")}>
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Button>
+            <p className="text-muted-foreground flex items-center gap-2">
+              <MapPin className="h-4 w-4" />
+              {school.address}, {school.city}, {school.state} {school.zip_code}
+            </p>
           </div>
 
           {/* Stats Grid */}

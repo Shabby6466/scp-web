@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { userService } from "@/services/userService";
 import { documentTypeService } from "@/services/documentTypeService";
 import { documentService } from "@/services/documentService";
+import { unwrapList } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,10 +53,44 @@ interface RequiredDocument {
 interface TeacherDocument {
   id: string;
   teacher_id: string;
+  /** Stable match key for required doc rows */
+  document_type_id: string;
   document_type: string;
   expiration_date: string | null;
   file_name: string;
   created_at: string;
+}
+
+function normalizeTeacherSearchDoc(d: Record<string, unknown>): TeacherDocument {
+  const docType = d.documentType as Record<string, unknown> | undefined;
+  const typeId = String(d.documentTypeId ?? docType?.id ?? "");
+  const expRaw = d.expiresAt ?? d.expiration_date;
+  const expStr =
+    expRaw != null && String(expRaw) !== ""
+      ? new Date(expRaw as string).toISOString().slice(0, 10)
+      : null;
+  return {
+    id: String(d.id),
+    teacher_id: String(d.ownerUserId ?? ""),
+    document_type_id: typeId,
+    document_type: String(docType?.name ?? ""),
+    expiration_date: expStr,
+    file_name: String(d.fileName ?? ""),
+    created_at: String(d.createdAt ?? ""),
+  };
+}
+
+function mapRequiredTeacherTypesFromApi(raw: unknown[]): RequiredDocument[] {
+  return raw.map((r: any) => ({
+    id: String(r.id),
+    name: String(r.name ?? "Document"),
+    category:
+      typeof r.category === "object" && r.category?.name
+        ? String(r.category.name)
+        : String(r.category ?? ""),
+    is_mandatory: !!(r.isMandatory ?? r.is_mandatory),
+    description: r.description != null ? String(r.description) : null,
+  }));
 }
 
 interface TeacherCompliance {
@@ -122,17 +157,22 @@ const TeacherCompliance = () => {
     try {
       setLoading(true);
 
-      const [teachersData, requiredData, docsData] = await Promise.all([
+      const [teachersData, requiredRaw, docsRaw] = await Promise.all([
         userService.listTeachers(schoolId),
         documentTypeService.list({ schoolId, targetRole: 'TEACHER' }),
-        documentService.search({ schoolId }),
+        documentService.search({ schoolId, ownerRole: 'TEACHER' }),
       ]);
 
-      setTeachers(teachersData || []);
-      setRequiredDocs(requiredData || []);
-      setTeacherDocs(docsData || []);
+      const requiredList = mapRequiredTeacherTypesFromApi(unwrapList(requiredRaw));
+      const docsList = unwrapList<Record<string, unknown>>(docsRaw).map((d) =>
+        normalizeTeacherSearchDoc(d),
+      );
 
-      calculateCompliance(teachersData || [], requiredData || [], docsData || []);
+      setTeachers(teachersData || []);
+      setRequiredDocs(requiredList);
+      setTeacherDocs(docsList);
+
+      calculateCompliance(teachersData || [], requiredList, docsList);
     } catch (error: any) {
       console.error("Error fetching data:", error);
       toast.error("Failed to load teacher compliance data");
@@ -159,7 +199,10 @@ const TeacherCompliance = () => {
 
       required.forEach((req) => {
         const uploaded = teacherDocs.find(
-          (d) => d.document_type.toLowerCase() === req.name.toLowerCase()
+          (d) =>
+            d.teacher_id === teacher.id &&
+            d.document_type_id !== "" &&
+            d.document_type_id === req.id,
         );
 
         if (!uploaded) {
@@ -393,7 +436,10 @@ const TeacherCompliance = () => {
                   ) : (
                     tc.requiredDocs.map((req) => {
                       const uploaded = tc.uploadedDocs.find(
-                        (d) => d.document_type.toLowerCase() === req.name.toLowerCase()
+                        (d) =>
+                          d.teacher_id === tc.teacher.id &&
+                          d.document_type_id !== "" &&
+                          d.document_type_id === req.id,
                       );
                       const today = new Date();
                       let status: "missing" | "expired" | "expiring" | "current" = "missing";

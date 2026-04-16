@@ -1,13 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { complianceService } from '@/services/complianceService';
-import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useComplianceData } from '@/hooks/useComplianceData';
 import { useCertifications } from '@/hooks/useCertifications';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,7 +12,6 @@ import {
   Heart,
   Flame,
   Award,
-  ArrowRight,
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -28,8 +24,6 @@ interface InspectionStats {
 }
 
 const ComplianceCenterLanding = () => {
-  const navigate = useNavigate();
-  const { user } = useAuth();
   const { schoolId, loading: roleLoading } = useUserRole();
   const { stats: complianceStats, loading: complianceLoading } = useComplianceData(schoolId);
   const { stats: certStats, loading: certLoading } = useCertifications(schoolId);
@@ -131,6 +125,9 @@ const ComplianceCenterLanding = () => {
             Track DOH compliance, facility safety inspections, and certifications across your
             organization. Stay audit-ready with real-time readiness scores.
           </p>
+          <p className="text-sm text-muted-foreground mt-3">
+            Switch to DOH, facility, or certifications using the sidebar.
+          </p>
         </div>
 
         {/* Main Cards Grid */}
@@ -201,13 +198,6 @@ const ComplianceCenterLanding = () => {
                   )}
                 </>
               )}
-              <Button
-                className="w-full mt-4"
-                onClick={() => navigate('/compliance-center/doh')}
-              >
-                View DOH Compliance
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
             </CardContent>
           </Card>
 
@@ -275,13 +265,6 @@ const ComplianceCenterLanding = () => {
                   )}
                 </>
               )}
-              <Button
-                className="w-full mt-4"
-                onClick={() => navigate('/compliance-center/facility')}
-              >
-                View Facility Safety
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
             </CardContent>
           </Card>
 
@@ -347,13 +330,6 @@ const ComplianceCenterLanding = () => {
                   )}
                 </>
               )}
-              <Button
-                className="w-full mt-4"
-                onClick={() => navigate('/compliance-center/certifications')}
-              >
-                View Certifications
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
             </CardContent>
           </Card>
         </div>

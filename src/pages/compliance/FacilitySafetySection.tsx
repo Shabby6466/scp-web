@@ -1,12 +1,11 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useComplianceFramework } from '@/hooks/useComplianceFramework';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Flame, Plus, CheckCircle, AlertTriangle, Clock, FileText } from 'lucide-react';
+import { Flame, Plus, CheckCircle, AlertTriangle, Clock, FileText } from 'lucide-react';
 import InspectionTypeCard from '@/components/compliance/InspectionTypeCard';
 import RequirementsList from '@/components/compliance/RequirementsList';
 import CreateInspectionTypeDialog from '@/components/compliance/CreateInspectionTypeDialog';
@@ -14,7 +13,6 @@ import CreateRequirementDialog from '@/components/compliance/CreateRequirementDi
 import { Skeleton } from '@/components/ui/skeleton';
 
 const FacilitySafetySection = () => {
-  const navigate = useNavigate();
   const { schoolId } = useUserRole();
   const {
     inspectionTypes,
@@ -65,14 +63,6 @@ const FacilitySafetySection = () => {
       <div className="p-6 space-y-6">
         {/* Header */}
         <div>
-          <Button
-            variant="ghost"
-            className="mb-4"
-            onClick={() => navigate('/compliance-center')}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Compliance Center
-          </Button>
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
               <Flame className="h-5 w-5 text-orange-600 dark:text-orange-400" />

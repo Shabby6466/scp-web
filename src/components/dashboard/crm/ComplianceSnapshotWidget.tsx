@@ -1,6 +1,4 @@
-import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
@@ -9,7 +7,6 @@ import {
   Building,
   AlertTriangle,
   Clock,
-  ChevronRight,
   CheckCircle2,
 } from 'lucide-react';
 
@@ -86,8 +83,6 @@ export function ComplianceSnapshotWidget({
   facilityCompliance,
   loading = false,
 }: ComplianceSnapshotWidgetProps) {
-  const navigate = useNavigate();
-
   if (loading) {
     return (
       <Card>
@@ -110,7 +105,6 @@ export function ComplianceSnapshotWidget({
               </div>
             ))}
           </div>
-          <Skeleton className="h-9 w-full" />
         </CardContent>
       </Card>
     );
@@ -141,20 +135,13 @@ export function ComplianceSnapshotWidget({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid md:grid-cols-2 gap-3 mb-3">
+        <div className="grid md:grid-cols-2 gap-3">
           <ComplianceCard category={{ ...defaultDoh, icon: Shield }} />
           <ComplianceCard category={{ ...defaultFacility, icon: Building }} />
         </div>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full gap-1.5"
-          onClick={() => navigate('/compliance-center')}
-        >
-          Open Compliance Center
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        <p className="text-xs text-muted-foreground mt-3">
+          Open compliance sections from the sidebar.
+        </p>
       </CardContent>
     </Card>
   );

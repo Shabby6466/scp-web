@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Mail, Send, Loader2, RefreshCw, X, Clock, CheckCircle } from "lucide-react";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
+import { unwrapList } from "@/lib/api";
 
 interface Invitation {
   id: string;
@@ -16,6 +17,32 @@ interface Invitation {
   status: string;
   created_at: string;
   expires_at: string;
+}
+
+function parseDate(raw: unknown): Date | null {
+  if (raw == null || raw === "") return null;
+  const d = raw instanceof Date ? raw : new Date(raw as string | number);
+  return isValid(d) ? d : null;
+}
+
+function safeFormat(raw: unknown, fmt: string): string {
+  const d = parseDate(raw);
+  return d ? format(d, fmt) : "—";
+}
+
+function mapInvitationRow(raw: Record<string, unknown>): Invitation {
+  const r = raw as Record<string, any>;
+  const email = String(r.admin_email ?? r.email ?? r.adminEmail ?? "");
+  const created = r.created_at ?? r.createdAt ?? "";
+  const expires = r.expires_at ?? r.expiresAt ?? "";
+  return {
+    id: String(r.id),
+    admin_email: email,
+    admin_name: r.admin_name != null ? String(r.admin_name) : r.adminName != null ? String(r.adminName) : null,
+    status: String(r.status ?? "").toLowerCase() || "pending",
+    created_at: created != null ? String(created) : "",
+    expires_at: expires != null ? String(expires) : "",
+  };
 }
 
 interface SchoolAdminInviteSectionProps {
@@ -38,7 +65,8 @@ export function SchoolAdminInviteSection({ schoolId, schoolName, isApproved }: S
   const loadInvitations = async () => {
     try {
       const data = await invitationService.list(schoolId);
-      setInvitations(data || []);
+      const rows = unwrapList<Record<string, unknown>>(data);
+      setInvitations(rows.map(mapInvitationRow));
     } catch (error) {
       console.error("Error loading invitations:", error);
     } finally {
@@ -103,7 +131,8 @@ export function SchoolAdminInviteSection({ schoolId, schoolName, isApproved }: S
   };
 
   const getStatusBadge = (status: string, expiresAt: string) => {
-    const isExpired = new Date(expiresAt) < new Date();
+    const exp = parseDate(expiresAt);
+    const isExpired = exp != null && exp < new Date();
 
     if (status === "accepted") {
       return <Badge variant="default" className="bg-green-500"><CheckCircle className="h-3 w-3 mr-1" />Accepted</Badge>;
@@ -182,7 +211,13 @@ export function SchoolAdminInviteSection({ schoolId, schoolName, isApproved }: S
           <div className="space-y-3">
             <h4 className="text-sm font-medium text-muted-foreground">Sent Invitations</h4>
             <div className="space-y-2">
-              {invitations.map((invitation) => (
+              {invitations.map((invitation) => {
+                const expiresAt = parseDate(invitation.expires_at);
+                const canResend =
+                  invitation.status === "pending" &&
+                  expiresAt != null &&
+                  expiresAt > new Date();
+                return (
                 <div
                   key={invitation.id}
                   className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
@@ -190,13 +225,13 @@ export function SchoolAdminInviteSection({ schoolId, schoolName, isApproved }: S
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{invitation.admin_email}</p>
                     <p className="text-xs text-muted-foreground">
-                      Sent {format(new Date(invitation.created_at), "MMM d, yyyy")}
+                      Sent {safeFormat(invitation.created_at, "MMM d, yyyy")}
                       {invitation.admin_name && ` • ${invitation.admin_name}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 ml-4">
                     {getStatusBadge(invitation.status, invitation.expires_at)}
-                    {invitation.status === "pending" && new Date(invitation.expires_at) > new Date() && (
+                    {canResend && (
                       <>
                         <Button
                           variant="ghost"
@@ -219,7 +254,8 @@ export function SchoolAdminInviteSection({ schoolId, schoolName, isApproved }: S
                     )}
                   </div>
                 </div>
-              ))}
+              );
+              })}
             </div>
           </div>
         ) : null}
