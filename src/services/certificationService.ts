@@ -1,8 +1,9 @@
 import { api } from '@/lib/api';
 
 export const certificationService = {
-  // Types
-  listTypes: () => api.get('/certification-types'),
+  // Types — backend requires `schoolId` query param or it returns [] (see CertificationTypesController.list)
+  listTypes: (schoolId: string) =>
+    api.get(`/certification-types?schoolId=${encodeURIComponent(schoolId)}`),
   getType: (id: string) => api.get(`/certification-types/${id}`),
   createType: (data: any) => api.post('/certification-types', data),
   updateType: (id: string, data: any) => api.patch(`/certification-types/${id}`, data),

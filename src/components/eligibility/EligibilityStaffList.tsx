@@ -42,6 +42,35 @@ import {
   Users,
 } from "lucide-react";
 
+/** API users may use `name`, camelCase names, or snake_case — normalize for UI. */
+function staffDisplayNames(t: Record<string, unknown>): { first_name: string; last_name: string } {
+  const fn = (t.first_name ?? t.firstName) as string | undefined;
+  const ln = (t.last_name ?? t.lastName) as string | undefined;
+  if ((fn != null && String(fn).trim() !== "") || (ln != null && String(ln).trim() !== "")) {
+    return { first_name: String(fn ?? "").trim(), last_name: String(ln ?? "").trim() };
+  }
+  const raw = String(t.name ?? "").trim();
+  if (!raw) return { first_name: "", last_name: "" };
+  const parts = raw.split(/\s+/);
+  if (parts.length === 1) return { first_name: parts[0], last_name: "" };
+  return { first_name: parts[0], last_name: parts.slice(1).join(" ") };
+}
+
+function staffInitials(first: string, last: string, email: string): string {
+  const a = first.trim()[0];
+  const b = last.trim()[0];
+  if (a && b) return `${a}${b}`.toUpperCase();
+  if (a) return a.toUpperCase();
+  if (b) return b.toUpperCase();
+  const e = email.trim()[0];
+  return e ? e.toUpperCase() : "?";
+}
+
+function staffDisplayLabel(member: StaffMember): string {
+  const n = `${member.first_name} ${member.last_name}`.trim();
+  return n || member.email || "Staff";
+}
+
 interface StaffMember {
   id: string;
   first_name: string;
@@ -97,11 +126,12 @@ export function EligibilityStaffList({ schoolId, branchId }: EligibilityStaffLis
 
       const staffList: StaffMember[] = (teachers || []).map((t: any) => {
         const profile = profileMap.get(t.id);
+        const { first_name, last_name } = staffDisplayNames(t as Record<string, unknown>);
         return {
           id: t.id,
-          first_name: t.first_name,
-          last_name: t.last_name,
-          email: t.email,
+          first_name,
+          last_name,
+          email: t.email ?? "",
           position_id: t.position_id,
           position_name: t.teacher_positions?.name || t.position_name || null,
           has_profile: !!profile,
@@ -142,7 +172,7 @@ export function EligibilityStaffList({ schoolId, branchId }: EligibilityStaffLis
 
       toast({
         title: "Analysis Complete",
-        description: `${staffMember.first_name}'s eligibility has been analyzed`,
+        description: `Eligibility analyzed for ${staffDisplayLabel(staffMember)}`,
       });
     } catch (error) {
       console.error('Error analyzing:', error);
@@ -225,10 +255,13 @@ export function EligibilityStaffList({ schoolId, branchId }: EligibilityStaffLis
     );
   };
 
-  const filteredStaff = staff.filter(s => 
-    `${s.first_name} ${s.last_name}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.email.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredStaff = staff.filter(s => {
+    const q = searchQuery.toLowerCase();
+    return (
+      staffDisplayLabel(s).toLowerCase().includes(q) ||
+      s.email.toLowerCase().includes(q)
+    );
+  });
 
   const eligibleForAnalysis = getEligibleForAnalysis();
 
@@ -357,12 +390,12 @@ export function EligibilityStaffList({ schoolId, branchId }: EligibilityStaffLis
                         <div className="flex items-center gap-3">
                           <Avatar className="h-9 w-9 ring-2 ring-background">
                             <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary text-sm font-medium">
-                              {member.first_name[0]}{member.last_name[0]}
+                              {staffInitials(member.first_name, member.last_name, member.email)}
                             </AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-medium group-hover:text-primary transition-colors">
-                              {member.first_name} {member.last_name}
+                              {staffDisplayLabel(member)}
                             </p>
                             <p className="text-sm text-muted-foreground">{member.email}</p>
                           </div>

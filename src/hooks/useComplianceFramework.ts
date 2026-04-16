@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { api } from '@/lib/api';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { api, unwrapList } from '@/lib/api';
 import { complianceService } from '@/services/complianceService';
 import { useUserRole } from './useUserRole';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,11 +10,15 @@ export type ComplianceStatus = 'not_started' | 'in_progress' | 'complete' | 'ove
 export type EvidenceType = 'document' | 'photo' | 'log' | 'link';
 export type RiskLevel = 'low' | 'medium' | 'high';
 
+export type InspectionProgramCategory = 'doh' | 'facility_safety';
+
 export interface InspectionType {
   id: string;
   school_id: string;
   name: string;
   description: string | null;
+  /** Backend / TypeORM camelCase `category` is normalized in fetch when needed */
+  category?: InspectionProgramCategory | null;
   is_system_default: boolean;
   created_by: string | null;
   created_at: string;
@@ -69,12 +73,59 @@ export interface InspectionStats {
   readiness_score: number;
 }
 
+/** `/analytics/compliance/stats` returns document summary fields, not per-type rows — derive from requirements. */
+function buildInspectionStats(
+  inspectionTypes: InspectionType[],
+  requirements: ComplianceRequirement[],
+): InspectionStats[] {
+  const today = new Date().toISOString().split('T')[0];
+  const addDays = (n: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + n);
+    return d.toISOString().split('T')[0];
+  };
+  const end30 = addDays(30);
+  const end60 = addDays(60);
+  const end90 = addDays(90);
+
+  return inspectionTypes.map((type) => {
+    const reqs = requirements.filter((r) => r.inspection_type_id === type.id);
+    const total = reqs.length;
+    const completed = reqs.filter((r) => r.status === 'complete').length;
+    const overdue = reqs.filter((r) => r.status === 'overdue').length;
+
+    const incompleteWithDue = reqs.filter(
+      (r) => r.status !== 'complete' && r.next_due_date,
+    );
+    const due30 = incompleteWithDue.filter(
+      (r) => r.next_due_date! >= today && r.next_due_date! <= end30,
+    ).length;
+    const due60 = incompleteWithDue.filter(
+      (r) => r.next_due_date! > end30 && r.next_due_date! <= end60,
+    ).length;
+    const due90 = incompleteWithDue.filter(
+      (r) => r.next_due_date! > end60 && r.next_due_date! <= end90,
+    ).length;
+
+    return {
+      inspection_type_id: type.id,
+      inspection_name: type.name,
+      total_requirements: total,
+      completed_count: completed,
+      overdue_count: overdue,
+      due_30_days: due30,
+      due_60_days: due60,
+      due_90_days: due90,
+      readiness_score: total > 0 ? Math.round((completed / total) * 100) : 100,
+    };
+  });
+}
+
 export const useComplianceFramework = (schoolId?: string | null) => {
   const { user } = useAuth();
   const { schoolId: userSchoolId, isAdmin } = useUserRole();
   const [inspectionTypes, setInspectionTypes] = useState<InspectionType[]>([]);
   const [requirements, setRequirements] = useState<ComplianceRequirement[]>([]);
-  const [stats, setStats] = useState<InspectionStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,9 +134,15 @@ export const useComplianceFramework = (schoolId?: string | null) => {
   const fetchInspectionTypes = useCallback(async () => {
     if (!targetSchoolId) return;
 
-    const data = await complianceService.listInspectionTypes(targetSchoolId);
-    setInspectionTypes(data || []);
-    return data;
+    const raw = await complianceService.listInspectionTypes(targetSchoolId);
+    const list = unwrapList<InspectionType & { category?: InspectionProgramCategory | null }>(raw);
+    const normalized = list.map((row) => {
+      const r = row as InspectionType & { category?: InspectionProgramCategory | null };
+      const category = r.category ?? null;
+      return { ...r, category };
+    });
+    setInspectionTypes(normalized);
+    return normalized;
   }, [targetSchoolId]);
 
   const fetchRequirements = useCallback(async (inspectionTypeId?: string) => {
@@ -105,20 +162,10 @@ export const useComplianceFramework = (schoolId?: string | null) => {
     return requirementsWithCount;
   }, [targetSchoolId]);
 
-  const fetchStats = useCallback(async () => {
-    if (!targetSchoolId) return;
-
-    try {
-      const data = await api.get(
-        `/analytics/compliance/stats?schoolId=${targetSchoolId}`,
-      );
-      setStats(data || []);
-      return data;
-    } catch (err) {
-      console.error('Error fetching compliance stats:', err);
-      return [];
-    }
-  }, [targetSchoolId]);
+  const stats = useMemo(
+    () => buildInspectionStats(inspectionTypes, requirements),
+    [inspectionTypes, requirements],
+  );
 
   const fetchAll = useCallback(async () => {
     if (!user || !targetSchoolId) {
@@ -129,18 +176,14 @@ export const useComplianceFramework = (schoolId?: string | null) => {
     try {
       setLoading(true);
       setError(null);
-      await Promise.all([
-        fetchInspectionTypes(),
-        fetchRequirements(),
-        fetchStats(),
-      ]);
+      await Promise.all([fetchInspectionTypes(), fetchRequirements()]);
     } catch (err: any) {
       console.error('Error fetching compliance data:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [user, targetSchoolId, fetchInspectionTypes, fetchRequirements, fetchStats]);
+  }, [user, targetSchoolId, fetchInspectionTypes, fetchRequirements]);
 
   useEffect(() => {
     fetchAll();
@@ -153,6 +196,7 @@ export const useComplianceFramework = (schoolId?: string | null) => {
       const newType = await complianceService.createInspectionType(targetSchoolId, {
         name: data.name!,
         description: data.description,
+        category: data.category,
       });
 
       await fetchInspectionTypes();
@@ -185,7 +229,6 @@ export const useComplianceFramework = (schoolId?: string | null) => {
       });
 
       await fetchRequirements();
-      await fetchStats();
       toast({ title: 'Success', description: 'Requirement created' });
       return newReq;
     } catch (err: any) {
@@ -198,7 +241,6 @@ export const useComplianceFramework = (schoolId?: string | null) => {
     try {
       await complianceService.updateRequirement(id, updates);
       await fetchRequirements();
-      await fetchStats();
       return true;
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
@@ -237,7 +279,6 @@ export const useComplianceFramework = (schoolId?: string | null) => {
     try {
       await complianceService.deleteRequirement(id);
       await fetchRequirements();
-      await fetchStats();
       toast({ title: 'Success', description: 'Requirement deleted' });
       return true;
     } catch (err: any) {

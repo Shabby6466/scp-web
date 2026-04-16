@@ -367,7 +367,7 @@ const ComplianceCenterLanding = () => {
                   <CheckCircle className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">
+                  <div className="text-2xl font-bold">
                     {isLoading ? (
                       <Skeleton className="h-8 w-12" />
                     ) : (
@@ -375,7 +375,7 @@ const ComplianceCenterLanding = () => {
                       inspectionStats.facility.complete +
                       certStats.active
                     )}
-                  </p>
+                  </div>
                   <p className="text-sm text-muted-foreground">Items Compliant</p>
                 </div>
               </div>
@@ -389,7 +389,7 @@ const ComplianceCenterLanding = () => {
                   <Clock className="h-5 w-5 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">
+                  <div className="text-2xl font-bold">
                     {isLoading ? (
                       <Skeleton className="h-8 w-12" />
                     ) : (
@@ -397,7 +397,7 @@ const ComplianceCenterLanding = () => {
                       inspectionStats.facility.dueSoon +
                       certStats.expiring
                     )}
-                  </p>
+                  </div>
                   <p className="text-sm text-muted-foreground">Due / Expiring Soon</p>
                 </div>
               </div>
@@ -411,7 +411,7 @@ const ComplianceCenterLanding = () => {
                   <AlertTriangle className="h-5 w-5 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">
+                  <div className="text-2xl font-bold">
                     {isLoading ? (
                       <Skeleton className="h-8 w-12" />
                     ) : (
@@ -419,7 +419,7 @@ const ComplianceCenterLanding = () => {
                       inspectionStats.facility.overdue +
                       certStats.expired
                     )}
-                  </p>
+                  </div>
                   <p className="text-sm text-muted-foreground">Overdue / Expired</p>
                 </div>
               </div>
@@ -433,7 +433,7 @@ const ComplianceCenterLanding = () => {
                   <TrendingUp className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">
+                  <div className="text-2xl font-bold">
                     {isLoading ? (
                       <Skeleton className="h-8 w-12" />
                     ) : (
@@ -441,7 +441,7 @@ const ComplianceCenterLanding = () => {
                       inspectionStats.facility.total +
                       certStats.total
                     )}
-                  </p>
+                  </div>
                   <p className="text-sm text-muted-foreground">Total Items Tracked</p>
                 </div>
               </div>

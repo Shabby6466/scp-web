@@ -209,9 +209,9 @@ const CertificationsSection = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Total</p>
-                    <p className="text-3xl font-bold">
+                    <div className="text-3xl font-bold">
                       {loading ? <Skeleton className="h-8 w-16" /> : stats.total}
-                    </p>
+                    </div>
                   </div>
                   <Award className="h-8 w-8 text-blue-500" />
                 </div>
@@ -222,9 +222,9 @@ const CertificationsSection = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Active</p>
-                    <p className="text-3xl font-bold text-green-600">
+                    <div className="text-3xl font-bold text-green-600">
                       {loading ? <Skeleton className="h-8 w-16" /> : stats.active}
-                    </p>
+                    </div>
                   </div>
                   <CheckCircle className="h-8 w-8 text-green-500" />
                 </div>
@@ -235,13 +235,13 @@ const CertificationsSection = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Expiring Soon</p>
-                    <p
+                    <div
                       className={`text-3xl font-bold ${
                         stats.expiring > 0 ? 'text-yellow-600' : ''
                       }`}
                     >
                       {loading ? <Skeleton className="h-8 w-16" /> : stats.expiring}
-                    </p>
+                    </div>
                   </div>
                   <Clock
                     className={`h-8 w-8 ${
@@ -256,11 +256,11 @@ const CertificationsSection = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Expired</p>
-                    <p
+                    <div
                       className={`text-3xl font-bold ${stats.expired > 0 ? 'text-red-600' : ''}`}
                     >
                       {loading ? <Skeleton className="h-8 w-16" /> : stats.expired}
-                    </p>
+                    </div>
                   </div>
                   <AlertTriangle
                     className={`h-8 w-8 ${
@@ -342,6 +342,22 @@ const CertificationsSection = () => {
                             ))}
                           </SelectContent>
                         </Select>
+                        {certificationTypes.length === 0 && !loading && (
+                          <p className="text-xs text-muted-foreground">
+                            No types are defined for your school yet. A director or admin can create
+                            them with{' '}
+                            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+                              POST /api/certification-types
+                            </code>{' '}
+                            (body:{' '}
+                            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
+                              schoolId
+                            </code>
+                            ,{' '}
+                            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">name</code>
+                            , optional description / defaultValidityMonths). Then refresh this page.
+                          </p>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <Label>Applies To</Label>

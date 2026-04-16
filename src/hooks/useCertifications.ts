@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { certificationService } from '@/services/certificationService';
 import { useToast } from '@/hooks/use-toast';
+import { unwrapList } from '@/lib/api';
 
 export interface CertificationType {
   id: string;
@@ -61,21 +62,22 @@ export const useCertifications = (schoolId?: string | null) => {
   const { toast } = useToast();
 
   const fetchCertificationTypes = useCallback(async () => {
+    if (!schoolId) return [];
     try {
-      const data = await certificationService.listTypes();
-      return (data || []) as CertificationType[];
+      const data = await certificationService.listTypes(schoolId);
+      return unwrapList<CertificationType>(data);
     } catch (err) {
       console.error('Error fetching certification types:', err);
       return [];
     }
-  }, []);
+  }, [schoolId]);
 
   const fetchRecords = useCallback(async () => {
     if (!schoolId) return [];
 
     try {
       const data = await certificationService.listRecords(schoolId);
-      return (data || []) as CertificationRecord[];
+      return unwrapList<CertificationRecord>(data);
     } catch (err) {
       console.error('Error fetching certification records:', err);
       return [];
@@ -134,7 +136,17 @@ export const useCertifications = (schoolId?: string | null) => {
 
   const createRecord = async (record: Omit<CertificationRecord, 'id' | 'created_at' | 'updated_at' | 'certification_type' | 'evidence_count'>) => {
     try {
-      const data = await certificationService.createRecord(record);
+      const sid = record.school_id ?? schoolId;
+      if (!sid) {
+        toast({
+          title: 'Error',
+          description: 'School context is required to create a certification.',
+          variant: 'destructive',
+        });
+        throw new Error('Missing schoolId');
+      }
+      const { school_id: _omitSchoolId, ...body } = record;
+      const data = await certificationService.createRecord(sid, body);
       toast({ title: 'Success', description: 'Certification record created' });
       await fetchAll();
       return data;
@@ -149,8 +161,16 @@ export const useCertifications = (schoolId?: string | null) => {
   };
 
   const updateRecord = async (id: string, updates: Partial<CertificationRecord>) => {
+    if (!schoolId) {
+      toast({
+        title: 'Error',
+        description: 'School context is required to update a certification.',
+        variant: 'destructive',
+      });
+      throw new Error('Missing schoolId');
+    }
     try {
-      await certificationService.updateRecord(id, updates);
+      await certificationService.updateRecord(schoolId, id, updates);
       toast({ title: 'Success', description: 'Certification record updated' });
       await fetchAll();
     } catch (err) {
@@ -164,8 +184,16 @@ export const useCertifications = (schoolId?: string | null) => {
   };
 
   const deleteRecord = async (id: string) => {
+    if (!schoolId) {
+      toast({
+        title: 'Error',
+        description: 'School context is required to delete a certification.',
+        variant: 'destructive',
+      });
+      throw new Error('Missing schoolId');
+    }
     try {
-      await certificationService.deleteRecord(id);
+      await certificationService.deleteRecord(schoolId, id);
       toast({ title: 'Success', description: 'Certification record deleted' });
       await fetchAll();
     } catch (err) {
