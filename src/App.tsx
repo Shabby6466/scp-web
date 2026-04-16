@@ -374,6 +374,7 @@ const App = () => (
                     <Route path="schools" element={<AdminSchools />} />
                     <Route path="directors" element={<AdminDirectors />} />
                     <Route path="documents" element={<AdminDocumentsPage />} />
+                    <Route path="settings" element={<AdminSettings />} />
                   </Route>
                   <Route path="/admin/audit-logs" element={
                     <AdminRoute>
@@ -395,12 +396,6 @@ const App = () => (
                       <PrivacyPolicySettings />
                     </AdminRoute>
                   } />
-                  <Route path="/admin/settings" element={
-                    <AdminRoute>
-                      <AdminSettings />
-                    </AdminRoute>
-                  } />
-
                   {/* In-layout access denied */}
                   <Route path="/access-denied" element={<NotAuthorizedInLayout />} />
                   

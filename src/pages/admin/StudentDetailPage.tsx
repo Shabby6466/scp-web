@@ -37,10 +37,70 @@ type Document = {
 
 type ChecklistItem = {
   requiredDoc: RequiredDocument;
-  status: "missing" | "pending" | "approved" | "rejected";
+  status: "missing" | "pending" | "approved" | "rejected" | "expired";
   expiration?: string | null;
   documentId?: string | null;
 };
+
+function toDateOnlyString(raw: unknown): string {
+  if (raw == null || raw === "") return "";
+  try {
+    const d = new Date(raw as string | number | Date);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 10);
+  } catch {
+    return "";
+  }
+}
+
+/** Map API DocumentStatus (and legacy strings) to checklist UI keys. */
+function normalizeDocStatus(raw: unknown): ChecklistItem["status"] {
+  const s = String(raw ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/-/g, "_");
+  switch (s) {
+    case "APPROVED":
+      return "approved";
+    case "REJECTED":
+      return "rejected";
+    case "PENDING":
+      return "pending";
+    case "EXPIRED":
+      return "expired";
+    default:
+      return "pending";
+  }
+}
+
+function unwrapList<T>(payload: unknown): T[] {
+  if (Array.isArray(payload)) return payload as T[];
+  if (payload && typeof payload === "object" && Array.isArray((payload as { data?: T[] }).data)) {
+    return (payload as { data: T[] }).data;
+  }
+  return [];
+}
+
+function complianceCategoryLabel(cat: unknown): string {
+  if (cat == null || typeof cat !== "object") return "";
+  const c = cat as { name?: string; slug?: string };
+  return String(c.name ?? c.slug ?? "").trim();
+}
+
+function mapRequiredStudentTypes(raw: unknown[]): RequiredDocument[] {
+  return raw.map((r: any) => {
+    const nested = complianceCategoryLabel(r.category);
+    const category =
+      nested || String(r.slug ?? "").trim() || String(r.name ?? "").trim() || "—";
+    return {
+      id: String(r.id),
+      category,
+      name: String(r.name ?? "Document"),
+      description: r.description != null ? String(r.description) : null,
+      is_mandatory: !!(r.isMandatory ?? r.is_mandatory),
+    };
+  });
+}
 
 export default function StudentDetailPage() {
   const { studentId } = useParams<{ studentId: string }>();
@@ -75,9 +135,9 @@ export default function StudentDetailPage() {
         id: studentData.id,
         first_name: studentData.firstName ?? studentData.first_name ?? '',
         last_name: studentData.lastName ?? studentData.last_name ?? '',
-        date_of_birth: studentData.dateOfBirth
-          ? new Date(studentData.dateOfBirth).toISOString().slice(0, 10)
-          : studentData.date_of_birth ?? '',
+        date_of_birth:
+          toDateOnlyString(studentData.dateOfBirth ?? studentData.date_of_birth) ||
+          "",
         school_id: schoolId,
         school_name: studentData.school?.name ?? studentData.school_name ?? null,
       };
@@ -106,8 +166,9 @@ export default function StudentDetailPage() {
         documentService.listByOwner(id),
       ]);
 
-      const docsArr = Array.isArray(docs) ? docs : (docs as any)?.data ?? [];
-      const list = buildChecklist(requiredDocs ?? [], docsArr);
+      const requiredList = unwrapList<any>(requiredDocs);
+      const docsArr = unwrapList<any>(docs);
+      const list = buildChecklist(mapRequiredStudentTypes(requiredList), docsArr);
       setChecklist(list);
     } catch (error) {
       console.error("Error loading checklist:", error);
@@ -122,11 +183,15 @@ export default function StudentDetailPage() {
     docs: Document[]
   ): ChecklistItem[] => {
     return requiredDocs.map((rd) => {
-      const match = docs.find(
-        (d: any) =>
-          (d as any).documentTypeId === rd.id ||
-          d.category === rd.category,
-      );
+      const match = docs.find((d: any) => {
+        const dtId =
+          d.documentType?.id ??
+          d.documentTypeId ??
+          d.document_type_id;
+        if (dtId != null && String(dtId) === rd.id) return true;
+        const cat = typeof d.category === "string" ? d.category : "";
+        return cat && cat === rd.category;
+      });
       if (!match) {
         return {
           requiredDoc: rd,
@@ -136,21 +201,29 @@ export default function StudentDetailPage() {
 
       return {
         requiredDoc: rd,
-        status: match.status as ChecklistItem["status"],
-        expiration: match.expiration_date,
+        status: normalizeDocStatus(match.status),
+        expiration:
+          match.expiration_date ??
+          (match as any).expiresAt ??
+          (match as any).expires_at ??
+          null,
         documentId: match.id,
       };
     });
   };
 
   const getStatusBadge = (status: ChecklistItem["status"]) => {
-    const variants: Record<ChecklistItem["status"], { variant: "default" | "destructive" | "secondary" | "outline"; label: string }> = {
+    const variants: Record<
+      ChecklistItem["status"],
+      { variant: "default" | "destructive" | "secondary" | "outline"; label: string }
+    > = {
       missing: { variant: "outline", label: "Missing" },
       pending: { variant: "secondary", label: "Pending" },
       approved: { variant: "default", label: "Approved" },
       rejected: { variant: "destructive", label: "Rejected" },
+      expired: { variant: "destructive", label: "Expired" },
     };
-    const config = variants[status];
+    const config = variants[status] ?? variants.pending;
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 

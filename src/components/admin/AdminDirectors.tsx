@@ -85,15 +85,33 @@ export const AdminDirectors = () => {
       setSchools((schoolsData as School[]) || []);
       setUsers((usersData as User[]) || []);
       
-      const transformedAssignments = (directorsData || []).map((assignment: any) => ({
-        id: assignment.id,
-        user_id: assignment.user_id,
-        school_id: assignment.school_id,
-        branch_id: assignment.branch_id,
-        user: assignment.user || assignment.profiles || { id: assignment.user_id, full_name: '', email: '' },
-        school: assignment.school || assignment.schools || { id: assignment.school_id, name: '', city: '', state: '' },
-        branch: assignment.branch || assignment.branches || null,
-      }));
+      const transformedAssignments = (directorsData || []).map((assignment: any) => {
+        const schoolId = assignment.school_id ?? assignment.schoolId ?? '';
+        const userId = assignment.user_id ?? assignment.userId ?? assignment.id;
+        const u = assignment.user || assignment.profiles;
+        const displayName =
+          u?.full_name ?? u?.name ?? assignment.name ?? '';
+        const email = u?.email ?? assignment.email ?? '';
+        const sch = assignment.school || assignment.schools;
+        return {
+          id: assignment.id,
+          user_id: userId,
+          school_id: schoolId,
+          branch_id: assignment.branch_id ?? assignment.branchId,
+          user: {
+            id: u?.id ?? userId,
+            full_name: displayName,
+            email,
+          },
+          school: {
+            id: sch?.id ?? schoolId,
+            name: sch?.name ?? '',
+            city: sch?.city ?? '',
+            state: sch?.state ?? '',
+          },
+          branch: assignment.branch || assignment.branches || null,
+        };
+      });
       
       setAssignments(transformedAssignments);
     } catch (error) {
@@ -120,11 +138,24 @@ export const AdminDirectors = () => {
       return;
     }
 
+    const otherDirector = assignments.find(
+      (a) => a.school_id === selectedSchool && a.user_id !== selectedUser,
+    );
+    if (otherDirector) {
+      toast.error(
+        `This school already has a director (${otherDirector.user.full_name}). Remove that assignment first, then assign a new director.`,
+      );
+      return;
+    }
+
+    const branchPayload =
+      !selectedBranch || selectedBranch === '_none_' ? null : selectedBranch;
+
     try {
       await userService.update(selectedUser, {
         role: 'director',
         school_id: selectedSchool,
-        branch_id: selectedBranch || null,
+        branch_id: branchPayload,
       });
 
       toast.success('Director assigned successfully');
@@ -132,9 +163,11 @@ export const AdminDirectors = () => {
       setSelectedBranch('');
       setSelectedUser('');
       fetchData();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error assigning director:', error);
-      toast.error('Failed to assign director');
+      const message =
+        error instanceof Error ? error.message : 'Failed to assign director';
+      toast.error(message);
     }
   };
 

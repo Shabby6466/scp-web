@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { auditService } from '@/services/auditService';
 import { api } from '@/lib/api';
-import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowLeft, Search, RefreshCw, Shield, User, FileText, Clock } from 'lucide-react';
+import { Search, RefreshCw, Shield, User, FileText, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
@@ -122,13 +121,8 @@ const AuditEventsPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 pt-24">
+      <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/admin')} className="mb-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Admin
-          </Button>
           <div className="flex items-center gap-3 mb-2">
             <Shield className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold">Audit Logs</h1>

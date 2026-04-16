@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Search, UserPlus, Edit, FileText, AlertTriangle, CheckCircle, Calendar, Mail, Phone, School as SchoolIcon, Upload, Users, Trash2 } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -530,6 +530,9 @@ const AdminTeachers = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Teacher</DialogTitle>
+            <DialogDescription>
+              Create a teacher account for the selected school. They will appear in compliance and roster tools.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleAddTeacher} className="space-y-4">
             <div className="space-y-2">
@@ -629,6 +632,9 @@ const AdminTeachers = () => {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Teacher</DialogTitle>
+            <DialogDescription>
+              Update this staff member&apos;s profile and HR fields. Changes apply to compliance tracking.
+            </DialogDescription>
           </DialogHeader>
           {editingTeacher && (
             <form onSubmit={handleUpdateTeacher} className="space-y-4">

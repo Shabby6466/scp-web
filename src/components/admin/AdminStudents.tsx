@@ -4,13 +4,14 @@ import { toast as toastHook } from '@/hooks/use-toast';
 import { schoolService } from '@/services/schoolService';
 import { documentService } from '@/services/documentService';
 import { studentParentService } from '@/services/studentParentService';
+import { studentProfileService } from '@/services/studentProfileService';
 import { invitationService } from '@/services/invitationService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Search, Edit, FileText, Calendar, School as SchoolIcon, GraduationCap, Mail, CheckCircle, UserCheck, RefreshCw, X, Filter, Trash2 } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -49,6 +50,22 @@ interface Student {
 interface School {
   id: string;
   name: string;
+}
+
+/** Backend may send null, odd strings, or objects; never throw from Date parsing. */
+function toDateOnlyString(raw: unknown): string {
+  if (raw == null || raw === '') return '';
+  const d = new Date(raw as string);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toISOString().slice(0, 10);
+}
+
+function formatDobForUi(isoOrRaw: string): string {
+  const s = (isoOrRaw ?? '').trim();
+  if (!s) return '—';
+  const d = new Date(s);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString();
 }
 
 type ParentOnboardingStatus =
@@ -101,6 +118,7 @@ const AdminStudents = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [inviteStudent, setInviteStudent] = useState<Student | null>(null);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [savingStudent, setSavingStudent] = useState(false);
 
   // Quick filter counts - memoized to avoid recalculating on every render
   const quickFilterCounts = useMemo(() => ({
@@ -214,9 +232,7 @@ const AdminStudents = () => {
         id: student.id,
         first_name: student.firstName ?? student.first_name ?? '',
         last_name: student.lastName ?? student.last_name ?? '',
-        date_of_birth: student.dateOfBirth
-          ? new Date(student.dateOfBirth).toISOString().slice(0, 10)
-          : student.date_of_birth ?? '',
+        date_of_birth: toDateOnlyString(student.dateOfBirth ?? student.date_of_birth) || '',
         grade_level: student.gradeLevel ?? student.grade_level ?? null,
         school_name: student.school_name ?? null,
         school_id: student.school_id ?? student.schoolId ?? null,
@@ -289,13 +305,52 @@ const AdminStudents = () => {
     e.preventDefault();
     if (!editingStudent) return;
 
-    toastHook({
-      variant: 'destructive',
-      title: 'Editing not available here',
-      description:
-        'Children are stored as student profiles. Use roster import or parent registration to update enrollments.',
-    });
-    setIsEditDialogOpen(false);
+    const first = editingStudent.first_name?.trim();
+    const last = editingStudent.last_name?.trim();
+    if (!first || !last) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Validation',
+        description: 'First and last name are required.',
+      });
+      return;
+    }
+    if (!editingStudent.date_of_birth?.trim()) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Validation',
+        description: 'Date of birth is required.',
+      });
+      return;
+    }
+
+    setSavingStudent(true);
+    try {
+      await studentProfileService.update(editingStudent.id, {
+        firstName: first,
+        lastName: last,
+        dateOfBirth: editingStudent.date_of_birth.trim(),
+        gradeLevel: editingStudent.grade_level?.trim() || null,
+        schoolId: editingStudent.school_id ?? null,
+      });
+      toastHook({
+        title: 'Student updated',
+        description: 'Profile changes have been saved.',
+      });
+      setIsEditDialogOpen(false);
+      setEditingStudent(null);
+      await fetchStudents();
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to update student';
+      toastHook({
+        variant: 'destructive',
+        title: 'Update failed',
+        description: message,
+      });
+    } finally {
+      setSavingStudent(false);
+    }
   };
 
   const handleDeleteStudent = async (student: Student) => {
@@ -557,7 +612,7 @@ const AdminStudents = () => {
                           <div className="space-y-1 text-sm text-muted-foreground">
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4" />
-                              <span>DOB: {new Date(student.date_of_birth).toLocaleDateString()}</span>
+                              <span>DOB: {formatDobForUi(student.date_of_birth)}</span>
                               {student.grade_level && <span>• Grade: {student.grade_level}</span>}
                             </div>
                             {student.school_name && (
@@ -676,6 +731,9 @@ const AdminStudents = () => {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Student</DialogTitle>
+            <DialogDescription>
+              Updates are saved to the student profile. Changing school or branch may require director or admin permissions.
+            </DialogDescription>
           </DialogHeader>
           {editingStudent && (
             <form onSubmit={handleUpdateStudent} className="space-y-4">
@@ -747,7 +805,9 @@ const AdminStudents = () => {
                 <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit">Save Changes</Button>
+                <Button type="submit" disabled={savingStudent}>
+                  {savingStudent ? 'Saving…' : 'Save Changes'}
+                </Button>
               </div>
             </form>
           )}

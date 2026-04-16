@@ -3,10 +3,28 @@ import { toast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
 import { userService } from '@/services/userService';
 import { studentParentService } from '@/services/studentParentService';
+import { schoolService } from '@/services/schoolService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Mail, Phone, Users, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Search, Mail, Phone, Users, Calendar, UserPlus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Parent {
@@ -39,16 +57,56 @@ function mapStudentLinksToDisplay(apiRows: unknown): Parent['students'] {
   });
 }
 
+function safeLocaleDate(raw: unknown): string {
+  if (raw == null || raw === '') return '—';
+  if (raw instanceof Date) {
+    return Number.isNaN(raw.getTime()) ? '—' : raw.toLocaleDateString();
+  }
+  if (typeof raw === 'number') {
+    const d = new Date(raw);
+    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
+  }
+  const s = String(raw).trim();
+  if (!s) return '—';
+  const d = new Date(s);
+  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
+}
+
 const AdminParents = () => {
-  const { schoolId, isAdmin } = useUserRole();
+  const { schoolId, isAdmin, isDirector, isBranchDirector } = useUserRole();
   const [parents, setParents] = useState<Parent[]>([]);
   const [filteredParents, setFilteredParents] = useState<Parent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+  const [addOpen, setAddOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [newParent, setNewParent] = useState({
+    email: '',
+    first_name: '',
+    last_name: '',
+    phone: '',
+    school_id: '' as string,
+  });
+
+  const canAddParent =
+    isAdmin || ((isDirector || isBranchDirector) && !!schoolId);
 
   useEffect(() => {
     fetchParents();
   }, [schoolId, isAdmin]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    (async () => {
+      try {
+        const data = await schoolService.list();
+        setSchools(Array.isArray(data) ? data : []);
+      } catch {
+        setSchools([]);
+      }
+    })();
+  }, [isAdmin]);
 
   useEffect(() => {
     applyFilters();
@@ -81,6 +139,7 @@ const AdminParents = () => {
             return {
               ...profile,
               full_name: displayName,
+              created_at: profile.created_at ?? profile.createdAt ?? '',
               students: mapStudentLinksToDisplay(linkRows),
             };
           } catch {
@@ -92,6 +151,7 @@ const AdminParents = () => {
                 [profile.first_name, profile.last_name].filter(Boolean).join(' ') ??
                 profile.email ??
                 'Parent',
+              created_at: profile.created_at ?? profile.createdAt ?? '',
               students: [],
             };
           }
@@ -129,6 +189,73 @@ const AdminParents = () => {
     }
 
     setFilteredParents(filtered);
+  };
+
+  const handleAddParent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = newParent.email.trim().toLowerCase();
+    const first = newParent.first_name.trim();
+    const last = newParent.last_name.trim();
+    if (!email || !first || !last) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing fields',
+        description: 'Email, first name, and last name are required.',
+      });
+      return;
+    }
+
+    const payload: Record<string, unknown> = {
+      email,
+      role: 'PARENT',
+      first_name: first,
+      last_name: last,
+    };
+    if (newParent.phone.trim()) {
+      payload.phone = newParent.phone.trim();
+    }
+
+    setSaving(true);
+    try {
+      if (isAdmin) {
+        if (newParent.school_id) {
+          await userService.createInSchool(newParent.school_id, {
+            ...payload,
+            schoolId: newParent.school_id,
+          });
+        } else {
+          await userService.create(payload);
+        }
+      } else if (schoolId) {
+        await userService.createInSchool(schoolId, {
+          ...payload,
+          schoolId,
+        });
+      } else {
+        toast({
+          variant: 'destructive',
+          title: 'Cannot add parent',
+          description: 'Your account is not linked to a school.',
+        });
+        return;
+      }
+
+      toast({ title: 'Parent added', description: `${first} ${last} can sign in after they complete email verification (if enabled).` });
+      setAddOpen(false);
+      setNewParent({
+        email: '',
+        first_name: '',
+        last_name: '',
+        phone: '',
+        school_id: '',
+      });
+      await fetchParents();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to create parent';
+      toast({ variant: 'destructive', title: 'Could not add parent', description: message });
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) {
@@ -211,8 +338,14 @@ const AdminParents = () => {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle>Parent Directory</CardTitle>
+          {canAddParent && (
+            <Button type="button" size="sm" onClick={() => setAddOpen(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add parent
+            </Button>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="relative">
@@ -251,7 +384,7 @@ const AdminParents = () => {
                             )}
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4" />
-                              <span>Registered: {new Date(parent.created_at).toLocaleDateString()}</span>
+                              <span>Registered: {safeLocaleDate(parent.created_at)}</span>
                             </div>
                           </div>
                         </div>
@@ -282,6 +415,91 @@ const AdminParents = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add parent</DialogTitle>
+            <DialogDescription>
+              Creates a parent login. {isAdmin ? 'Optionally link them to a school.' : 'They are linked to your school.'}{' '}
+              If email verification is on, they will receive an invite code.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddParent} className="space-y-3">
+            {isAdmin && (
+              <div className="space-y-2">
+                <Label>School (optional)</Label>
+                <Select
+                  value={newParent.school_id || '_none_'}
+                  onValueChange={(v) =>
+                    setNewParent((p) => ({ ...p, school_id: v === '_none_' ? '' : v }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Platform-wide (no school)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none_">No school (platform)</SelectItem>
+                    {schools.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="parent-email">Email</Label>
+              <Input
+                id="parent-email"
+                type="email"
+                autoComplete="email"
+                value={newParent.email}
+                onChange={(e) => setNewParent((p) => ({ ...p, email: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <Label htmlFor="parent-fn">First name</Label>
+                <Input
+                  id="parent-fn"
+                  value={newParent.first_name}
+                  onChange={(e) => setNewParent((p) => ({ ...p, first_name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="parent-ln">Last name</Label>
+                <Input
+                  id="parent-ln"
+                  value={newParent.last_name}
+                  onChange={(e) => setNewParent((p) => ({ ...p, last_name: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="parent-phone">Phone (optional)</Label>
+              <Input
+                id="parent-phone"
+                type="tel"
+                value={newParent.phone}
+                onChange={(e) => setNewParent((p) => ({ ...p, phone: e.target.value }))}
+              />
+            </div>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setAddOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Saving…' : 'Create parent'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
