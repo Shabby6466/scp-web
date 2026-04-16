@@ -5,6 +5,7 @@ import { schoolService } from '@/services/schoolService';
 import { documentService } from '@/services/documentService';
 import { studentParentService } from '@/services/studentParentService';
 import { studentProfileService } from '@/services/studentProfileService';
+import { ApiError } from '@/lib/api';
 import { invitationService } from '@/services/invitationService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -119,6 +120,8 @@ const AdminStudents = () => {
   const [inviteStudent, setInviteStudent] = useState<Student | null>(null);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [savingStudent, setSavingStudent] = useState(false);
+  /** School at dialog open — only send `schoolId` on PATCH if this changed (avoids 403 for branch directors). */
+  const [editSchoolSnapshot, setEditSchoolSnapshot] = useState<string | null>(null);
 
   // Quick filter counts - memoized to avoid recalculating on every render
   const quickFilterCounts = useMemo(() => ({
@@ -326,13 +329,23 @@ const AdminStudents = () => {
 
     setSavingStudent(true);
     try {
-      await studentProfileService.update(editingStudent.id, {
+      const normSchool = (v: string | null | undefined) =>
+        v == null || v === '' || v === '_none_' ? null : v;
+      const schoolNow = normSchool(editingStudent.school_id);
+      const schoolWas = normSchool(editSchoolSnapshot);
+      const schoolChanged = schoolNow !== schoolWas;
+
+      const payload: Parameters<typeof studentProfileService.update>[1] = {
         firstName: first,
         lastName: last,
         dateOfBirth: editingStudent.date_of_birth.trim(),
         gradeLevel: editingStudent.grade_level?.trim() || null,
-        schoolId: editingStudent.school_id ?? null,
-      });
+      };
+      if (schoolChanged) {
+        payload.schoolId = schoolNow;
+      }
+
+      await studentProfileService.update(editingStudent.id, payload);
       toastHook({
         title: 'Student updated',
         description: 'Profile changes have been saved.',
@@ -341,8 +354,13 @@ const AdminStudents = () => {
       setEditingStudent(null);
       await fetchStudents();
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to update student';
+      let message = 'Failed to update student';
+      if (error instanceof ApiError) {
+        const m = error.data?.message;
+        message = Array.isArray(m) ? m.join(', ') : (typeof m === 'string' && m ? m : error.message);
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
       toastHook({
         variant: 'destructive',
         title: 'Update failed',
@@ -693,6 +711,7 @@ const AdminStudents = () => {
                             size="sm"
                             onClick={() => {
                               setEditingStudent(student);
+                              setEditSchoolSnapshot(student.school_id ?? null);
                               setIsEditDialogOpen(true);
                             }}
                           >

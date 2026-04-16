@@ -28,10 +28,7 @@ const FacilitySafetySection = () => {
   const [createTypeOpen, setCreateTypeOpen] = useState(false);
   const [createReqOpen, setCreateReqOpen] = useState(false);
 
-  // Filter to facility_safety category only
-  const facilityTypes = inspectionTypes.filter(
-    (t) => (t as any).category === 'facility_safety'
-  );
+  const facilityTypes = inspectionTypes.filter((t) => t.category === 'facility_safety');
   const facilityRequirements = requirements.filter((r) =>
     facilityTypes.some((t) => t.id === r.inspection_type_id)
   );
@@ -98,7 +95,9 @@ const FacilitySafetySection = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Readiness Score</p>
-                  <p className="text-3xl font-bold">{loading ? <Skeleton className="h-8 w-16" /> : `${readinessScore}%`}</p>
+                  <div className="text-3xl font-bold">
+                    {loading ? <Skeleton className="h-8 w-16" /> : `${readinessScore}%`}
+                  </div>
                 </div>
                 <CheckCircle className={`h-8 w-8 ${readinessScore >= 90 ? 'text-green-500' : readinessScore >= 70 ? 'text-yellow-500' : 'text-red-500'}`} />
               </div>
@@ -109,7 +108,9 @@ const FacilitySafetySection = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Complete</p>
-                  <p className="text-3xl font-bold">{loading ? <Skeleton className="h-8 w-16" /> : facilityStats.complete}</p>
+                  <div className="text-3xl font-bold">
+                    {loading ? <Skeleton className="h-8 w-16" /> : facilityStats.complete}
+                  </div>
                 </div>
                 <CheckCircle className="h-8 w-8 text-green-500" />
               </div>
@@ -120,9 +121,9 @@ const FacilitySafetySection = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Overdue</p>
-                  <p className={`text-3xl font-bold ${facilityStats.overdue > 0 ? 'text-red-600' : ''}`}>
+                  <div className={`text-3xl font-bold ${facilityStats.overdue > 0 ? 'text-red-600' : ''}`}>
                     {loading ? <Skeleton className="h-8 w-16" /> : facilityStats.overdue}
-                  </p>
+                  </div>
                 </div>
                 <AlertTriangle className={`h-8 w-8 ${facilityStats.overdue > 0 ? 'text-red-500' : 'text-muted-foreground'}`} />
               </div>
@@ -133,9 +134,9 @@ const FacilitySafetySection = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">Due Soon</p>
-                  <p className={`text-3xl font-bold ${facilityStats.dueSoon > 0 ? 'text-yellow-600' : ''}`}>
+                  <div className={`text-3xl font-bold ${facilityStats.dueSoon > 0 ? 'text-yellow-600' : ''}`}>
                     {loading ? <Skeleton className="h-8 w-16" /> : facilityStats.dueSoon}
-                  </p>
+                  </div>
                 </div>
                 <Clock className={`h-8 w-8 ${facilityStats.dueSoon > 0 ? 'text-yellow-500' : 'text-muted-foreground'}`} />
               </div>
@@ -270,6 +271,8 @@ const FacilitySafetySection = () => {
       <CreateInspectionTypeDialog
         open={createTypeOpen}
         onOpenChange={setCreateTypeOpen}
+        defaultCategory="facility_safety"
+        lockCategory
         onSuccess={() => {
           refresh();
           setCreateTypeOpen(false);

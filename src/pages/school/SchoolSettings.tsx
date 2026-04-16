@@ -3,13 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { schoolService } from '@/services/schoolService';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Save, Building2, Phone, Mail, MapPin, Globe, Users } from 'lucide-react';
 
@@ -157,52 +154,43 @@ const SchoolSettings = () => {
 
   if (loading || roleLoading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-            <p className="text-muted-foreground">Loading settings...</p>
-          </div>
-        </main>
-        <Footer />
+      <div className="p-6 flex min-h-[40vh] items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading settings...</p>
+        </div>
       </div>
     );
   }
 
   if (!school) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <Card className="max-w-md">
-            <CardHeader>
-              <CardTitle>No School Found</CardTitle>
-              <CardDescription>You don't have access to any school settings.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button onClick={() => navigate(-1)}>Go Back</Button>
-            </CardContent>
-          </Card>
-        </main>
-        <Footer />
+      <div className="p-6 flex min-h-[40vh] items-center justify-center">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <CardTitle>No School Found</CardTitle>
+            <CardDescription>You don't have access to any school settings.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={() => navigate(-1)}>Go Back</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header />
-      <main className="flex-1 pt-20 pb-12">
-        <div className="container px-4 max-w-4xl">
-          {/* Header */}
-          <div className="mb-8">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+    <div className="p-6 pb-10">
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+          <div className="space-y-2">
+            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2 gap-1.5 w-fit">
+              <ArrowLeft className="h-4 w-4" />
               Back
             </Button>
-            <h1 className="text-3xl font-display font-bold mb-2">School Settings</h1>
-            <p className="text-muted-foreground">Manage your school's information and settings</p>
+            <h1 className="text-3xl font-display font-bold tracking-tight">School Settings</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
+              Manage your school&apos;s information and settings
+            </p>
           </div>
 
           <div className="space-y-6">
@@ -378,16 +366,14 @@ const SchoolSettings = () => {
             </Card>
 
             {/* Save Button */}
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-2">
               <Button onClick={handleSave} disabled={saving} size="lg">
                 <Save className="h-4 w-4 mr-2" />
                 {saving ? 'Saving...' : 'Save Settings'}
               </Button>
             </div>
           </div>
-        </div>
-      </main>
-      <Footer />
+      </div>
     </div>
   );
 };

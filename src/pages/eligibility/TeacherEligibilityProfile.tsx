@@ -45,6 +45,47 @@ interface Teacher {
   position_id: string | null;
 }
 
+/** `GET /teachers/:id` returns `full_name` (from `User.name`), not always `first_name` / `last_name`. */
+function normalizeTeacherFromApi(data: Record<string, unknown> | null | undefined): Teacher | null {
+  if (!data || typeof data.id !== "string") return null;
+  const fn = (data.first_name ?? data.firstName) as string | undefined;
+  const ln = (data.last_name ?? data.lastName) as string | undefined;
+  let first_name = (fn ?? "").trim();
+  let last_name = (ln ?? "").trim();
+  if (!first_name && !last_name) {
+    const raw = String(data.full_name ?? data.name ?? "").trim();
+    if (raw) {
+      const parts = raw.split(/\s+/);
+      first_name = parts[0] ?? "";
+      last_name = parts.length > 1 ? parts.slice(1).join(" ") : "";
+    }
+  }
+  const school_id = String(data.school_id ?? data.schoolId ?? "");
+  return {
+    id: data.id,
+    first_name,
+    last_name,
+    email: String(data.email ?? ""),
+    school_id,
+    position_id: (data.position_id ?? data.positionId ?? null) as string | null,
+  };
+}
+
+function teacherInitials(t: Teacher): string {
+  const a = t.first_name.trim()[0];
+  const b = t.last_name.trim()[0];
+  if (a && b) return `${a}${b}`.toUpperCase();
+  if (a) return a.toUpperCase();
+  if (b) return b.toUpperCase();
+  const e = t.email.trim()[0];
+  return e ? e.toUpperCase() : "?";
+}
+
+function teacherDisplayName(t: Teacher): string {
+  const n = `${t.first_name} ${t.last_name}`.trim();
+  return n || t.email || "Teacher";
+}
+
 interface Position {
   id: string;
   name: string;
@@ -204,10 +245,16 @@ export default function TeacherEligibilityProfile() {
       setLoading(true);
 
       const teacherData = await api.get(`/teachers/${teacherId}`);
-      setTeacher(teacherData);
-      setSelectedPosition(teacherData.position_id || 'none');
+      const teacherNorm = normalizeTeacherFromApi(teacherData as Record<string, unknown>);
+      if (!teacherNorm?.school_id) {
+        setTeacher(null);
+        setProfile(null);
+        return;
+      }
+      setTeacher(teacherNorm);
+      setSelectedPosition(teacherNorm.position_id || 'none');
 
-      const positionsData = await api.get(`/teacher-positions?schoolId=${teacherData.school_id}&isActive=true`);
+      const positionsData = await api.get(`/teacher-positions?schoolId=${teacherNorm.school_id}&isActive=true`);
       setPositions(positionsData || []);
 
       try {
@@ -225,7 +272,7 @@ export default function TeacherEligibilityProfile() {
       } catch {
         setProfile({
           teacher_id: teacherId!,
-          school_id: teacherData.school_id,
+          school_id: teacherNorm.school_id,
           education_level: 'none',
           education_field: 'none',
           total_credits: 0,
@@ -389,7 +436,7 @@ export default function TeacherEligibilityProfile() {
     );
   }
 
-  const initials = `${teacher.first_name[0]}${teacher.last_name[0]}`.toUpperCase();
+  const initials = teacherInitials(teacher);
 
   return (
     <PageTransition>
@@ -409,7 +456,7 @@ export default function TeacherEligibilityProfile() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <h1 className="text-lg font-semibold">{teacher.first_name} {teacher.last_name}</h1>
+                <h1 className="text-lg font-semibold">{teacherDisplayName(teacher)}</h1>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                   <Mail className="h-3 w-3" />
                   {teacher.email}

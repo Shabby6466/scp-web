@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/hooks/use-toast';
 import { schoolService } from '@/services/schoolService';
 import { userService } from '@/services/userService';
@@ -50,8 +51,58 @@ interface School {
   name: string;
 }
 
+function isoDateOnly(v: unknown): string | null {
+  if (v == null || v === '') return null;
+  const d = v instanceof Date ? v : new Date(String(v));
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString().split('T')[0];
+}
+
+/** DB uses ACTIVE / ON_LEAVE; filters + badges use lowercase snake. */
+function mapEmploymentToUi(raw: unknown): string {
+  if (raw == null || raw === '') return 'active';
+  const k = String(raw).toUpperCase().replace(/-/g, '_');
+  if (k === 'ACTIVE') return 'active';
+  if (k === 'INACTIVE') return 'inactive';
+  if (k === 'ON_LEAVE') return 'on_leave';
+  if (k === 'TERMINATED') return 'inactive';
+  return 'active';
+}
+
+/** Nest returns `name`, `schoolId`, nested `teacherProfile` — align with this UI model. */
+function normalizeTeacherRow(raw: Record<string, any>, schoolMap: Map<string, string>): Teacher {
+  const tp = raw.teacherProfile ?? raw.teacher_profile;
+  const sid = raw.school_id ?? raw.schoolId ?? '';
+  const full = String(raw.name ?? '').trim();
+  const parts = full.split(/\s+/).filter(Boolean);
+  const first_name =
+    raw.first_name ?? raw.firstName ?? (parts[0] ?? '');
+  const last_name =
+    raw.last_name ?? raw.lastName ?? (parts.length > 1 ? parts.slice(1).join(' ') : '');
+
+  return {
+    id: raw.id,
+    school_id: sid,
+    first_name,
+    last_name,
+    email: raw.email ?? '',
+    phone: (tp?.phone ?? raw.phone) ?? null,
+    hire_date: isoDateOnly(tp?.hireDate ?? tp?.hire_date),
+    certification_type: tp?.certificationType ?? tp?.certification_type ?? null,
+    certification_expiry: isoDateOnly(tp?.certificationExpiry ?? tp?.certification_expiry),
+    background_check_date: isoDateOnly(tp?.backgroundCheckDate ?? tp?.background_check_date),
+    background_check_expiry: isoDateOnly(tp?.backgroundCheckExpiry ?? tp?.background_check_expiry),
+    employment_status: mapEmploymentToUi(tp?.employmentStatus ?? tp?.employment_status),
+    notes: tp?.notes ?? null,
+    created_at: raw.created_at ?? raw.createdAt ?? '',
+    school: sid ? { name: schoolMap.get(sid) || raw.school?.name || '' } : undefined,
+    documents: raw.documents,
+  };
+}
+
 const AdminTeachers = () => {
   const navigate = useNavigate();
+  const { schoolId: viewerSchoolId } = useUserRole();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [filteredTeachers, setFilteredTeachers] = useState<Teacher[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
@@ -79,8 +130,11 @@ const AdminTeachers = () => {
 
   useEffect(() => {
     fetchSchools();
-    fetchTeachers();
   }, []);
+
+  useEffect(() => {
+    fetchTeachers();
+  }, [viewerSchoolId]);
 
   useEffect(() => {
     applyFilters();
@@ -97,21 +151,27 @@ const AdminTeachers = () => {
 
   const fetchTeachers = async () => {
     try {
-      const teachersList = await userService.list({ role: 'TEACHER' });
+      const listParams = viewerSchoolId
+        ? { role: 'TEACHER' as const, schoolId: viewerSchoolId }
+        : { role: 'TEACHER' as const };
+      const teachersList = await userService.list(listParams);
       const [allDocs, schoolsList] = await Promise.all([
-        documentService.search(),
+        documentService.search(viewerSchoolId ? { schoolId: viewerSchoolId } : undefined),
         schoolService.list(),
       ]);
 
       const schoolMap = new Map((schoolsList || []).map((s: any) => [s.id, s.name]));
 
       const teachersWithDocs = (teachersList || []).map((teacher: any) => {
-        const docs = (allDocs || []).filter((d: any) => d.teacher_id === teacher.id);
-        return {
-          ...teacher,
-          school: teacher.school_id ? { name: schoolMap.get(teacher.school_id) || '' } : null,
-          documents: docs,
-        };
+        const row = normalizeTeacherRow(teacher, schoolMap);
+        const docs = (allDocs || []).filter(
+          (d: any) =>
+            d.teacher_id === teacher.id ||
+            d.teacherId === teacher.id ||
+            d.owner_user_id === teacher.id ||
+            d.ownerUserId === teacher.id,
+        );
+        return { ...row, documents: docs };
       });
 
       setTeachers(teachersWithDocs);
@@ -131,13 +191,15 @@ const AdminTeachers = () => {
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (teacher) =>
-          teacher.first_name.toLowerCase().includes(query) ||
-          teacher.last_name.toLowerCase().includes(query) ||
+      filtered = filtered.filter((teacher) => {
+        const nameHay = `${teacher.first_name} ${teacher.last_name}`.toLowerCase();
+        const schoolHay = (teacher.school?.name ?? '').toLowerCase();
+        return (
+          nameHay.includes(query) ||
           teacher.email.toLowerCase().includes(query) ||
-          teacher.school?.name.toLowerCase().includes(query)
-      );
+          schoolHay.includes(query)
+        );
+      });
     }
 
     if (schoolFilter !== 'all') {
