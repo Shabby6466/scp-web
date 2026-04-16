@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { studentProfileService } from '@/services/studentProfileService';
 import { documentService } from '@/services/documentService';
-import { documentTypeService } from '@/services/documentTypeService';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -112,29 +111,24 @@ const ChildDocumentUpload = () => {
         school: detail.school?.name ? { name: detail.school.name } : undefined,
       });
 
-      if (schoolId) {
-        try {
-          const types = await documentTypeService.list({
-            schoolId: schoolId,
-            targetRole: 'STUDENT',
-            includeInactive: false,
-          });
-          const list = Array.isArray(types) ? types : [];
-          setRequiredDocs(
-            list
-              .filter((dt: any) => dt.isActive !== false)
-              .map((dt: any) => ({
-                id: dt.id,
-                name: dt.name,
-                category: dt.category || slugCategory(dt.name),
-                description: dt.description ?? null,
-                is_mandatory: dt.isMandatory !== false,
-              })),
-          );
-        } catch {
-          setRequiredDocs([]);
-        }
-      } else {
+      try {
+        const types = await studentProfileService.listRequiredDocumentTypes(studentId);
+        const list = Array.isArray(types) ? types : (types as { data?: unknown[] })?.data ?? [];
+        setRequiredDocs(
+          (list as any[])
+            .filter((dt: any) => dt.isActive !== false)
+            .map((dt: any) => ({
+              id: dt.id,
+              name: dt.name,
+              category:
+                (typeof dt.category === 'object' && dt.category?.name
+                  ? String(dt.category.name)
+                  : dt.category) || slugCategory(dt.name),
+              description: dt.description ?? null,
+              is_mandatory: dt.isMandatory !== false,
+            })),
+        );
+      } catch {
         setRequiredDocs([]);
       }
 

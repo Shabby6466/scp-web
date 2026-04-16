@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import { userService } from '@/services/userService';
 import { toast } from '@/hooks/use-toast';
-import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -145,31 +144,26 @@ const PrivacyPolicySettings = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8 max-w-6xl">
-          <Skeleton className="h-8 w-64 mb-6" />
-          <div className="grid gap-4 md:grid-cols-4 mb-6">
-            {[...Array(4)].map((_, i) => (
-              <Card key={i}>
-                <CardHeader className="pb-2">
-                  <Skeleton className="h-4 w-24" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-8 w-16" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </main>
+      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
+        <Skeleton className="h-8 w-64" />
+        <div className="grid gap-4 md:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="pb-2">
+                <Skeleton className="h-4 w-24" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
@@ -380,7 +374,6 @@ const PrivacyPolicySettings = () => {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
     </div>
   );
 };

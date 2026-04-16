@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCertifications, CertificationRecord } from '@/hooks/useCertifications';
@@ -35,7 +34,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  ArrowLeft,
   Award,
   Plus,
   Search,
@@ -56,7 +54,6 @@ import {
 import { format, differenceInDays, parseISO } from 'date-fns';
 
 const CertificationsSection = () => {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { schoolId } = useUserRole();
   const {
@@ -179,14 +176,6 @@ const CertificationsSection = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-            <Button
-              variant="ghost"
-              className="mb-4"
-              onClick={() => navigate('/compliance-center')}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Compliance Center
-            </Button>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30">
                 <Award className="h-5 w-5 text-blue-600 dark:text-blue-400" />

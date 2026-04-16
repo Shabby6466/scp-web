@@ -14,6 +14,7 @@ import {
 import { userService } from "@/services/userService";
 import { schoolService } from "@/services/schoolService";
 import { documentTypeService } from "@/services/documentTypeService";
+import { studentProfileService } from "@/services/studentProfileService";
 import { useUserRole } from "@/hooks/useUserRole";
 import { PersonFileCard } from "@/components/documents/PersonFileCard";
 
@@ -96,17 +97,41 @@ export default function AllDocumentsPage() {
         : userService.list({ role: 'TEACHER' }));
       const teachersList: any[] = Array.isArray(teachersRes) ? teachersRes : (teachersRes as any)?.data ?? [];
 
+      const requiredCountByProfileId = new Map<string, number>();
+      const studentIds = studentsList.map((s: any) => String(s.id));
+      if (studentIds.length > 0) {
+        try {
+          const res = await studentProfileService.getRequiredDocumentTypeCounts(
+            studentIds,
+          );
+          const counts = res?.counts ?? {};
+          for (const [profileId, n] of Object.entries(counts)) {
+            if (typeof n === "number") {
+              requiredCountByProfileId.set(profileId, n);
+            }
+          }
+        } catch {
+          for (const id of studentIds) {
+            requiredCountByProfileId.set(id, studentReqList.length);
+          }
+        }
+      }
+
       setStudents(
-        studentsList.map((s: any) => ({
-          id: s.id,
-          first_name: s.firstName ?? s.studentProfile?.firstName ?? s.name?.split(' ')[0] ?? '',
-          last_name: s.lastName ?? s.studentProfile?.lastName ?? s.name?.split(' ').slice(1).join(' ') ?? '',
-          school_id: s.schoolId ?? s.school_id ?? '',
-          branch_id: s.branchId ?? null,
-          date_of_birth: s.dateOfBirth ?? s.studentProfile?.dateOfBirth ?? '',
-          documents: s.documents ?? [],
-          requiredCount: studentReqList.length,
-        }))
+        studentsList.map((s: any) => {
+          const pid = String(s.id);
+          return {
+            id: pid,
+            first_name: s.firstName ?? s.studentProfile?.firstName ?? s.name?.split(' ')[0] ?? '',
+            last_name: s.lastName ?? s.studentProfile?.lastName ?? s.name?.split(' ').slice(1).join(' ') ?? '',
+            school_id: s.schoolId ?? s.school_id ?? '',
+            branch_id: s.branchId ?? null,
+            date_of_birth: s.dateOfBirth ?? s.studentProfile?.dateOfBirth ?? '',
+            documents: s.documents ?? [],
+            requiredCount:
+              requiredCountByProfileId.get(pid) ?? studentReqList.length,
+          };
+        })
       );
 
       setTeachers(

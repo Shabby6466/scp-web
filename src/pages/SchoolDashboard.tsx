@@ -190,8 +190,7 @@ const SchoolDashboard = () => {
           label: 'compliance items overdue',
           count: overdueReqs.length,
           type: 'overdue',
-          ctaLabel: 'Fix Now',
-          route: '/compliance-center',
+          ctaLabel: 'Use sidebar',
           icon: 'compliance',
           blocksCompliance: true,
         };

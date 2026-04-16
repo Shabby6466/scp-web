@@ -76,12 +76,23 @@ export function DashboardTopbar({
   };
 
   // Build breadcrumbs from current path
-  const buildBreadcrumbs = () => {
+  const buildBreadcrumbs = (): {
+    label: string;
+    path: string;
+    isHome?: boolean;
+    /** When false, crumb is label-only (navigate via sidebar instead). */
+    navigable?: boolean;
+  }[] => {
     const path = location.pathname;
     const dashboardPath = getDashboardPath();
 
     // Start with dashboard
-    const breadcrumbs = [{
+    const breadcrumbs: {
+      label: string;
+      path: string;
+      isHome?: boolean;
+      navigable?: boolean;
+    }[] = [{
       label: getDashboardLabel(),
       path: dashboardPath,
       isHome: true
@@ -100,7 +111,8 @@ export function DashboardTopbar({
       breadcrumbs.push({
         label: 'Compliance',
         path: '/compliance-center',
-        isHome: false
+        isHome: false,
+        navigable: false,
       });
     } else if (path.startsWith('/school/')) {
       breadcrumbs.push({
@@ -139,6 +151,10 @@ export function DashboardTopbar({
               <BreadcrumbItem>
                 {index === breadcrumbs.length - 1 ? (
                   <BreadcrumbPage className="text-sm font-medium">
+                    {crumb.label}
+                  </BreadcrumbPage>
+                ) : crumb.navigable === false ? (
+                  <BreadcrumbPage className="text-sm text-muted-foreground font-normal">
                     {crumb.label}
                   </BreadcrumbPage>
                 ) : (

@@ -21,6 +21,10 @@ import {
   Bell,
   Search,
   ClipboardCheck,
+  Briefcase,
+  LayoutGrid,
+  Scale,
+  MessageSquare,
 } from "lucide-react";
 import {
   Sidebar,
@@ -89,19 +93,30 @@ export function DashboardSidebar({
   const navigate = useNavigate();
   const { state } = useSidebar();
   const { user, signOut } = useAuth();
-  const { role, isAdmin, isDirector, isBranchDirector, isTeacher, isParent, getDashboardPath, getRoleDisplayName } = useUserRole();
+  const { isAdmin, isDirector, isBranchDirector, isTeacher, getDashboardPath, getSettingsPath, getRoleDisplayName } = useUserRole();
   const collapsed = state === "collapsed";
 
   const dashboardPath = getDashboardPath();
 
+  const pathFromNavUrl = (url: string) => url.split('?')[0];
+
   const isActive = (path: string) => {
+    const base = pathFromNavUrl(path);
+    const { pathname } = location;
     if (path === dashboardPath) {
       if (path === '/admin') {
-        return location.pathname === '/admin' || location.pathname === '/admin/';
+        return pathname === '/admin' || pathname === '/admin/';
       }
-      return location.pathname === path || location.pathname === `${path}/`;
+      return pathname === base || pathname === `${base}/`;
     }
-    return location.pathname === path || location.pathname.startsWith(`${path}/`);
+    if (base === '/school-dashboard') {
+      return pathname === '/school-dashboard' || pathname === '/school-dashboard/';
+    }
+    // Hub page only — not active on /compliance-center/doh etc.
+    if (base === '/compliance-center') {
+      return pathname === '/compliance-center' || pathname === '/compliance-center/';
+    }
+    return pathname === base || pathname.startsWith(`${base}/`);
   };
 
   const getInitials = () => {
@@ -111,8 +126,17 @@ export function DashboardSidebar({
     return user?.email?.charAt(0).toUpperCase() || 'U';
   };
 
+  const complianceGroupOpen =
+    location.pathname.startsWith('/compliance-center') ||
+    location.pathname.startsWith('/eligibility');
+
+  const documentsGroupOpen =
+    location.pathname.startsWith('/school/pending-documents') ||
+    location.pathname.startsWith('/school/expiring-documents') ||
+    location.pathname.startsWith('/school/teacher-compliance') ||
+    location.pathname === '/all-documents';
+
   const buildNavigation = (): NavigationGroup[] => {
-    const canManageSchool = isAdmin || isDirector || isBranchDirector || isTeacher;
     const groups: NavigationGroup[] = [];
 
     // --- ADMIN-only sections ---
@@ -130,6 +154,7 @@ export function DashboardSidebar({
           { title: "Documents", url: '/admin/documents', icon: FileText },
           { title: "Audit Logs", url: '/admin/audit-logs', icon: Shield },
           { title: "Reminders", url: '/admin/reminders', icon: Bell },
+          { title: "Privacy & policy", url: '/admin/privacy-settings', icon: Scale },
           { title: "Settings", url: '/admin/settings', icon: Settings },
         ],
         collapsible: true,
@@ -154,19 +179,35 @@ export function DashboardSidebar({
     if (isDirector) {
       groups.push({
         label: "Main",
-        items: [{ title: "School Dashboard", url: dashboardPath, icon: LayoutDashboard }],
+        items: [
+          { title: "School dashboard", url: dashboardPath, icon: LayoutDashboard },
+          { title: "Director dashboard", url: '/director-dashboard', icon: Briefcase },
+        ],
       });
 
       groups.push({
-        label: "Compliance",
+        label: "Compliance center",
         items: [
+          { title: "Overview", url: '/compliance-center', icon: LayoutGrid },
           { title: "DOH", url: '/compliance-center/doh', icon: Activity },
-          { title: "Facility & Safety", url: '/compliance-center/facility', icon: Flame },
+          { title: "Facility & safety", url: '/compliance-center/facility', icon: Flame },
           { title: "Certifications", url: '/compliance-center/certifications', icon: Award },
-          { title: "Staff Eligibility", url: '/eligibility', icon: ClipboardCheck },
+          { title: "Staff eligibility", url: '/eligibility', icon: ClipboardCheck },
         ],
         collapsible: true,
-        defaultOpen: location.pathname.includes('/compliance') || location.pathname.includes('/eligibility'),
+        defaultOpen: complianceGroupOpen,
+      });
+
+      groups.push({
+        label: "Document tracking",
+        items: [
+          { title: "Pending review", url: '/school/pending-documents', icon: Clock, badge: stats.pendingDocs, isUrgent: (stats.pendingDocs ?? 0) > 0 },
+          { title: "Expiring soon", url: '/school/expiring-documents', icon: AlertTriangle, badge: stats.expiringDocs, isUrgent: (stats.expiringDocs ?? 0) > 0 },
+          { title: "Staff compliance", url: '/school/teacher-compliance', icon: Users },
+          { title: "All documents", url: '/all-documents', icon: FileText },
+        ],
+        collapsible: true,
+        defaultOpen: documentsGroupOpen,
       });
 
       groups.push({
@@ -185,7 +226,7 @@ export function DashboardSidebar({
         items: [
           { title: "Branches", url: '/school/branches', icon: MapPin },
           { title: "Requirements", url: '/admin/required-documents', icon: Shield },
-          { title: "Settings", url: '/school/settings', icon: Settings },
+          { title: "School settings", url: '/school/settings', icon: Settings },
         ],
         collapsible: true,
         defaultOpen: location.pathname.includes('/settings') || location.pathname.includes('/branches'),
@@ -198,19 +239,32 @@ export function DashboardSidebar({
     if (isBranchDirector) {
       groups.push({
         label: "Main",
-        items: [{ title: "School Dashboard", url: dashboardPath, icon: LayoutDashboard }],
+        items: [{ title: "School dashboard", url: dashboardPath, icon: LayoutDashboard }],
       });
 
       groups.push({
-        label: "Compliance",
+        label: "Compliance center",
         items: [
+          { title: "Overview", url: '/compliance-center', icon: LayoutGrid },
           { title: "DOH", url: '/compliance-center/doh', icon: Activity },
-          { title: "Facility & Safety", url: '/compliance-center/facility', icon: Flame },
+          { title: "Facility & safety", url: '/compliance-center/facility', icon: Flame },
           { title: "Certifications", url: '/compliance-center/certifications', icon: Award },
-          { title: "Staff Eligibility", url: '/eligibility', icon: ClipboardCheck },
+          { title: "Staff eligibility", url: '/eligibility', icon: ClipboardCheck },
         ],
         collapsible: true,
-        defaultOpen: location.pathname.includes('/compliance') || location.pathname.includes('/eligibility'),
+        defaultOpen: complianceGroupOpen,
+      });
+
+      groups.push({
+        label: "Document tracking",
+        items: [
+          { title: "Pending review", url: '/school/pending-documents', icon: Clock, badge: stats.pendingDocs, isUrgent: (stats.pendingDocs ?? 0) > 0 },
+          { title: "Expiring soon", url: '/school/expiring-documents', icon: AlertTriangle, badge: stats.expiringDocs, isUrgent: (stats.expiringDocs ?? 0) > 0 },
+          { title: "Staff compliance", url: '/school/teacher-compliance', icon: Users },
+          { title: "All documents", url: '/all-documents', icon: FileText },
+        ],
+        collapsible: true,
+        defaultOpen: documentsGroupOpen,
       });
 
       groups.push({
@@ -226,7 +280,7 @@ export function DashboardSidebar({
       groups.push({
         label: "Settings",
         items: [
-          { title: "Settings", url: '/school/settings', icon: Settings },
+          { title: "School settings", url: '/school/settings', icon: Settings },
         ],
         collapsible: true,
         defaultOpen: false,
@@ -240,22 +294,14 @@ export function DashboardSidebar({
       groups.push({
         label: "Main",
         items: [
-          { title: "Eligibility Portal", url: '/eligibility', icon: ClipboardCheck },
-          { title: "My Documents", url: '/all-documents', icon: FileText },
+          { title: "Eligibility portal", url: '/eligibility', icon: ClipboardCheck },
+          { title: "My documents", url: '/all-documents', icon: FileText },
         ],
       });
 
-      return groups;
-    }
-
-    // --- PARENT sections ---
-    if (isParent) {
       groups.push({
-        label: "Main",
-        items: [
-          { title: "Dashboard", url: dashboardPath, icon: LayoutDashboard },
-          { title: "My Children", url: '/dashboard/children', icon: Users },
-        ],
+        label: "Messages",
+        items: [{ title: "Message center", url: '/admin/messages', icon: MessageSquare }],
       });
 
       return groups;
@@ -451,7 +497,7 @@ export function DashboardSidebar({
               <p className="text-sm font-medium">{user?.name || 'User'}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
-            <DropdownMenuItem onClick={() => navigate('/school/settings')} className="gap-2">
+            <DropdownMenuItem onClick={() => navigate(getSettingsPath())} className="gap-2">
               <Settings className="h-4 w-4" />
               Settings
             </DropdownMenuItem>

@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useUserRole } from '@/hooks/useUserRole';
 import { toast as toastHook } from '@/hooks/use-toast';
 import { schoolService } from '@/services/schoolService';
 import { documentService } from '@/services/documentService';
 import { studentParentService } from '@/services/studentParentService';
 import { studentProfileService } from '@/services/studentProfileService';
+import { studentsService } from '@/services/studentsService';
 import { ApiError } from '@/lib/api';
 import { invitationService } from '@/services/invitationService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Search, Edit, FileText, Calendar, School as SchoolIcon, GraduationCap, Mail, CheckCircle, UserCheck, RefreshCw, X, Filter, Trash2 } from 'lucide-react';
+import { Search, Edit, FileText, Calendar, School as SchoolIcon, GraduationCap, Mail, CheckCircle, UserCheck, RefreshCw, X, Filter, Trash2, UserPlus } from 'lucide-react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import StudentInviteDialog from './StudentInviteDialog';
@@ -107,6 +109,7 @@ function getEnrollmentStatus(student: Student) {
 
 const AdminStudents = () => {
   const navigate = useNavigate();
+  const { schoolId: viewerSchoolId, isAdmin } = useUserRole();
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
@@ -122,6 +125,21 @@ const AdminStudents = () => {
   const [savingStudent, setSavingStudent] = useState(false);
   /** School at dialog open — only send `schoolId` on PATCH if this changed (avoids 403 for branch directors). */
   const [editSchoolSnapshot, setEditSchoolSnapshot] = useState<string | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [addSaving, setAddSaving] = useState(false);
+  const [newStudent, setNewStudent] = useState({
+    school_id: '',
+    first_name: '',
+    last_name: '',
+    date_of_birth: '',
+    grade_level: '',
+  });
+
+  const schoolsForAdd = useMemo(() => {
+    if (isAdmin) return schools;
+    if (viewerSchoolId) return schools.filter((s) => s.id === viewerSchoolId);
+    return schools;
+  }, [isAdmin, viewerSchoolId, schools]);
 
   // Quick filter counts - memoized to avoid recalculating on every render
   const quickFilterCounts = useMemo(() => ({
@@ -371,6 +389,84 @@ const AdminStudents = () => {
     }
   };
 
+  const openAddStudentDialog = () => {
+    const defaultSchool =
+      viewerSchoolId ||
+      (schoolsForAdd.length === 1 ? schoolsForAdd[0].id : '') ||
+      schools[0]?.id ||
+      '';
+    setNewStudent({
+      school_id: defaultSchool,
+      first_name: '',
+      last_name: '',
+      date_of_birth: '',
+      grade_level: '',
+    });
+    setIsAddDialogOpen(true);
+  };
+
+  const handleAddStudent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStudent.school_id?.trim()) {
+      toastHook({
+        variant: 'destructive',
+        title: 'School required',
+        description: 'Select which school this student is enrolled in.',
+      });
+      return;
+    }
+    const fn = newStudent.first_name?.trim();
+    const ln = newStudent.last_name?.trim();
+    if (!fn || !ln) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Name required',
+        description: 'Enter first and last name.',
+      });
+      return;
+    }
+    if (!newStudent.date_of_birth?.trim()) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Date of birth required',
+        description: 'Choose the student’s date of birth.',
+      });
+      return;
+    }
+
+    setAddSaving(true);
+    try {
+      await studentsService.create({
+        first_name: fn,
+        last_name: ln,
+        date_of_birth: newStudent.date_of_birth.trim(),
+        grade_level: newStudent.grade_level?.trim() || null,
+        school_id: newStudent.school_id.trim(),
+      });
+      toastHook({
+        title: 'Student added',
+        description: 'The student profile was created. You can invite a parent from the list.',
+      });
+      setIsAddDialogOpen(false);
+      await fetchStudents();
+    } catch (error: unknown) {
+      let message = 'Failed to add student';
+      if (error instanceof ApiError) {
+        const m = error.data?.message;
+        message = Array.isArray(m) ? m.join(', ') : (typeof m === 'string' && m ? m : error.message);
+      } else if (error instanceof Error) {
+        message = error.message;
+      }
+      toastHook({
+        variant: 'destructive',
+        title: 'Could not add student',
+        description: message,
+      });
+    } finally {
+      setAddSaving(false);
+    }
+  };
+
   const handleDeleteStudent = async (student: Student) => {
     toastHook({
       variant: 'destructive',
@@ -482,14 +578,20 @@ const AdminStudents = () => {
 
       <Card>
         <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle>Student Management</CardTitle>
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-muted-foreground">
-                <X className="h-4 w-4 mr-1" />
-                Clear filters
+            <div className="flex flex-wrap items-center gap-2">
+              <Button onClick={openAddStudentDialog} size="sm" className="gap-1.5">
+                <UserPlus className="h-4 w-4" />
+                Add student
               </Button>
-            )}
+              {hasActiveFilters && (
+                <Button variant="ghost" size="sm" onClick={clearAllFilters} className="text-muted-foreground">
+                  <X className="h-4 w-4 mr-1" />
+                  Clear filters
+                </Button>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -611,7 +713,16 @@ const AdminStudents = () => {
               <EmptyState
                 icon={GraduationCap}
                 title="No students found"
-                description={searchQuery ? "Try adjusting your search or filters" : "Students will appear here once parents register them"}
+                description={
+                  searchQuery || hasActiveFilters
+                    ? 'Try adjusting your search or filters.'
+                    : 'Add a student profile here, or parents can enroll through your school flow.'
+                }
+                action={
+                  !searchQuery && !hasActiveFilters
+                    ? { label: 'Add student', onClick: openAddStudentDialog }
+                    : undefined
+                }
               />
             ) : (
               filteredStudents.map((student) => {
@@ -640,8 +751,15 @@ const AdminStudents = () => {
                               </div>
                             )}
                             <div>
-                              <strong>Parent:</strong> {student.parent?.full_name} ({student.parent?.email})
-                              {student.parent?.phone && <span> • {student.parent.phone}</span>}
+                              <strong>Parent:</strong>{' '}
+                              {student.parent ? (
+                                <>
+                                  {student.parent.full_name} ({student.parent.email})
+                                  {student.parent.phone && <span> • {student.parent.phone}</span>}
+                                </>
+                              ) : (
+                                <span className="text-muted-foreground">Not linked — use Invite Parent</span>
+                              )}
                             </div>
                             <div>
                               <strong>Documents:</strong> {student.documents?.length || 0} uploaded
@@ -745,6 +863,89 @@ const AdminStudents = () => {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Add student</DialogTitle>
+            <DialogDescription>
+              Creates an enrolled child profile for the selected school. Link or invite a parent afterward from the list.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleAddStudent} className="space-y-4">
+            <div className="space-y-2">
+              <Label>School *</Label>
+              <Select
+                value={newStudent.school_id || '__none__'}
+                onValueChange={(v) =>
+                  setNewStudent((s) => ({ ...s, school_id: v === '__none__' ? '' : v }))
+                }
+                disabled={schoolsForAdd.length === 0}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select school" />
+                </SelectTrigger>
+                <SelectContent>
+                  {schoolsForAdd.length > 1 && (
+                    <SelectItem value="__none__">Select school…</SelectItem>
+                  )}
+                  {schoolsForAdd.map((school) => (
+                    <SelectItem key={school.id} value={school.id}>
+                      {school.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {schoolsForAdd.length === 0 && (
+                <p className="text-xs text-muted-foreground">No schools available. Try again after schools load.</p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>First name *</Label>
+                <Input
+                  value={newStudent.first_name}
+                  onChange={(e) => setNewStudent((s) => ({ ...s, first_name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Last name *</Label>
+                <Input
+                  value={newStudent.last_name}
+                  onChange={(e) => setNewStudent((s) => ({ ...s, last_name: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Date of birth *</Label>
+              <Input
+                type="date"
+                value={newStudent.date_of_birth}
+                onChange={(e) => setNewStudent((s) => ({ ...s, date_of_birth: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Grade level</Label>
+              <Input
+                value={newStudent.grade_level}
+                onChange={(e) => setNewStudent((s) => ({ ...s, grade_level: e.target.value }))}
+                placeholder="e.g., Pre-K, Kindergarten"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={addSaving}>
+                {addSaving ? 'Adding…' : 'Add student'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-2xl">

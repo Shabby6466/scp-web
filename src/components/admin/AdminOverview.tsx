@@ -15,7 +15,6 @@ import {
   ChevronRight,
   GraduationCap,
   Trash2,
-  ShieldAlert,
   Activity,
   UserPlus as UserPlusIcon,
   Upload,
@@ -263,41 +262,6 @@ const AdminOverview = () => {
                 </div>
               </div>
 
-              <div
-                className="p-4 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 shadow-sm"
-                onClick={() => navigate('/compliance-center')}
-                onKeyDown={(e) => e.key === 'Enter' && navigate('/compliance-center')}
-                role="button"
-                tabIndex={0}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center shadow-inner">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">Compliance center</p>
-                    <p className="text-sm text-muted-foreground">System health</p>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                className="p-4 rounded-lg border border-border/40 bg-card/50 hover:bg-muted/50 cursor-pointer transition-all duration-200 shadow-sm"
-                onClick={() => navigate('/admin/settings')}
-                onKeyDown={(e) => e.key === 'Enter' && navigate('/admin/settings')}
-                role="button"
-                tabIndex={0}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center shadow-inner">
-                    <ShieldAlert className="h-5 w-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">Security settings</p>
-                    <p className="text-sm text-muted-foreground">Roles and access</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </CardContent>
         </Card>

@@ -10,6 +10,11 @@ export const useUserRole = () => {
     role,
     schoolId,
     branchId,
+    getSettingsPath: () => {
+      if (!role) return '/auth';
+      if (role === 'ADMIN') return '/admin/settings';
+      return '/school/settings';
+    },
     isAdmin: role === 'ADMIN',
     isDirector: role === 'DIRECTOR',
     isBranchDirector: role === 'BRANCH_DIRECTOR',

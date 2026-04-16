@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, LogOut, Shield, Building2, Users, Briefcase, ClipboardCheck } from "lucide-react";
+import { Menu, LogOut, Shield, Building2, Users, Briefcase } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Link, useNavigate } from "react-router-dom";
@@ -100,13 +100,6 @@ const Header = ({
             {dashboardInfo.label}
           </Link>
 
-          {(isDirector || isSchool || isAdmin || isStaff) && (
-            <Link to="/compliance-center" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
-              <ClipboardCheck className="h-4 w-4" />
-              Compliance Center
-            </Link>
-          )}
-
           {showSchoolSwitcher && selectedSchool && <Select value={selectedSchool.id} onValueChange={value => {
             const school = availableSchools.find(s => s.id === value);
             if (school) setSelectedSchool(school);
@@ -180,13 +173,6 @@ const Header = ({
                 <DashboardIcon className="h-4 w-4" />
                 {dashboardInfo.label}
               </Link>
-
-              {(isDirector || isSchool || isAdmin || isStaff) && (
-                <Link to="/compliance-center" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors py-2 flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                  <ClipboardCheck className="h-4 w-4" />
-                  Compliance Center
-                </Link>
-              )}
 
               {showSchoolSwitcher && selectedSchool && <div className="py-2">
                 <Select value={selectedSchool.id} onValueChange={value => {

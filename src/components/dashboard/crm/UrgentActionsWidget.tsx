@@ -62,7 +62,9 @@ export function UrgentActionsWidget({
   const handleClick = (action: UrgentAction) => {
     if (onActionClick) {
       onActionClick(action);
-    } else {
+      return;
+    }
+    if (action.route) {
       navigate(action.route);
     }
   };
@@ -140,7 +142,9 @@ export function UrgentActionsWidget({
           return (
             <div
               key={action.id}
-              className="flex items-center justify-between py-2.5 px-2 -mx-2 rounded-lg hover:bg-muted/40 transition-colors cursor-pointer group"
+              className={`flex items-center justify-between py-2.5 px-2 -mx-2 rounded-lg transition-colors group ${
+                action.route || onActionClick ? 'cursor-pointer hover:bg-muted/40' : 'cursor-default opacity-95'
+              }`}
               onClick={() => handleClick(action)}
             >
               <div className="flex items-center gap-2.5 min-w-0">
@@ -164,14 +168,16 @@ export function UrgentActionsWidget({
                   </Badge>
                 </div>
               </div>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="shrink-0 h-8 px-2"
-              >
-                {action.ctaLabel}
-                <ChevronRight className="h-3 w-3 ml-1" />
-              </Button>
+              {(action.route || onActionClick) && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="shrink-0 h-8 px-2"
+                >
+                  {action.ctaLabel}
+                  <ChevronRight className="h-3 w-3 ml-1" />
+                </Button>
+              )}
             </div>
           );
         })}

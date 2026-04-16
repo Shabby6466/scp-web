@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { analyticsService } from '@/services/analyticsService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Heart, 
   ShieldCheck, 
   Award, 
-  ChevronRight, 
   AlertCircle,
   CheckCircle,
   Clock
@@ -39,7 +36,6 @@ interface ComplianceStats {
 }
 
 export const ComplianceQuickView = ({ schoolId, compact = false }: ComplianceQuickViewProps) => {
-  const navigate = useNavigate();
   const [stats, setStats] = useState<ComplianceStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -136,10 +132,7 @@ export const ComplianceQuickView = ({ schoolId, compact = false }: ComplianceQui
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-6 w-48" />
-          <Skeleton className="h-9 w-32" />
-        </div>
+        <Skeleton className="h-6 w-48" />
         <div className="grid md:grid-cols-3 gap-4">
           {[...Array(3)].map((_, i) => (
             <Card key={i}>
@@ -164,7 +157,6 @@ export const ComplianceQuickView = ({ schoolId, compact = false }: ComplianceQui
       primaryLabel: 'Student Compliance',
       secondaryValue: stats?.doh.teacherCompliance || 0,
       secondaryLabel: 'Teacher Compliance',
-      path: '/compliance-center/doh',
     },
     {
       title: 'Facility & Safety',
@@ -174,7 +166,6 @@ export const ComplianceQuickView = ({ schoolId, compact = false }: ComplianceQui
       primaryValue: stats?.facility.readinessScore || 0,
       primaryLabel: 'Readiness Score',
       overdueCount: stats?.facility.overdueCount || 0,
-      path: '/compliance-center/facility',
     },
     {
       title: 'Certifications',
@@ -183,26 +174,19 @@ export const ComplianceQuickView = ({ schoolId, compact = false }: ComplianceQui
       iconBg: 'bg-amber-100 dark:bg-amber-900/30',
       expiringSoon: stats?.certifications.expiringSoon || 0,
       expired: stats?.certifications.expired || 0,
-      path: '/compliance-center/certifications',
     },
   ];
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <ShieldCheck className="h-5 w-5 text-muted-foreground" />
           Compliance at a Glance
         </h2>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => navigate('/compliance-center')}
-          className="gap-1"
-        >
-          View Compliance Center
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+        <p className="text-xs text-muted-foreground sm:text-right">
+          Use the sidebar to open DOH, facility, or certifications.
+        </p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
@@ -217,7 +201,7 @@ export const ComplianceQuickView = ({ schoolId, compact = false }: ComplianceQui
           return (
             <Card 
               key={index} 
-              className="hover:shadow-md transition-all cursor-pointer group border-l-4"
+              className="transition-shadow border-l-4"
               style={{
                 borderLeftColor: percentage >= 90 
                   ? 'hsl(var(--chart-2))' 
@@ -225,7 +209,6 @@ export const ComplianceQuickView = ({ schoolId, compact = false }: ComplianceQui
                     ? 'hsl(var(--chart-4))' 
                     : 'hsl(var(--destructive))'
               }}
-              onClick={() => navigate(card.path)}
             >
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -235,7 +218,6 @@ export const ComplianceQuickView = ({ schoolId, compact = false }: ComplianceQui
                     </div>
                     {card.title}
                   </CardTitle>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">

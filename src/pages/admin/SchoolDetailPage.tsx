@@ -4,7 +4,6 @@ import { schoolService } from "@/services/schoolService";
 import { branchService } from "@/services/branchService";
 import { userService } from "@/services/userService";
 import { documentService } from "@/services/documentService";
-import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +15,7 @@ import {
   Calendar, Shield, AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 import { StudentComplianceBreakdown } from "@/components/compliance/StudentComplianceBreakdown";
 import { TeacherComplianceBreakdown } from "@/components/compliance/TeacherComplianceBreakdown";
 import { SchoolAdminInviteSection } from "@/components/admin/SchoolAdminInviteSection";
@@ -40,6 +39,39 @@ interface School {
   license_number: string | null;
   certification_number: string | null;
   approved_at: string | null;
+}
+
+function safeFormatDate(raw: unknown, fmt: string): string {
+  if (raw == null || raw === "") return "—";
+  const d = raw instanceof Date ? raw : new Date(raw as string | number);
+  if (!isValid(d)) return "—";
+  return format(d, fmt);
+}
+
+/** Map GET /schools/:id payload (camelCase) to the shape this page uses. */
+function mapSchoolFromApi(raw: unknown): School {
+  const r = raw as Record<string, any>;
+  const created = r.createdAt ?? r.created_at;
+  const approved = r.approvedAt ?? r.approved_at;
+  return {
+    id: String(r.id),
+    name: String(r.name ?? ""),
+    email: String(r.email ?? ""),
+    phone: String(r.phone ?? ""),
+    address: String(r.address ?? ""),
+    city: String(r.city ?? ""),
+    state: String(r.state ?? ""),
+    zip_code: String(r.zipCode ?? r.zip_code ?? ""),
+    website: r.website != null ? String(r.website) : null,
+    is_approved: !!(r.isApproved ?? r.is_approved),
+    total_capacity: r.totalCapacity ?? r.total_capacity ?? null,
+    min_age: r.minAge ?? r.min_age ?? null,
+    max_age: r.maxAge ?? r.max_age ?? null,
+    created_at: created != null ? String(created) : "",
+    license_number: r.licenseNumber ?? r.license_number ?? null,
+    certification_number: r.certificationNumber ?? r.certification_number ?? null,
+    approved_at: approved != null && approved !== "" ? String(approved) : null,
+  };
 }
 
 interface Stats {
@@ -85,7 +117,7 @@ export default function SchoolDetailPage() {
         documentService.search({ schoolId: id, status: 'approved' }),
       ]);
 
-      setSchool(schoolData as School);
+      setSchool(mapSchoolFromApi(schoolData));
 
       const studentsList = Array.isArray(studentsData) ? studentsData : (studentsData as any)?.data ?? [];
       const teachersList = Array.isArray(teachersData) ? teachersData : (teachersData as any)?.data ?? [];
@@ -101,7 +133,15 @@ export default function SchoolDetailPage() {
         approvedDocs: approvedList.length,
       });
 
-      setBranches(branchesList);
+      setBranches(
+        branchesList.map((b: Record<string, any>) => ({
+          id: String(b.id),
+          branch_name: String(b.branch_name ?? b.name ?? ""),
+          address: String(b.address ?? ""),
+          city: String(b.city ?? ""),
+          is_primary: !!(b.is_primary ?? b.isPrimary),
+        })),
+      );
     } catch (error) {
       console.error("Error loading school:", error);
       toast.error("Failed to load school details");
@@ -126,43 +166,34 @@ export default function SchoolDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container px-4 py-8 pt-24">
-          <div className="max-w-6xl mx-auto space-y-6">
-            <Skeleton className="h-8 w-64" />
-            <div className="grid md:grid-cols-4 gap-4">
-              {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24" />)}
-            </div>
-          </div>
-        </main>
+      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
+        <Skeleton className="h-8 w-64" />
+        <div className="grid md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-24" />
+          ))}
+        </div>
       </div>
     );
   }
 
   if (!school) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container px-4 py-8 pt-24 flex items-center justify-center">
-          <Card className="max-w-md">
-            <CardContent className="pt-6 text-center">
-              <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h2 className="text-xl font-semibold mb-2">School Not Found</h2>
-              <Button onClick={() => navigate("/admin")}>Back to Admin</Button>
-            </CardContent>
-          </Card>
-        </main>
+      <div className="mx-auto flex w-full max-w-6xl justify-center px-4 py-12">
+        <Card className="max-w-md">
+          <CardContent className="pt-6 text-center">
+            <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-xl font-semibold mb-2">School Not Found</h2>
+            <Button onClick={() => navigate("/admin")}>Back to Admin</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container px-4 py-8 pt-24">
-        <div className="max-w-6xl mx-auto space-y-6">
-          {/* Header */}
+    <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
+        {/* Page title */}
           <div className="flex items-start justify-between">
             <div className="flex items-start gap-4">
               <Button variant="outline" size="icon" onClick={() => navigate("/admin")}>
@@ -285,15 +316,15 @@ export default function SchoolDetailPage() {
                       <Calendar className="h-4 w-4 text-muted-foreground" />
                       <div>
                         <p className="text-xs text-muted-foreground">Registered</p>
-                        <p className="font-medium text-sm">{format(new Date(school.created_at), "MMMM d, yyyy")}</p>
+                        <p className="font-medium text-sm">{safeFormatDate(school.created_at, "MMMM d, yyyy")}</p>
                       </div>
                     </div>
-                    {school.approved_at && (
+                    {school.is_approved && (
                       <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                         <CheckCircle className="h-4 w-4 text-green-500" />
                         <div>
                           <p className="text-xs text-muted-foreground">Approved</p>
-                          <p className="font-medium text-sm">{format(new Date(school.approved_at), "MMMM d, yyyy")}</p>
+                          <p className="font-medium text-sm">{safeFormatDate(school.approved_at, "MMMM d, yyyy")}</p>
                         </div>
                       </div>
                     )}
@@ -394,8 +425,6 @@ export default function SchoolDetailPage() {
               </Card>
             </TabsContent>
           </Tabs>
-        </div>
-      </main>
     </div>
   );
 }

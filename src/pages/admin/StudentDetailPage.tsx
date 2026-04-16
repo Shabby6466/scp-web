@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { studentProfileService } from "@/services/studentProfileService";
-import { documentTypeService } from "@/services/documentTypeService";
 import { documentService } from "@/services/documentService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -162,7 +161,7 @@ export default function StudentDetailPage() {
       ]);
 
       const [requiredDocs, docs] = await Promise.all([
-        documentTypeService.list({ schoolId: mapped.school_id, targetRole: 'STUDENT' }),
+        studentProfileService.listRequiredDocumentTypes(id),
         documentService.listByOwner(id),
       ]);
 
