@@ -18,9 +18,6 @@ import {
   GraduationCap
 } from "lucide-react";
 import { RosterImportWizard } from "@/components/roster";
-import AdminStudents from "@/components/admin/AdminStudents";
-import AdminTeachers from "@/components/admin/AdminTeachers";
-import AdminParents from "@/components/admin/AdminParents";
 import AdminDocuments from "@/components/admin/AdminDocuments";
 import { DirectorManagement } from "@/components/school/DirectorManagement";
 import TeacherInviteDialog from "@/components/admin/TeacherInviteDialog";
@@ -47,7 +44,7 @@ const SchoolDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { canManageSchool, isParent, loading: roleLoading } = useUserRole();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
   // Core state
@@ -86,6 +83,22 @@ const SchoolDashboard = () => {
   const [sendingInvite, setSendingInvite] = useState(false);
 
   const activeTab = searchParams.get('tab') || 'overview';
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'students') {
+      navigate('/school/students', { replace: true });
+      return;
+    }
+    if (tab === 'teachers') {
+      navigate('/school/staff', { replace: true });
+      return;
+    }
+    if (tab === 'parents') {
+      navigate('/school/parents', { replace: true });
+      return;
+    }
+  }, [searchParams, navigate]);
 
   // Auth and role check
   useEffect(() => {
@@ -206,7 +219,7 @@ const SchoolDashboard = () => {
           type: 'due-soon',
           daysUntilDue: 30,
           ctaLabel: 'View',
-          route: '/school-dashboard?tab=teachers',
+          route: '/school/staff',
           icon: 'certifications',
           isLicensingRelated: true,
         };
@@ -226,7 +239,7 @@ const SchoolDashboard = () => {
           count: notInvitedCount,
           type: 'action-needed',
           ctaLabel: 'Send Invites',
-          route: '/school-dashboard?tab=parents',
+          route: '/school/parents',
           icon: 'invites',
         };
         action.priorityScore = calculatePriorityScore(action);
@@ -284,7 +297,7 @@ const SchoolDashboard = () => {
           description: 'Invitation pending >7 days',
           priorityScore: 40,
           ctaLabel: 'Resend',
-          route: '/school-dashboard?tab=parents',
+          route: '/school/parents',
         });
       });
 
@@ -378,10 +391,6 @@ const SchoolDashboard = () => {
     }
   };
 
-  const handleTabChange = (tab: string) => {
-    setSearchParams({ tab });
-  };
-
   // Loading state
   if (loading || authLoading || roleLoading) {
     return (
@@ -408,31 +417,6 @@ const SchoolDashboard = () => {
             <Button onClick={() => navigate("/school-register")}>Register Your School</Button>
           </CardContent>
         </Card>
-      </div>
-    );
-  }
-
-  // Render content based on active tab (sidebar handles navigation)
-  if (activeTab === 'students') {
-    return (
-      <div className="p-6">
-        <AdminStudents />
-      </div>
-    );
-  }
-
-  if (activeTab === 'teachers') {
-    return (
-      <div className="p-6">
-        <AdminTeachers />
-      </div>
-    );
-  }
-
-  if (activeTab === 'parents') {
-    return (
-      <div className="p-6">
-        <AdminParents />
       </div>
     );
   }
@@ -493,7 +477,7 @@ const SchoolDashboard = () => {
         selectedBranchId={selectedBranchId}
         onBranchChange={setSelectedBranchId}
         onImportRoster={() => setIsRosterImportOpen(true)}
-        onInviteParent={() => handleTabChange('parents')}
+        onInviteParent={() => navigate('/school/parents')}
         isApproved={school.isApproved}
       />
 
@@ -516,7 +500,7 @@ const SchoolDashboard = () => {
         <InvitesStatusWidget
           stats={inviteStats}
           loading={statsLoading}
-          onSendInvites={() => handleTabChange('parents')}
+          onSendInvites={() => navigate('/school/parents')}
         />
 
         {/* Compliance Snapshot */}
@@ -546,24 +530,24 @@ const SchoolDashboard = () => {
           total={directoryStats.students.total}
           alertCount={directoryStats.students.missingDocs}
           alertLabel="missing docs"
-          route="/school-dashboard?tab=students"
-          onClick={() => handleTabChange('students')}
+          route="/school/students"
+          onClick={() => navigate('/school/students')}
         />
         <DirectoryCard
           type="parents"
           total={directoryStats.parents.total}
           alertCount={directoryStats.parents.notInvited}
           alertLabel="not invited"
-          route="/school-dashboard?tab=parents"
-          onClick={() => handleTabChange('parents')}
+          route="/school/parents"
+          onClick={() => navigate('/school/parents')}
         />
         <DirectoryCard
           type="staff"
           total={directoryStats.staff.total}
           alertCount={directoryStats.staff.expiring}
           alertLabel="expiring"
-          route="/school-dashboard?tab=teachers"
-          onClick={() => handleTabChange('teachers')}
+          route="/school/staff"
+          onClick={() => navigate('/school/staff')}
         />
         <DirectoryCard
           type="documents"

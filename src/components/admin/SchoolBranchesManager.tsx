@@ -27,10 +27,12 @@ interface SchoolBranchesManagerProps {
   branches: SchoolBranch[];
   onChange: (branches: SchoolBranch[]) => void;
   defaultState?: string;
+  /** ADMIN & DIRECTOR: create/delete branches. Branch directors only edit existing rows. */
+  allowAddRemove?: boolean;
 }
 
 const emptyBranch = (isPrimary: boolean, defaultState: string = "NY"): SchoolBranch => ({
-  branch_name: isPrimary ? "Main Location" : "",
+  branch_name: isPrimary ? "Main branch" : "",
   address: "",
   city: "",
   state: defaultState,
@@ -44,10 +46,11 @@ const emptyBranch = (isPrimary: boolean, defaultState: string = "NY"): SchoolBra
   notes: "",
 });
 
-export const SchoolBranchesManager = ({ 
-  branches, 
+export const SchoolBranchesManager = ({
+  branches,
   onChange,
-  defaultState = "NY" 
+  defaultState = "NY",
+  allowAddRemove = true,
 }: SchoolBranchesManagerProps) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
@@ -89,22 +92,24 @@ export const SchoolBranchesManager = ({
         <div>
           <h3 className="text-lg font-bold flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
-            School Locations/Branches
+            Branches
           </h3>
           <p className="text-sm text-muted-foreground">
-            Add multiple locations with different age ranges and capacities
+            Each branch is a campus or site (address, ages served, capacity).
           </p>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addBranch}
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Add Location
-        </Button>
+        {allowAddRemove && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addBranch}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add branch
+          </Button>
+        )}
       </div>
 
       {branches.length === 0 ? (
@@ -112,12 +117,16 @@ export const SchoolBranchesManager = ({
           <CardContent className="flex flex-col items-center justify-center py-8 text-center">
             <Building className="h-12 w-12 text-muted-foreground mb-3" />
             <p className="text-muted-foreground mb-4">
-              No locations added yet. Click "Add Location" to get started.
+              {allowAddRemove
+                ? 'No branches yet. Add your main campus to get started.'
+                : 'No branch record loaded. Contact a school director if this looks wrong.'}
             </p>
-            <Button type="button" onClick={addBranch} className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add First Location
-            </Button>
+            {allowAddRemove && (
+              <Button type="button" onClick={addBranch} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add branch
+              </Button>
+            )}
           </CardContent>
         </Card>
       ) : (
@@ -128,7 +137,7 @@ export const SchoolBranchesManager = ({
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Building className="h-4 w-4" />
-                    {branch.branch_name || `Location ${index + 1}`}
+                    {branch.branch_name || `Branch ${index + 1}`}
                     {branch.is_primary && (
                       <Badge variant="default" className="ml-2">Primary</Badge>
                     )}
@@ -147,7 +156,7 @@ export const SchoolBranchesManager = ({
                       variant="ghost"
                       size="sm"
                       onClick={() => removeBranch(index)}
-                      disabled={branches.length === 1}
+                      disabled={branches.length === 1 || !allowAddRemove}
                     >
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
@@ -167,7 +176,7 @@ export const SchoolBranchesManager = ({
                 <CardContent className="space-y-4">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Branch/Location Name *</Label>
+                      <Label>Branch name *</Label>
                       <Input
                         value={branch.branch_name}
                         onChange={(e) => updateBranch(index, "branch_name", e.target.value)}
@@ -183,10 +192,10 @@ export const SchoolBranchesManager = ({
                           onChange={(e) => updateBranch(index, "is_primary", e.target.checked)}
                           className="rounded"
                         />
-                        Set as Primary Location
+                        Set as primary branch
                       </Label>
                       <p className="text-xs text-muted-foreground">
-                        The primary location will be used for main communications
+                        The primary branch is used as the default site for communications when relevant
                       </p>
                     </div>
                   </div>

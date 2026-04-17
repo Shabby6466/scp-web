@@ -129,9 +129,8 @@ const SchoolRegister = () => {
       });
 
       await Promise.all(
-        branches.map(branch =>
-          branchService.create({
-            schoolId: school.id,
+        branches.map((branch) =>
+          branchService.create(school.id, {
             name: branch.branch_name,
             address: branch.address,
             city: branch.city,
@@ -144,8 +143,8 @@ const SchoolRegister = () => {
             totalCapacity: branch.total_capacity,
             isPrimary: branch.is_primary,
             notes: branch.notes || null,
-          })
-        )
+          }),
+        ),
       );
 
       toast.success("School registered successfully!");

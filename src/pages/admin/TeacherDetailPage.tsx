@@ -6,7 +6,7 @@ import { documentService } from "@/services/documentService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 type Teacher = {
@@ -194,16 +194,11 @@ export default function TeacherDetailPage() {
 
   return (
     <div className="space-y-6 p-6 max-w-4xl mx-auto">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-semibold">
-            {teacher.first_name} {teacher.last_name}
-          </h1>
-          <p className="text-sm text-muted-foreground">{teacher.email}</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-semibold">
+          {teacher.first_name} {teacher.last_name}
+        </h1>
+        <p className="text-sm text-muted-foreground">{teacher.email}</p>
       </div>
 
       <Card className="p-6">

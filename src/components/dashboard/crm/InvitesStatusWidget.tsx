@@ -124,7 +124,7 @@ export function InvitesStatusWidget({
             size="sm"
             variant="outline"
             className="flex-1 gap-1.5"
-            onClick={() => onViewLog ? onViewLog() : navigate('/school-dashboard?tab=parents')}
+            onClick={() => onViewLog ? onViewLog() : navigate('/school/parents')}
           >
             View Log
             <ChevronRight className="h-4 w-4" />

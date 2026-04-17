@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Calendar, Clock, FileText, Search, User, Eye, CheckCircle, XCircle, Filter, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, FileText, Search, User, Eye, CheckCircle, XCircle, Filter } from 'lucide-react';
 /**
  * PendingDocuments - School document review page
  * 
@@ -262,17 +262,11 @@ const PendingDocuments = () => {
   return (
     <div className="space-y-6 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Document Review</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Review and approve student documents submitted by parents
-          </p>
-        </div>
-        <Button variant="outline" onClick={() => navigate('/school-dashboard')} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Dashboard
-        </Button>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Document Review</h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Review and approve student documents submitted by parents
+        </p>
       </div>
 
       {/* Statistics */}

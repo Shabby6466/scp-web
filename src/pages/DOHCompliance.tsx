@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useComplianceData } from "@/hooks/useComplianceData";
+import { COMPLIANCE_CATEGORY_SLUG } from "@/constants/complianceCategories";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ComplianceOverview } from "@/components/compliance/ComplianceOverview";
@@ -26,7 +27,14 @@ const DOHCompliance = () => {
   }, [canManageSchool, roleLoading, navigate]);
 
   const effectiveSchoolId = isAdmin ? undefined : (schoolId ?? undefined);
-  const { stats, expiringDocs, expiredDocs, loading, refresh } = useComplianceData(effectiveSchoolId);
+  const { stats, loading: statsLoading } = useComplianceData(
+    effectiveSchoolId,
+    undefined,
+    COMPLIANCE_CATEGORY_SLUG.DOH,
+  );
+  const { expiringDocs, expiredDocs, loading: listsLoading, refresh } =
+    useComplianceData(effectiveSchoolId);
+  const loading = statsLoading || listsLoading;
 
   if (roleLoading) {
     return (

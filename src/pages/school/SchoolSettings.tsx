@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Save, Building2, Phone, Mail, MapPin, Globe, Users } from 'lucide-react';
+import { Save, Building2, Phone, Mail, MapPin, Globe, Users } from 'lucide-react';
 
 /**
  * SchoolSettings - School settings page
@@ -172,7 +172,7 @@ const SchoolSettings = () => {
             <CardDescription>You don't have access to any school settings.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => navigate(-1)}>Go Back</Button>
+            <Button onClick={() => navigate('/school-dashboard')}>Go to school dashboard</Button>
           </CardContent>
         </Card>
       </div>
@@ -183,10 +183,6 @@ const SchoolSettings = () => {
     <div className="p-6 pb-10">
       <div className="mx-auto w-full max-w-4xl space-y-6">
           <div className="space-y-2">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="-ml-2 gap-1.5 w-fit">
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
             <h1 className="text-3xl font-display font-bold tracking-tight">School Settings</h1>
             <p className="text-muted-foreground text-sm sm:text-base">
               Manage your school&apos;s information and settings

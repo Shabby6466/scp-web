@@ -1,10 +1,15 @@
 import { api } from '@/lib/api';
 
 export const analyticsService = {
-  getComplianceStats: (params?: { schoolId?: string; branchId?: string }) => {
+  getComplianceStats: (params?: {
+    schoolId?: string;
+    branchId?: string;
+    categorySlug?: string;
+  }) => {
     const qs = new URLSearchParams();
     if (params?.schoolId) qs.set('schoolId', params.schoolId);
     if (params?.branchId) qs.set('branchId', params.branchId);
+    if (params?.categorySlug) qs.set('categorySlug', params.categorySlug);
     return api.get(`/analytics/compliance/stats?${qs.toString()}`);
   },
   getExpiringDocuments: (params?: { schoolId?: string; branchId?: string; days?: number; limit?: number }) => {

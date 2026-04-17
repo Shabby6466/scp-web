@@ -15,7 +15,7 @@ const steps = [
     title: "Upload Required Documents",
     description: "Add your school's required document list and templates",
     icon: Upload,
-    path: "/school/required-documents",
+    path: "/school/student-requirements",
   },
   {
     id: 2,

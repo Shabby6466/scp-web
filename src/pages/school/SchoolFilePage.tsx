@@ -379,13 +379,13 @@ export default function SchoolFilePage() {
                     <Badge variant="destructive" className="ml-auto">{stats?.pendingDocs}</Badge>
                   )}
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => navigate("/admin/required-documents")}>
+                <Button variant="outline" className="justify-start" onClick={() => navigate("/school/student-requirements")}>
                   <Shield className="h-4 w-4 mr-2" />
-                  Student Requirements
+                  Student document requirements
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => navigate("/admin/staff-requirements")}>
+                <Button variant="outline" className="justify-start" onClick={() => navigate("/school/staff-documents")}>
                   <GraduationCap className="h-4 w-4 mr-2" />
-                  Staff Requirements
+                  Staff document requirements
                 </Button>
                 <Button variant="outline" className="justify-start" onClick={() => navigate("/school/branches")}>
                   <MapPin className="h-4 w-4 mr-2" />

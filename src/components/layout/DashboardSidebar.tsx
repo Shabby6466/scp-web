@@ -26,6 +26,7 @@ import {
   LayoutGrid,
   Scale,
   MessageSquare,
+  UsersRound,
 } from "lucide-react";
 import {
   Sidebar,
@@ -62,7 +63,8 @@ interface NavigationItem {
   title: string;
   url: string;
   icon: React.ComponentType<{ className?: string }>;
-  badge?: number | string;
+  /** Shown next to the label when set (including 0). */
+  badge?: number;
   isUrgent?: boolean;
 }
 
@@ -82,6 +84,10 @@ interface DashboardSidebarProps {
     studentCount?: number;
     teacherCount?: number;
     parentCount?: number;
+    branchCount?: number;
+    directorCount?: number;
+    branchDirectorCount?: number;
+    schoolCount?: number;
   };
 }
 
@@ -103,16 +109,56 @@ export function DashboardSidebar({
 
   const isActive = (path: string) => {
     const base = pathFromNavUrl(path);
-    const { pathname } = location;
+    const { pathname, search } = location;
+
+    // Same pathname but different ?tab= — must match tab or only one item highlights.
+    if (base === '/school-dashboard') {
+      if (pathname !== '/school-dashboard' && pathname !== '/school-dashboard/') return false;
+      const currentTab = new URLSearchParams(search).get('tab') || 'overview';
+      const itemQs = path.includes('?') ? path.split('?')[1] : '';
+      const itemTab = new URLSearchParams(itemQs).get('tab');
+      if (itemTab == null || itemTab === '') {
+        return currentTab === 'overview';
+      }
+      return itemTab === currentTab;
+    }
+
     if (path === dashboardPath) {
       if (path === '/admin') {
         return pathname === '/admin' || pathname === '/admin/';
       }
       return pathname === base || pathname === `${base}/`;
     }
-    if (base === '/school-dashboard') {
-      return pathname === '/school-dashboard' || pathname === '/school-dashboard/';
+
+    if (base === '/school/students') {
+      return (
+        pathname === '/school/students' ||
+        pathname === '/school/students/' ||
+        pathname.startsWith('/admin/student/')
+      );
     }
+    if (base === '/school/staff') {
+      return (
+        pathname === '/school/staff' ||
+        pathname === '/school/staff/' ||
+        pathname.startsWith('/admin/teacher/')
+      );
+    }
+    if (base === '/school/parents') {
+      return pathname === '/school/parents' || pathname === '/school/parents/';
+    }
+    if (base === '/school/branches') {
+      return pathname === '/school/branches' || pathname === '/school/branches/';
+    }
+    if (base === '/school/branch-directors') {
+      return (
+        pathname === '/school/branch-directors' ||
+        pathname === '/school/branch-directors/' ||
+        pathname === '/school/leadership' ||
+        pathname === '/school/leadership/'
+      );
+    }
+
     // Hub page only — not active on /compliance-center/doh etc.
     if (base === '/compliance-center') {
       return pathname === '/compliance-center' || pathname === '/compliance-center/';
@@ -137,6 +183,32 @@ export function DashboardSidebar({
     location.pathname.startsWith('/school/teacher-compliance') ||
     location.pathname === '/all-documents';
 
+  const requirementsGroupOpen =
+    location.pathname.includes('/student-requirements') ||
+    location.pathname.includes('/staff-documents');
+
+  const schoolPeoplePaths =
+    location.pathname === '/school/students' ||
+    location.pathname === '/school/students/' ||
+    location.pathname === '/school/staff' ||
+    location.pathname === '/school/staff/' ||
+    location.pathname === '/school/parents' ||
+    location.pathname === '/school/parents/' ||
+    location.pathname === '/school/branch-directors' ||
+    location.pathname === '/school/branch-directors/';
+
+  const schoolGroupOpen =
+    location.pathname.includes('/school/settings') ||
+    location.pathname.includes('/school/branches') ||
+    location.pathname === '/school-dashboard' ||
+    location.pathname === '/school-dashboard/' ||
+    schoolPeoplePaths;
+
+  const adminSchoolGroupOpen =
+    location.pathname === '/admin/schools' ||
+    location.pathname === '/admin/schools/' ||
+    location.pathname.startsWith('/admin/school/');
+
   const buildNavigation = (): NavigationGroup[] => {
     const groups: NavigationGroup[] = [];
 
@@ -148,13 +220,19 @@ export function DashboardSidebar({
       });
 
       groups.push({
+        label: "School",
+        items: [
+          { title: "Schools", url: '/admin/schools', icon: School, badge: stats.schoolCount },
+          { title: "Branches", url: '/admin/schools', icon: MapPin, badge: stats.branchCount },
+        ],
+        collapsible: true,
+        defaultOpen: adminSchoolGroupOpen,
+      });
+
+      groups.push({
         label: "Platform",
         items: [
-          { title: "Schools", url: '/admin/schools', icon: School },
-          { title: "Directors", url: '/admin/directors', icon: UserCog },
           { title: "Documents", url: '/admin/documents', icon: FileText },
-          { title: "Student requirements", url: '/admin/required-documents', icon: ClipboardList },
-          { title: "Staff requirements", url: '/admin/staff-requirements', icon: GraduationCap },
           { title: "Audit Logs", url: '/admin/audit-logs', icon: Shield },
           { title: "Reminders", url: '/admin/reminders', icon: Bell },
           { title: "Privacy & policy", url: '/admin/privacy-settings', icon: Scale },
@@ -165,11 +243,28 @@ export function DashboardSidebar({
       });
 
       groups.push({
+        label: "Requirements",
+        items: [
+          { title: "Student document requirements", url: '/admin/student-requirements', icon: ClipboardList },
+          { title: "Staff document requirements", url: '/admin/staff-documents', icon: GraduationCap },
+        ],
+        collapsible: true,
+        defaultOpen: requirementsGroupOpen,
+      });
+
+      groups.push({
         label: "People",
         items: [
           { title: "Students", url: '/admin/students', icon: Users, badge: stats.studentCount },
           { title: "Staff", url: '/admin/staff', icon: GraduationCap, badge: stats.teacherCount },
           { title: "Parents", url: '/admin/parents', icon: UserCircle, badge: stats.parentCount },
+          { title: "School directors", url: '/admin/directors', icon: UserCog, badge: stats.directorCount },
+          {
+            title: "Branch directors",
+            url: '/admin/branch-directors',
+            icon: UsersRound,
+            badge: stats.branchDirectorCount,
+          },
         ],
         collapsible: true,
         defaultOpen: true,
@@ -182,10 +277,27 @@ export function DashboardSidebar({
     if (isDirector) {
       groups.push({
         label: "Main",
+        items: [{ title: "Director dashboard", url: '/director-dashboard', icon: Briefcase }],
+      });
+
+      groups.push({
+        label: "School",
         items: [
           { title: "School dashboard", url: dashboardPath, icon: LayoutDashboard },
-          { title: "Director dashboard", url: '/director-dashboard', icon: Briefcase },
+          { title: "Branches", url: '/school/branches', icon: MapPin, badge: stats.branchCount },
+          { title: "School settings", url: '/school/settings', icon: Settings },
+          { title: "Students", url: '/school/students', icon: Users, badge: stats.studentCount },
+          { title: "Staff", url: '/school/staff', icon: GraduationCap, badge: stats.teacherCount },
+          { title: "Parents", url: '/school/parents', icon: UserCircle, badge: stats.parentCount },
+          {
+            title: "Branch directors",
+            url: '/school/branch-directors',
+            icon: UsersRound,
+            badge: stats.branchDirectorCount,
+          },
         ],
+        collapsible: true,
+        defaultOpen: schoolGroupOpen,
       });
 
       groups.push({
@@ -214,30 +326,13 @@ export function DashboardSidebar({
       });
 
       groups.push({
-        label: "People",
+        label: "Requirements",
         items: [
-          { title: "Students", url: '/school-dashboard?tab=students', icon: Users, badge: stats.studentCount },
-          { title: "Staff", url: '/school-dashboard?tab=teachers', icon: GraduationCap, badge: stats.teacherCount },
-          { title: "Parents", url: '/school-dashboard?tab=parents', icon: UserCircle, badge: stats.parentCount },
+          { title: "Student document requirements", url: '/school/student-requirements', icon: ClipboardList },
+          { title: "Staff document requirements", url: '/school/staff-documents', icon: GraduationCap },
         ],
         collapsible: true,
-        defaultOpen: true,
-      });
-
-      groups.push({
-        label: "Settings",
-        items: [
-          { title: "Branches", url: '/school/branches', icon: MapPin },
-          { title: "Requirements", url: '/admin/required-documents', icon: Shield },
-          { title: "Staff requirements", url: '/admin/staff-requirements', icon: GraduationCap },
-          { title: "School settings", url: '/school/settings', icon: Settings },
-        ],
-        collapsible: true,
-        defaultOpen:
-          location.pathname.includes('/settings') ||
-          location.pathname.includes('/branches') ||
-          location.pathname.includes('/required-documents') ||
-          location.pathname.includes('/staff-requirements'),
+        defaultOpen: requirementsGroupOpen,
       });
 
       return groups;
@@ -246,8 +341,22 @@ export function DashboardSidebar({
     // --- BRANCH_DIRECTOR sections ---
     if (isBranchDirector) {
       groups.push({
-        label: "Main",
-        items: [{ title: "School dashboard", url: dashboardPath, icon: LayoutDashboard }],
+        label: "School",
+        items: [
+          { title: "School dashboard", url: dashboardPath, icon: LayoutDashboard },
+          { title: "School settings", url: '/school/settings', icon: Settings },
+          { title: "Students", url: '/school/students', icon: Users, badge: stats.studentCount },
+          { title: "Staff", url: '/school/staff', icon: GraduationCap, badge: stats.teacherCount },
+          { title: "Parents", url: '/school/parents', icon: UserCircle, badge: stats.parentCount },
+          {
+            title: "Branch directors",
+            url: '/school/branch-directors',
+            icon: UsersRound,
+            badge: stats.branchDirectorCount,
+          },
+        ],
+        collapsible: true,
+        defaultOpen: schoolGroupOpen,
       });
 
       groups.push({
@@ -276,27 +385,13 @@ export function DashboardSidebar({
       });
 
       groups.push({
-        label: "People",
+        label: "Requirements",
         items: [
-          { title: "Students", url: '/school-dashboard?tab=students', icon: Users, badge: stats.studentCount },
-          { title: "Staff", url: '/school-dashboard?tab=teachers', icon: GraduationCap, badge: stats.teacherCount },
+          { title: "Student document requirements", url: '/school/student-requirements', icon: ClipboardList },
+          { title: "Staff document requirements", url: '/school/staff-documents', icon: GraduationCap },
         ],
         collapsible: true,
-        defaultOpen: true,
-      });
-
-      groups.push({
-        label: "Settings",
-        items: [
-          { title: "Requirements", url: '/admin/required-documents', icon: Shield },
-          { title: "Staff requirements", url: '/admin/staff-requirements', icon: GraduationCap },
-          { title: "School settings", url: '/school/settings', icon: Settings },
-        ],
-        collapsible: true,
-        defaultOpen:
-          location.pathname.includes('/settings') ||
-          location.pathname.includes('/required-documents') ||
-          location.pathname.includes('/staff-requirements'),
+        defaultOpen: requirementsGroupOpen,
       });
 
       return groups;
@@ -364,9 +459,9 @@ export function DashboardSidebar({
           {!collapsed && (
             <>
               <span className="flex-1 truncate text-sm">{item.title}</span>
-              {item.badge !== undefined && item.badge !== 0 && (
+              {typeof item.badge === 'number' && (
                 <span className={cn(
-                  "text-[10px] font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center transition-colors",
+                  "text-[10px] font-medium px-1.5 py-0.5 rounded-full min-w-[18px] text-center transition-colors tabular-nums",
                   item.isUrgent
                     ? "bg-error/15 text-error animate-pulse-glow"
                     : "bg-muted-foreground/10 text-muted-foreground"
@@ -380,7 +475,7 @@ export function DashboardSidebar({
       </SidebarMenuButton>
     );
 
-    if (collapsed && item.badge) {
+    if (collapsed && typeof item.badge === 'number') {
       return (
         <Tooltip>
           <TooltipTrigger asChild>{content}</TooltipTrigger>

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Shield, Users, FileText, CheckCircle, Clock, ArrowLeft, Save } from 'lucide-react';
+import { Shield, Users, FileText, CheckCircle, Clock, Save } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
@@ -165,19 +165,14 @@ const PrivacyPolicySettings = () => {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-display font-bold flex items-center gap-2">
-              <Shield className="h-8 w-8 text-primary" />
-              Privacy Policy Settings
-            </h1>
-            <p className="text-muted-foreground">
-              Manage platform privacy policies and user consent
-            </p>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-3xl font-display font-bold flex items-center gap-2">
+            <Shield className="h-8 w-8 text-primary" />
+            Privacy Policy Settings
+          </h1>
+          <p className="text-muted-foreground">
+            Manage platform privacy policies and user consent
+          </p>
         </div>
 
         {/* Stats */}
