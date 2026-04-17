@@ -9,7 +9,8 @@ function normalizeApiBase(raw: string): string {
 }
 
 const API_BASE = normalizeApiBase(
-  import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
+  // import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
+  'http://76.13.177.120:8091/api'
 );
 
 function getToken(): string | null {
