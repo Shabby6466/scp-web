@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { studentProfileService } from "@/services/studentProfileService";
 import { documentService } from "@/services/documentService";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import DocumentUploadDialog from "@/components/DocumentUploadDialog";
-import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
 type Student = {
@@ -103,7 +102,6 @@ function mapRequiredStudentTypes(raw: unknown[]): RequiredDocument[] {
 
 export default function StudentDetailPage() {
   const { studentId } = useParams<{ studentId: string }>();
-  const navigate = useNavigate();
   const [student, setStudent] = useState<Student | null>(null);
   const [students, setStudents] = useState<any[]>([]);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
@@ -236,14 +234,9 @@ export default function StudentDetailPage() {
 
   return (
     <div className="space-y-4 p-4">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-2xl font-semibold">
-          {student.first_name} {student.last_name}
-        </h1>
-      </div>
+      <h1 className="text-2xl font-semibold">
+        {student.first_name} {student.last_name}
+      </h1>
 
       <Card>
         <CardHeader>

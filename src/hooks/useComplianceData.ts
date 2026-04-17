@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api, unwrapList } from '@/lib/api';
 import { schoolService } from '@/services/schoolService';
 import { analyticsService } from '@/services/analyticsService';
@@ -40,7 +40,34 @@ interface ExpiredDocument {
   days_expired: number;
 }
 
-export const useComplianceData = (schoolId?: string, branchId?: string) => {
+function num(raw: Record<string, unknown>, snake: string, camel?: string): number {
+  const v = raw[snake] ?? (camel ? raw[camel] : undefined);
+  if (typeof v === 'number' && !Number.isNaN(v)) return v;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function normalizeComplianceStats(raw: Record<string, unknown>): ComplianceStats {
+  return {
+    total_students: num(raw, 'total_students', 'totalStudents'),
+    compliant_students: num(raw, 'compliant_students', 'compliantStudents'),
+    student_compliance_rate: num(raw, 'student_compliance_rate', 'studentComplianceRate'),
+    total_teachers: num(raw, 'total_teachers', 'totalTeachers'),
+    compliant_teachers: num(raw, 'compliant_teachers', 'compliantTeachers'),
+    teacher_compliance_rate: num(raw, 'teacher_compliance_rate', 'teacherComplianceRate'),
+    total_expiring_soon: num(raw, 'total_expiring_soon', 'totalExpiringSoon'),
+    total_expired: num(raw, 'total_expired', 'totalExpired'),
+  };
+}
+
+/**
+ * @param categorySlug When set, stats are scoped to that compliance category; document lists are skipped (stats-only).
+ */
+export const useComplianceData = (
+  schoolId?: string,
+  branchId?: string,
+  categorySlug?: string,
+) => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const [stats, setStats] = useState<ComplianceStats | null>(null);
@@ -49,7 +76,7 @@ export const useComplianceData = (schoolId?: string, branchId?: string) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchComplianceData = async () => {
+  const fetchComplianceData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -69,18 +96,37 @@ export const useComplianceData = (schoolId?: string, branchId?: string) => {
         return;
       }
 
-      const [statsData, expiringData, expiredData] = await Promise.all([
-        analyticsService.getComplianceStats({ schoolId: targetSchoolId }),
+      const statsOnly = !!categorySlug;
+
+      const statsRes = await analyticsService.getComplianceStats({
+        schoolId: targetSchoolId,
+        branchId,
+        categorySlug,
+      });
+
+      const rawStats = (Array.isArray(statsRes) ? statsRes[0] : statsRes) as Record<
+        string,
+        unknown
+      > | null;
+      if (rawStats && typeof rawStats === 'object') {
+        setStats(normalizeComplianceStats(rawStats));
+      } else {
+        setStats(null);
+      }
+
+      if (statsOnly) {
+        setExpiringDocs([]);
+        setExpiredDocs([]);
+        return;
+      }
+
+      const [expiringData, expiredData] = await Promise.all([
         analyticsService.getExpiringDocuments({
           schoolId: targetSchoolId,
           days: 60,
         }),
         analyticsService.getExpiredDocuments({ schoolId: targetSchoolId }),
       ]);
-
-      if (statsData && (Array.isArray(statsData) ? statsData.length > 0 : true)) {
-        setStats(Array.isArray(statsData) ? statsData[0] : statsData);
-      }
 
       let filteredExpiring = expiringData || [];
       let filteredExpired = expiredData || [];
@@ -101,8 +147,8 @@ export const useComplianceData = (schoolId?: string, branchId?: string) => {
             .then(unwrapList),
         ]);
 
-        const branchStudentIds = new Set((branchStudents || []).map((s: any) => s.id));
-        const branchTeacherIds = new Set((branchTeachers || []).map((t: any) => t.id));
+        const branchStudentIds = new Set((branchStudents || []).map((s: { id: string }) => s.id));
+        const branchTeacherIds = new Set((branchTeachers || []).map((t: { id: string }) => t.id));
 
         filteredExpiring = filteredExpiring.filter((d: ExpiringDocument) => {
           if (d.entity_type === 'student') return branchStudentIds.has(d.entity_id);
@@ -119,25 +165,24 @@ export const useComplianceData = (schoolId?: string, branchId?: string) => {
 
       setExpiringDocs(filteredExpiring);
       setExpiredDocs(filteredExpired);
-
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error fetching compliance data:', err);
-      setError(err.message);
+      setError(err instanceof Error ? err.message : 'Failed to load compliance data');
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, schoolId, branchId, isAdmin, categorySlug]);
 
   useEffect(() => {
-    fetchComplianceData();
-  }, [user, schoolId, branchId, isAdmin]);
+    void fetchComplianceData();
+  }, [fetchComplianceData]);
 
-  return { 
-    stats, 
-    expiringDocs, 
-    expiredDocs, 
-    loading, 
+  return {
+    stats,
+    expiringDocs,
+    expiredDocs,
+    loading,
     error,
-    refresh: fetchComplianceData 
+    refresh: fetchComplianceData,
   };
 };

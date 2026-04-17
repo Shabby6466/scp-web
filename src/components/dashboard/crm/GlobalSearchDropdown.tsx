@@ -94,7 +94,7 @@ export function GlobalSearchDropdown({ schoolId, branchId, isDirector }: GlobalS
           type: 'parent',
           name: p.name || `${p.first_name || ''} ${p.last_name || ''}`.trim() || p.email,
           subtitle: p.email,
-          route: `/school-dashboard?tab=parents`,
+          route: `/school/parents`,
         });
       });
 

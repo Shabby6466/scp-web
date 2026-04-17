@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCertifications, CertificationRecord } from '@/hooks/useCertifications';
+import { useComplianceData } from '@/hooks/useComplianceData';
+import { COMPLIANCE_CATEGORY_SLUG } from '@/constants/complianceCategories';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -66,6 +68,11 @@ const CertificationsSection = () => {
     deleteRecord,
     refresh,
   } = useCertifications(schoolId);
+  const { stats: certDocStats, loading: certDocLoading } = useComplianceData(
+    schoolId,
+    undefined,
+    COMPLIANCE_CATEGORY_SLUG.CERTIFICATIONS,
+  );
 
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -189,6 +196,18 @@ const CertificationsSection = () => {
               Track staff certifications, vendor credentials, and facility permits. Get notified
               before expiration dates and maintain evidence for audits.
             </p>
+            {!certDocLoading && certDocStats && (
+              <p className="text-sm text-muted-foreground mt-3 max-w-2xl">
+                Related document requirements (certifications category):{' '}
+                <span className="font-medium text-foreground">
+                  {Math.round(certDocStats.student_compliance_rate)}% students
+                </span>
+                {' · '}
+                <span className="font-medium text-foreground">
+                  {Math.round(certDocStats.teacher_compliance_rate)}% staff
+                </span>
+              </p>
+            )}
           </div>
 
           {/* Summary Cards */}

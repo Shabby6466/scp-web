@@ -46,14 +46,11 @@ import PendingDocuments from "./pages/school/PendingDocuments";
 import ExpiringDocuments from "./pages/school/ExpiringDocuments";
 import TeacherCompliance from "./pages/school/TeacherCompliance";
 import SchoolBranches from "./pages/school/SchoolBranches";
+import SchoolPeoplePortal from "./pages/school/SchoolPeoplePortal";
 import SchoolSettings from "./pages/school/SchoolSettings";
 import SchoolFilePage from "./pages/school/SchoolFilePage";
 import AllDocumentsPage from "./pages/AllDocumentsPage";
 import PersonFilePage from "./pages/PersonFilePage";
-import SetupRequiredDocuments from "./pages/school/setup/SetupRequiredDocuments";
-import SetupStaff from "./pages/school/setup/SetupStaff";
-import SetupStudents from "./pages/school/setup/SetupStudents";
-import SetupInvitations from "./pages/school/setup/SetupInvitations";
 
 // Director Pages
 import DirectorDashboard from "./pages/DirectorDashboard";
@@ -65,7 +62,7 @@ import AdminStudents from "@/components/admin/AdminStudents";
 import AdminParents from "@/components/admin/AdminParents";
 import AdminTeachers from "@/components/admin/AdminTeachers";
 import AdminSchools from "@/components/admin/AdminSchools";
-import { AdminDirectors } from "@/components/admin/AdminDirectors";
+import AdminLeadershipDirectory from "@/components/admin/AdminLeadershipDirectory";
 import AdminDocumentsPage from "./pages/admin/AdminDocumentsPage";
 import DOHCompliance from "./pages/DOHCompliance";
 import ComplianceDashboard from "./pages/ComplianceDashboard";
@@ -207,6 +204,18 @@ const App = () => (
                       <SchoolDashboard />
                     </SchoolRoute>
                   } />
+                  <Route
+                    element={
+                      <SchoolRoute>
+                        <SchoolPeoplePortal />
+                      </SchoolRoute>
+                    }
+                  >
+                    <Route path="/school/students" element={<AdminStudents />} />
+                    <Route path="/school/staff" element={<AdminTeachers />} />
+                    <Route path="/school/parents" element={<AdminParents />} />
+                    <Route path="/school/branch-directors" element={<AdminLeadershipDirectory />} />
+                  </Route>
                   <Route path="/school/pending-documents" element={
                     <SchoolRoute>
                       <PendingDocuments />
@@ -227,31 +236,28 @@ const App = () => (
                       <SchoolBranches />
                     </SchoolRoute>
                   } />
+                  <Route path="/school/leadership" element={<Navigate to="/school/branch-directors" replace />} />
                   <Route path="/school/settings" element={
                     <SchoolRoute>
                       <SchoolSettings />
                     </SchoolRoute>
                   } />
-                  <Route path="/school/setup/required-documents" element={
+                  <Route path="/school/required-documents" element={<Navigate to="/school/student-requirements" replace />} />
+                  <Route path="/school/student-requirements" element={
                     <SchoolRoute>
-                      <SetupRequiredDocuments />
+                      <RequiredDocumentsPage />
                     </SchoolRoute>
                   } />
-                  <Route path="/school/setup/staff" element={
+                  <Route path="/school/staff-documents" element={
                     <SchoolRoute>
-                      <SetupStaff />
+                      <StaffRequiredDocumentsPage />
                     </SchoolRoute>
                   } />
-                  <Route path="/school/setup/students" element={
-                    <SchoolRoute>
-                      <SetupStudents />
-                    </SchoolRoute>
-                  } />
-                  <Route path="/school/setup/invitations" element={
-                    <SchoolRoute>
-                      <SetupInvitations />
-                    </SchoolRoute>
-                  } />
+                  <Route path="/school/setup/required-documents" element={<Navigate to="/school/student-requirements" replace />} />
+                  <Route path="/school/setup/student-requirements" element={<Navigate to="/school/student-requirements" replace />} />
+                  <Route path="/school/setup/staff" element={<Navigate to="/school/staff" replace />} />
+                  <Route path="/school/setup/students" element={<Navigate to="/school/students" replace />} />
+                  <Route path="/school/setup/invitations" element={<Navigate to="/school/parents" replace />} />
                   <Route path="/school/file" element={
                     <SchoolRoute>
                       <SchoolFilePage />
@@ -331,10 +337,18 @@ const App = () => (
                     </SchoolRoute>
                   } />
 
-                  {/* School Admin Management Routes */}
-                  <Route path="/admin/required-documents" element={
+                  {/* School Admin Management Routes (shared SchoolRoute: platform admin + school roles) */}
+                  <Route path="/admin/required-documents" element={<Navigate to="/admin/student-requirements" replace />} />
+                  <Route path="/admin/staff-requirements" element={<Navigate to="/admin/staff-documents" replace />} />
+                  <Route path="/admin/staff-required-documents" element={<Navigate to="/admin/staff-documents" replace />} />
+                  <Route path="/admin/student-requirements" element={
                     <SchoolRoute>
                       <RequiredDocumentsPage />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/admin/staff-documents" element={
+                    <SchoolRoute>
+                      <StaffRequiredDocumentsPage />
                     </SchoolRoute>
                   } />
                   <Route path="/admin/student/:studentId" element={
@@ -342,15 +356,6 @@ const App = () => (
                       <StudentDetailPage />
                     </SchoolRoute>
                   } />
-                  <Route path="/admin/staff-requirements" element={
-                    <SchoolRoute>
-                      <StaffRequiredDocumentsPage />
-                    </SchoolRoute>
-                  } />
-                  <Route
-                    path="/admin/staff-required-documents"
-                    element={<Navigate to="/admin/staff-requirements" replace />}
-                  />
                   <Route path="/admin/teacher/:teacherId" element={
                     <SchoolRoute>
                       <TeacherDetailPage />
@@ -376,7 +381,9 @@ const App = () => (
                     <Route path="parents" element={<AdminParents />} />
                     <Route path="staff" element={<AdminTeachers />} />
                     <Route path="schools" element={<AdminSchools />} />
-                    <Route path="directors" element={<AdminDirectors />} />
+                    <Route path="leadership" element={<Navigate to="/admin/directors" replace />} />
+                    <Route path="directors" element={<AdminLeadershipDirectory />} />
+                    <Route path="branch-directors" element={<AdminLeadershipDirectory />} />
                     <Route path="documents" element={<AdminDocumentsPage />} />
                     <Route path="settings" element={<AdminSettings />} />
                   </Route>

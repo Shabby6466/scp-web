@@ -320,7 +320,7 @@ export default function RequiredDocumentsPage() {
   if (!canManageSchool) {
     return (
       <div className="p-6">
-        <p className="text-muted-foreground">You don't have permission to manage required documents.</p>
+        <p className="text-muted-foreground">You don&apos;t have permission to manage student document requirements.</p>
       </div>
     );
   }
@@ -329,9 +329,9 @@ export default function RequiredDocumentsPage() {
     <div className="space-y-6 p-6 animate-in fade-in slide-in-from-bottom-4 duration-700 selection:bg-primary/20 text-foreground">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Student Required Documents</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Student document requirements</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Define which documents parents must upload for students
+            Configure which documents families must submit for enrollment and compliance
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -53,6 +54,8 @@ export function TopActionBar({
   branchId,
 }: TopActionBarProps) {
   const navigate = useNavigate();
+  const { isAdmin } = useUserRole();
+  const studentRequirementsPath = isAdmin ? '/admin/student-requirements' : '/school/student-requirements';
 
   return (
     <div className="flex flex-col lg:flex-row lg:items-center gap-4 pb-4 border-b border-border/40">
@@ -114,18 +117,16 @@ export function TopActionBar({
           <UserPlus className="h-4 w-4" />
           <span className="hidden sm:inline">Invite</span>
         </Button>
-        {!isDirector && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => navigate('/admin/required-documents')}
-            disabled={!isApproved}
-            className="gap-1.5"
-          >
-            <Plus className="h-4 w-4" />
-            <span className="hidden sm:inline">Requirements</span>
-          </Button>
-        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => navigate(studentRequirementsPath)}
+          disabled={!isApproved}
+          className="gap-1.5"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Student requirements</span>
+        </Button>
       </div>
     </div>
   );

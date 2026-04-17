@@ -8,6 +8,7 @@ const TAB_REDIRECTS: Record<string, string> = {
   teachers: '/admin/staff',
   schools: '/admin/schools',
   directors: '/admin/directors',
+  'branch-directors': '/admin/branch-directors',
   documents: '/admin/documents',
   reminders: '/admin/reminders',
 };
@@ -20,13 +21,16 @@ const AdminLayout = () => {
   const location = useLocation();
 
   useEffect(() => {
+    const onOverview =
+      location.pathname === '/admin' || location.pathname === '/admin/';
+    if (!onOverview) return;
     const tab = new URLSearchParams(location.search).get('tab');
     if (!tab) return;
     const target = TAB_REDIRECTS[tab];
     if (target) {
       navigate(target, { replace: true });
     }
-  }, [location.search, navigate]);
+  }, [location.pathname, location.search, navigate]);
 
   const hideOverviewChrome = location.pathname === '/admin/settings';
 

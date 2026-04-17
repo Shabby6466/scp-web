@@ -189,7 +189,10 @@ export const useComplianceFramework = (schoolId?: string | null) => {
     fetchAll();
   }, [fetchAll]);
 
-  const createInspectionType = async (data: Partial<InspectionType>) => {
+  const createInspectionType = async (
+    data: Partial<InspectionType>,
+    options?: { quiet?: boolean },
+  ) => {
     if (!targetSchoolId || !user) return null;
 
     try {
@@ -200,8 +203,10 @@ export const useComplianceFramework = (schoolId?: string | null) => {
       });
 
       await fetchInspectionTypes();
-      toast({ title: 'Success', description: 'Inspection type created' });
-      return newType;
+      if (!options?.quiet) {
+        toast({ title: 'Success', description: 'Inspection type created' });
+      }
+      return newType as InspectionType & { id: string };
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
       return null;

@@ -26,7 +26,6 @@ import {
 } from 'lucide-react';
 import InspectionTypeCard from '@/components/compliance/InspectionTypeCard';
 import RequirementsList from '@/components/compliance/RequirementsList';
-import CreateInspectionTypeDialog from '@/components/compliance/CreateInspectionTypeDialog';
 import CreateRequirementDialog from '@/components/compliance/CreateRequirementDialog';
 
 const ComplianceDashboard = () => {
@@ -42,7 +41,6 @@ const ComplianceDashboard = () => {
   } = useComplianceFramework(schoolId);
 
   const [activeTab, setActiveTab] = useState<string>('overview');
-  const [showCreateType, setShowCreateType] = useState(false);
   const [showCreateReq, setShowCreateReq] = useState(false);
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
 
@@ -124,9 +122,16 @@ const ComplianceDashboard = () => {
                 <RefreshCw className="h-4 w-4" />
                 Refresh
               </Button>
-              <Button size="sm" onClick={() => setShowCreateType(true)} className="gap-2">
+              <Button
+                size="sm"
+                onClick={() => {
+                  setSelectedTypeId(null);
+                  setShowCreateReq(true);
+                }}
+                className="gap-2"
+              >
                 <Plus className="h-4 w-4" />
-                Add Inspection Type
+                Add requirement
               </Button>
             </div>
           </div>
@@ -193,11 +198,17 @@ const ComplianceDashboard = () => {
                     </div>
                     <h3 className="text-lg font-medium mb-2">No Inspection Types Yet</h3>
                     <p className="text-muted-foreground text-center mb-6 max-w-sm">
-                      Start by adding your first inspection type (e.g., NYC DOH, Fire Safety)
+                      Add a requirement — create a new inspection program or pick an existing one in the same form.
                     </p>
-                    <Button onClick={() => setShowCreateType(true)} className="gap-2">
+                    <Button
+                      onClick={() => {
+                        setSelectedTypeId(null);
+                        setShowCreateReq(true);
+                      }}
+                      className="gap-2"
+                    >
                       <Plus className="h-4 w-4" />
-                      Add Inspection Type
+                      Add requirement
                     </Button>
                   </CardContent>
                 </Card>
@@ -252,12 +263,6 @@ const ComplianceDashboard = () => {
         </main>
       </PageTransition>
       <Footer />
-
-      <CreateInspectionTypeDialog
-        open={showCreateType}
-        onOpenChange={setShowCreateType}
-        onSuccess={refresh}
-      />
 
       <CreateRequirementDialog
         open={showCreateReq}

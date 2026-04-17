@@ -3,6 +3,7 @@ import { api } from '@/lib/api';
 import { complianceService } from '@/services/complianceService';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useComplianceData } from '@/hooks/useComplianceData';
+import { COMPLIANCE_CATEGORY_SLUG } from '@/constants/complianceCategories';
 import { useCertifications } from '@/hooks/useCertifications';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +26,16 @@ interface InspectionStats {
 
 const ComplianceCenterLanding = () => {
   const { schoolId, loading: roleLoading } = useUserRole();
-  const { stats: complianceStats, loading: complianceLoading } = useComplianceData(schoolId);
+  const { stats: dohDocStats, loading: dohDocLoading } = useComplianceData(
+    schoolId,
+    undefined,
+    COMPLIANCE_CATEGORY_SLUG.DOH,
+  );
+  const { stats: facilityDocStats, loading: facilityDocLoading } = useComplianceData(
+    schoolId,
+    undefined,
+    COMPLIANCE_CATEGORY_SLUG.FACILITY_SAFETY,
+  );
   const { stats: certStats, loading: certLoading } = useCertifications(schoolId);
   const [inspectionStats, setInspectionStats] = useState<InspectionStats>({
     doh: { total: 0, complete: 0, overdue: 0, dueSoon: 0 },
@@ -109,7 +119,8 @@ const ComplianceCenterLanding = () => {
     return 'text-red-600';
   };
 
-  const isLoading = roleLoading || complianceLoading || certLoading || statsLoading;
+  const isLoading =
+    roleLoading || dohDocLoading || facilityDocLoading || certLoading || statsLoading;
 
   return (
     <div className="p-6 space-y-6">
@@ -161,32 +172,32 @@ const ComplianceCenterLanding = () => {
                   <div className="flex items-end gap-2">
                     <span
                       className={`text-3xl font-bold ${getScoreColor(
-                        complianceStats?.student_compliance_rate || 0
+                        dohDocStats?.student_compliance_rate || 0
                       )}`}
                     >
-                      {Math.round(complianceStats?.student_compliance_rate || 0)}%
+                      {Math.round(dohDocStats?.student_compliance_rate || 0)}%
                     </span>
                     <span className="text-sm text-muted-foreground mb-1">
                       Student Compliance
                     </span>
                   </div>
                   <Progress
-                    value={complianceStats?.student_compliance_rate || 0}
+                    value={dohDocStats?.student_compliance_rate || 0}
                     className="h-2"
                   />
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
                       <span>
-                        {complianceStats?.compliant_students || 0}/
-                        {complianceStats?.total_students || 0} Students
+                        {dohDocStats?.compliant_students || 0}/
+                        {dohDocStats?.total_students || 0} Students
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <CheckCircle className="h-4 w-4 text-green-500" />
                       <span>
-                        {complianceStats?.compliant_teachers || 0}/
-                        {complianceStats?.total_teachers || 0} Teachers
+                        {dohDocStats?.compliant_teachers || 0}/
+                        {dohDocStats?.total_teachers || 0} Teachers
                       </span>
                     </div>
                   </div>

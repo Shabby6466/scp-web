@@ -18,12 +18,17 @@ interface DashboardStats {
   studentCount: number;
   teacherCount: number;
   parentCount: number;
+  branchCount: number;
+  directorCount: number;
+  branchDirectorCount: number;
+  /** Admin only: schools in platform */
+  schoolCount: number;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { role, schoolId, loading: roleLoading, isParent } = useUserRole();
+  const { role, schoolId, loading: roleLoading, isParent, isAdmin } = useUserRole();
   const [schoolName, setSchoolName] = useState<string>("");
   const [stats, setStats] = useState<DashboardStats>({
     pendingDocs: 0,
@@ -31,6 +36,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     studentCount: 0,
     teacherCount: 0,
     parentCount: 0,
+    branchCount: 0,
+    directorCount: 0,
+    branchDirectorCount: 0,
+    schoolCount: 0,
   });
 
   useEffect(() => {
@@ -41,20 +50,58 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user || !schoolId) return;
+      if (!user) return;
+
+      if (isAdmin) {
+        try {
+          const data = await api.get<{
+            schoolCount: number;
+            branchCount: number;
+            studentCount: number;
+            teacherCount: number;
+            parentCount: number;
+            directorCount: number;
+            branchDirectorCount: number;
+          }>('/schools/navigation-counts');
+          if (data) {
+            setSchoolName('');
+            setStats({
+              pendingDocs: 0,
+              expiringDocs: 0,
+              studentCount: data.studentCount ?? 0,
+              teacherCount: data.teacherCount ?? 0,
+              parentCount: data.parentCount ?? 0,
+              branchCount: data.branchCount ?? 0,
+              directorCount: data.directorCount ?? 0,
+              branchDirectorCount: data.branchDirectorCount ?? 0,
+              schoolCount: data.schoolCount ?? 0,
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching admin navigation counts:', error);
+        }
+        return;
+      }
+
+      if (!schoolId) return;
 
       try {
-        const data = await api.get<{ name: string; stats: DashboardStats }>(
+        const data = await api.get<{ name: string; stats: Partial<DashboardStats> }>(
           `/schools/${schoolId}/dashboard-summary`
         );
         if (data) {
           setSchoolName(data.name ?? "");
+          const s = data.stats ?? {};
           setStats({
-            studentCount: data.stats?.studentCount ?? 0,
-            teacherCount: data.stats?.teacherCount ?? 0,
-            pendingDocs: data.stats?.pendingDocs ?? 0,
-            expiringDocs: data.stats?.expiringDocs ?? 0,
-            parentCount: data.stats?.parentCount ?? 0,
+            studentCount: s.studentCount ?? 0,
+            teacherCount: s.teacherCount ?? 0,
+            pendingDocs: s.pendingDocs ?? 0,
+            expiringDocs: s.expiringDocs ?? 0,
+            parentCount: s.parentCount ?? 0,
+            branchCount: s.branchCount ?? 0,
+            directorCount: s.directorCount ?? 0,
+            branchDirectorCount: s.branchDirectorCount ?? 0,
+            schoolCount: 0,
           });
         }
       } catch (error) {
@@ -63,7 +110,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     };
 
     fetchData();
-  }, [user, schoolId]);
+  }, [user, schoolId, isAdmin]);
 
   if (authLoading || roleLoading) {
     return (

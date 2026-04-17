@@ -258,9 +258,9 @@ export default function StaffRequiredDocumentsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Staff Required Documents</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Staff document requirements</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Define which documents staff members must provide
+            Configure which documents teachers and staff must submit for hiring and compliance
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">

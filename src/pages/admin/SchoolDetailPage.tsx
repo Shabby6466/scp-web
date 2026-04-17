@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  ArrowLeft, Building2, MapPin, Phone, Mail, Globe, 
+  Building2, MapPin, Phone, Mail, Globe, 
   Users, GraduationCap, FileText, CheckCircle, Clock,
   Calendar, Shield, AlertTriangle
 } from "lucide-react";
@@ -195,26 +195,21 @@ export default function SchoolDetailPage() {
     <div className="mx-auto w-full max-w-6xl space-y-6 px-4 py-6">
         {/* Page title */}
           <div className="flex items-start justify-between">
-            <div className="flex items-start gap-4">
-              <Button variant="outline" size="icon" onClick={() => navigate("/admin")}>
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <h1 className="text-3xl font-display font-bold">{school.name}</h1>
-                  <Badge variant={school.is_approved ? "default" : "secondary"}>
-                    {school.is_approved ? (
-                      <><CheckCircle className="h-3 w-3 mr-1" /> Approved</>
-                    ) : (
-                      <><Clock className="h-3 w-3 mr-1" /> Pending</>
-                    )}
-                  </Badge>
-                </div>
-                <p className="text-muted-foreground flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  {school.address}, {school.city}, {school.state} {school.zip_code}
-                </p>
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-3xl font-display font-bold">{school.name}</h1>
+                <Badge variant={school.is_approved ? "default" : "secondary"}>
+                  {school.is_approved ? (
+                    <><CheckCircle className="h-3 w-3 mr-1" /> Approved</>
+                  ) : (
+                    <><Clock className="h-3 w-3 mr-1" /> Pending</>
+                  )}
+                </Badge>
               </div>
+              <p className="text-muted-foreground flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                {school.address}, {school.city}, {school.state} {school.zip_code}
+              </p>
             </div>
             {!school.is_approved && (
               <Button onClick={handleApprove} disabled={approving}>

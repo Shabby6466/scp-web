@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
   Mail,
   Phone,
   Calendar,
@@ -289,8 +288,8 @@ export default function PersonFilePage() {
     return (
       <div className="p-6 text-center">
         <p className="text-muted-foreground">Person not found</p>
-        <Button variant="link" onClick={() => navigate(-1)}>
-          Go back
+        <Button variant="link" onClick={() => navigate('/all-documents')}>
+          All documents
         </Button>
       </div>
     );
@@ -304,11 +303,7 @@ export default function PersonFilePage() {
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-2">
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
+      <div className="flex items-center justify-end">
         <ExportAllButton
           personId={person.id}
           personName={`${person.lastName}_${person.firstName}`}

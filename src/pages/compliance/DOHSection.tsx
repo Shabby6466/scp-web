@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useComplianceData } from '@/hooks/useComplianceData';
+import { COMPLIANCE_CATEGORY_SLUG } from '@/constants/complianceCategories';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +16,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const DOHSection = () => {
   const { schoolId, isAdmin } = useUserRole();
-  const { stats, expiringDocs, expiredDocs, loading } = useComplianceData(schoolId);
+  const { stats, loading: statsLoading } = useComplianceData(
+    schoolId,
+    undefined,
+    COMPLIANCE_CATEGORY_SLUG.DOH,
+  );
+  const { expiringDocs, expiredDocs, loading: listsLoading } = useComplianceData(schoolId);
+  const loading = statsLoading || listsLoading;
   const [activeTab, setActiveTab] = useState('overview');
 
   const getStatusColor = (rate: number) => {

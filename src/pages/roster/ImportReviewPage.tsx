@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { 
-  ArrowLeft, Users, GraduationCap, CheckCircle, AlertCircle, 
+  Users, GraduationCap, CheckCircle, AlertCircle, 
   Mail, Send, Loader2, MapPin, FileText
 } from 'lucide-react';
 
@@ -237,9 +237,8 @@ const ImportReviewPage = () => {
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h2 className="text-lg font-semibold">Import Job Not Found</h2>
             <p className="text-muted-foreground mb-4">The requested import job does not exist.</p>
-            <Button onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Go Back
+            <Button onClick={() => navigate('/school/students')}>
+              Go to students
             </Button>
           </CardContent>
         </Card>
@@ -255,10 +254,7 @@ const ImportReviewPage = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="text-2xl font-display font-bold">Import Review</h1>
           <p className="text-muted-foreground text-sm">
             {importJob.file_name} • Imported {new Date(importJob.created_at).toLocaleDateString()}
@@ -266,7 +262,7 @@ const ImportReviewPage = () => {
         </div>
         <Badge 
           variant={importJob.status === 'completed' ? 'default' : 'secondary'}
-          className="ml-auto"
+          className="shrink-0"
         >
           {importJob.status === 'completed' ? (
             <><CheckCircle className="h-3 w-3 mr-1" /> Completed</>
@@ -468,7 +464,7 @@ const ImportReviewPage = () => {
         <Button variant="outline" onClick={() => navigate('/school-dashboard')}>
           Back to Dashboard
         </Button>
-        <Button onClick={() => navigate('/school-dashboard?tab=students')}>
+        <Button onClick={() => navigate('/school/students')}>
           View All Students
         </Button>
       </div>

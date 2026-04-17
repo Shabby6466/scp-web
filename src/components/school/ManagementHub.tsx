@@ -48,7 +48,7 @@ const ManagementHub = ({
       icon: FileText,
       status: `${stats.requiredDocumentCount} types defined`,
       alert: null,
-      primaryCta: { label: "Manage", path: "/admin/required-documents" },
+      primaryCta: { label: "Manage", path: "/school/student-requirements" },
     },
     {
       id: "staff",
@@ -57,7 +57,7 @@ const ManagementHub = ({
       icon: Users,
       status: `${stats.staffCount} active`,
       alert: stats.expiringStaffCount > 0 ? `${stats.expiringStaffCount} expiring` : null,
-      primaryCta: { label: "Manage", path: "/school-dashboard?tab=teachers" },
+      primaryCta: { label: "Manage", path: "/school/staff" },
     },
     {
       id: "students",
@@ -66,7 +66,7 @@ const ManagementHub = ({
       icon: GraduationCap,
       status: `${stats.studentCount} enrolled`,
       alert: stats.studentsWithMissingDocs > 0 ? `${stats.studentsWithMissingDocs} missing docs` : null,
-      primaryCta: { label: "Manage", path: "/school-dashboard?tab=students" },
+      primaryCta: { label: "Manage", path: "/school/students" },
     },
     {
       id: "invitations",
@@ -75,7 +75,7 @@ const ManagementHub = ({
       icon: Mail,
       status: `${stats.acceptedInviteCount} accepted`,
       alert: stats.pendingInviteCount > 3 ? `${stats.pendingInviteCount} pending` : null,
-      primaryCta: { label: "Manage", path: "/school/setup/invitations" },
+      primaryCta: { label: "Manage", path: "/school/parents" },
     },
   ];
 

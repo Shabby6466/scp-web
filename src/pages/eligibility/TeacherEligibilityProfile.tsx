@@ -18,7 +18,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { PageTransition } from "@/components/ui/animations";
 import { ResumeUpload } from "@/components/eligibility/ResumeUpload";
 import { 
-  ArrowLeft, 
   Save, 
   Brain, 
   GraduationCap, 
@@ -426,9 +425,8 @@ export default function TeacherEligibilityProfile() {
             <p className="text-sm text-muted-foreground mb-4">
               The requested teacher profile could not be found.
             </p>
-            <Button onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Go Back
+            <Button onClick={() => navigate('/eligibility')}>
+              Eligibility portal
             </Button>
           </CardContent>
         </Card>
@@ -444,11 +442,6 @@ export default function TeacherEligibilityProfile() {
         {/* Premium Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="gap-1.5">
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-            <Separator orientation="vertical" className="h-6" />
             <div className="flex items-center gap-3">
               <Avatar className="h-10 w-10 ring-2 ring-background shadow-md">
                 <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-primary font-semibold">

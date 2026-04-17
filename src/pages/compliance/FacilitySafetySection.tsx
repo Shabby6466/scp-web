@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useComplianceFramework } from '@/hooks/useComplianceFramework';
+import { useComplianceData } from '@/hooks/useComplianceData';
+import { COMPLIANCE_CATEGORY_SLUG } from '@/constants/complianceCategories';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Flame, Plus, CheckCircle, AlertTriangle, Clock, FileText } from 'lucide-react';
 import InspectionTypeCard from '@/components/compliance/InspectionTypeCard';
 import RequirementsList from '@/components/compliance/RequirementsList';
-import CreateInspectionTypeDialog from '@/components/compliance/CreateInspectionTypeDialog';
 import CreateRequirementDialog from '@/components/compliance/CreateRequirementDialog';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -21,9 +22,13 @@ const FacilitySafetySection = () => {
     loading,
     refresh,
   } = useComplianceFramework(schoolId);
+  const { stats: facilityDocStats, loading: facilityDocLoading } = useComplianceData(
+    schoolId,
+    undefined,
+    COMPLIANCE_CATEGORY_SLUG.FACILITY_SAFETY,
+  );
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedTypeId, setSelectedTypeId] = useState<string | null>(null);
-  const [createTypeOpen, setCreateTypeOpen] = useState(false);
   const [createReqOpen, setCreateReqOpen] = useState(false);
 
   const facilityTypes = inspectionTypes.filter((t) => t.category === 'facility_safety');
@@ -76,6 +81,18 @@ const FacilitySafetySection = () => {
             Track Fire/Life Safety and Building/Facilities Safety inspection requirements.
             Maintain evidence binders and stay audit-ready.
           </p>
+          {!facilityDocLoading && facilityDocStats && (
+            <p className="text-sm text-muted-foreground mt-3 max-w-2xl">
+              Document requirements in this category:{' '}
+              <span className="font-medium text-foreground">
+                {Math.round(facilityDocStats.student_compliance_rate)}% students
+              </span>
+              {' · '}
+              <span className="font-medium text-foreground">
+                {Math.round(facilityDocStats.teacher_compliance_rate)}% staff
+              </span>
+            </p>
+          )}
         </div>
 
         {/* Summary Cards */}
@@ -141,16 +158,10 @@ const FacilitySafetySection = () => {
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="requirements">All Requirements</TabsTrigger>
             </TabsList>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setCreateReqOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Requirement
-              </Button>
-              <Button onClick={() => setCreateTypeOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Inspection Type
-              </Button>
-            </div>
+            <Button onClick={() => setCreateReqOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add requirement
+            </Button>
           </div>
 
           <TabsContent value="overview" className="space-y-6">
@@ -174,11 +185,11 @@ const FacilitySafetySection = () => {
                   <Flame className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                   <h3 className="text-lg font-semibold mb-2">No Inspection Types</h3>
                   <p className="text-muted-foreground mb-4">
-                    Create your first facility safety inspection type to start tracking requirements.
+                    Add a requirement to create your first facility safety inspection program and track what you need.
                   </p>
-                  <Button onClick={() => setCreateTypeOpen(true)}>
+                  <Button onClick={() => setCreateReqOpen(true)}>
                     <Plus className="h-4 w-4 mr-2" />
-                    Create Inspection Type
+                    Add requirement
                   </Button>
                 </CardContent>
               </Card>
@@ -227,21 +238,14 @@ const FacilitySafetySection = () => {
                       <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                       <h3 className="text-lg font-semibold mb-2">No Requirements Yet</h3>
                       <p className="text-muted-foreground mb-4">
-                        {facilityTypes.length === 0 
-                          ? "Create an inspection type first, then add requirements to track."
-                          : "Add your first compliance requirement to start tracking."}
+                        {facilityTypes.length === 0
+                          ? 'Add a requirement — you can create a new inspection program in the same step.'
+                          : 'Add your first compliance requirement to start tracking.'}
                       </p>
-                      {facilityTypes.length === 0 ? (
-                        <Button onClick={() => setCreateTypeOpen(true)}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Create Inspection Type
-                        </Button>
-                      ) : (
-                        <Button onClick={() => setCreateReqOpen(true)}>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add Requirement
-                        </Button>
-                      )}
+                      <Button onClick={() => setCreateReqOpen(true)}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add requirement
+                      </Button>
                     </CardContent>
                   </Card>
                 );
@@ -258,22 +262,13 @@ const FacilitySafetySection = () => {
         </Tabs>
       </div>
 
-      <CreateInspectionTypeDialog
-        open={createTypeOpen}
-        onOpenChange={setCreateTypeOpen}
-        defaultCategory="facility_safety"
-        lockCategory
-        onSuccess={() => {
-          refresh();
-          setCreateTypeOpen(false);
-        }}
-      />
-
       <CreateRequirementDialog
         open={createReqOpen}
         onOpenChange={setCreateReqOpen}
         inspectionTypeId={selectedTypeId}
         inspectionTypes={facilityTypes}
+        defaultProgramCategory="facility_safety"
+        lockProgramCategory
         onSuccess={() => {
           refresh();
           setCreateReqOpen(false);

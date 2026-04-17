@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ArrowLeft, Search, Upload, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
+import { Search, Upload, AlertTriangle, CheckCircle, XCircle, Clock } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BulkTeacherDocumentUpload from "@/components/admin/BulkTeacherDocumentUpload";
 
@@ -272,10 +272,7 @@ const TeacherCompliance = () => {
   if (loading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+        <div className="mb-6">
           <h1 className="text-3xl font-bold">Teacher Compliance</h1>
         </div>
         <div className="text-center py-12">Loading compliance data...</div>
@@ -286,14 +283,9 @@ const TeacherCompliance = () => {
   return (
     <div className="container mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Teacher Compliance Dashboard</h1>
-            <p className="text-muted-foreground">Track staff document requirements and status</p>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold">Teacher Compliance Dashboard</h1>
+          <p className="text-muted-foreground">Track staff document requirements and status</p>
         </div>
         <Button onClick={() => setShowBulkUpload(true)}>
           <Upload className="h-4 w-4 mr-2" />

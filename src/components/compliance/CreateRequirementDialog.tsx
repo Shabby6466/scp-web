@@ -24,13 +24,17 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { 
-  InspectionType, 
-  ComplianceFrequency, 
-  RiskLevel, 
-  useComplianceFramework 
+import {
+  InspectionType,
+  ComplianceFrequency,
+  RiskLevel,
+  InspectionProgramCategory,
+  useComplianceFramework,
 } from '@/hooks/useComplianceFramework';
 import { useUserRole } from '@/hooks/useUserRole';
+
+/** Create a new inspection program in the same step as the first requirement. */
+export const NEW_INSPECTION_PROGRAM = '__new_inspection_program__';
 
 interface CreateRequirementDialogProps {
   open: boolean;
@@ -38,6 +42,10 @@ interface CreateRequirementDialogProps {
   inspectionTypeId: string | null;
   inspectionTypes: InspectionType[];
   onSuccess: () => void;
+  /** Default program when user creates a new inspection (dashboard). */
+  defaultProgramCategory?: InspectionProgramCategory;
+  /** When true (e.g. Facility & Safety hub), new programs are always facility_safety — no extra picker. */
+  lockProgramCategory?: boolean;
 }
 
 const CreateRequirementDialog = ({
@@ -46,11 +54,18 @@ const CreateRequirementDialog = ({
   inspectionTypeId,
   inspectionTypes,
   onSuccess,
+  defaultProgramCategory = 'facility_safety',
+  lockProgramCategory = false,
 }: CreateRequirementDialogProps) => {
   const { schoolId } = useUserRole();
-  const { createRequirement } = useComplianceFramework(schoolId);
+  const { createRequirement, createInspectionType } = useComplianceFramework(schoolId);
 
   const [selectedTypeId, setSelectedTypeId] = useState<string>(inspectionTypeId || '');
+  const [newProgramName, setNewProgramName] = useState('');
+  const [newProgramDescription, setNewProgramDescription] = useState('');
+  const [newProgramCategory, setNewProgramCategory] =
+    useState<InspectionProgramCategory>(defaultProgramCategory);
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [frequency, setFrequency] = useState<ComplianceFrequency>('annual');
@@ -62,12 +77,7 @@ const CreateRequirementDialog = ({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (inspectionTypeId) {
-      setSelectedTypeId(inspectionTypeId);
-    }
-  }, [inspectionTypeId]);
-
-  const resetForm = () => {
+    if (!open) return;
     setTitle('');
     setDescription('');
     setFrequency('annual');
@@ -76,15 +86,56 @@ const CreateRequirementDialog = ({
     setEvidenceRequired(true);
     setRequiresReview(false);
     setTags('');
-  };
+    setNewProgramName('');
+    setNewProgramDescription('');
+    setNewProgramCategory(defaultProgramCategory);
+
+    if (inspectionTypeId) {
+      setSelectedTypeId(inspectionTypeId);
+    } else if (inspectionTypes.length === 0) {
+      setSelectedTypeId(NEW_INSPECTION_PROGRAM);
+    } else {
+      setSelectedTypeId(inspectionTypes[0].id);
+    }
+  }, [
+    open,
+    inspectionTypeId,
+    inspectionTypes.length,
+    inspectionTypes[0]?.id,
+    defaultProgramCategory,
+  ]);
+
+  const isNewProgram = selectedTypeId === NEW_INSPECTION_PROGRAM;
+  const programCategory: InspectionProgramCategory = lockProgramCategory
+    ? defaultProgramCategory
+    : newProgramCategory;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !selectedTypeId) return;
+    if (!title.trim()) return;
+
+    let inspectionTypeIdResolved = selectedTypeId;
+    if (isNewProgram) {
+      if (!newProgramName.trim()) return;
+      setLoading(true);
+      const created = await createInspectionType(
+        {
+          name: newProgramName.trim(),
+          description: newProgramDescription.trim() || null,
+          category: programCategory,
+        },
+        { quiet: true },
+      );
+      setLoading(false);
+      if (!created?.id) return;
+      inspectionTypeIdResolved = created.id;
+    } else {
+      if (!selectedTypeId) return;
+    }
 
     setLoading(true);
     const result = await createRequirement({
-      inspection_type_id: selectedTypeId,
+      inspection_type_id: inspectionTypeIdResolved,
       title: title.trim(),
       description: description.trim() || null,
       frequency,
@@ -93,35 +144,41 @@ const CreateRequirementDialog = ({
       risk_level: riskLevel,
       evidence_required: evidenceRequired,
       requires_review: requiresReview,
-      tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+      tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
     });
     setLoading(false);
 
     if (result) {
-      resetForm();
       onOpenChange(false);
       onSuccess();
     }
   };
 
+  const canSubmit =
+    title.trim() &&
+    (isNewProgram ? newProgramName.trim() : !!selectedTypeId);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Requirement</DialogTitle>
+          <DialogTitle>Add requirement</DialogTitle>
           <DialogDescription>
-            Create a new compliance requirement to track
+            Choose an inspection program (or create one), then define what to track.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="inspectionType">Inspection Type *</Label>
+            <Label htmlFor="inspectionType">Inspection program *</Label>
             <Select value={selectedTypeId} onValueChange={setSelectedTypeId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select inspection type" />
+              <SelectTrigger id="inspectionType">
+                <SelectValue placeholder="Select or create program" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value={NEW_INSPECTION_PROGRAM}>
+                  + New inspection program…
+                </SelectItem>
                 {inspectionTypes.map((type) => (
                   <SelectItem key={type.id} value={type.id}>
                     {type.name}
@@ -131,13 +188,56 @@ const CreateRequirementDialog = ({
             </Select>
           </div>
 
+          {isNewProgram && (
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+              <p className="text-sm font-medium">New inspection program</p>
+              <div className="space-y-2">
+                <Label htmlFor="progName">Program name *</Label>
+                <Input
+                  id="progName"
+                  value={newProgramName}
+                  onChange={(e) => setNewProgramName(e.target.value)}
+                  placeholder="e.g. NYC DOH visit, Fire & life safety"
+                  required={isNewProgram}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="progDesc">Program description</Label>
+                <Textarea
+                  id="progDesc"
+                  value={newProgramDescription}
+                  onChange={(e) => setNewProgramDescription(e.target.value)}
+                  placeholder="What this inspection covers…"
+                  rows={2}
+                />
+              </div>
+              {!lockProgramCategory && (
+                <div className="space-y-2">
+                  <Label>Program area</Label>
+                  <Select
+                    value={newProgramCategory}
+                    onValueChange={(v) => setNewProgramCategory(v as InspectionProgramCategory)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="doh">DOH & health</SelectItem>
+                      <SelectItem value="facility_safety">Facility & safety</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="space-y-2">
-            <Label htmlFor="title">Requirement Title *</Label>
+            <Label htmlFor="title">Requirement title *</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Annual Fire Drill Documentation"
+              placeholder="e.g. Annual fire drill documentation"
               required
             />
           </div>
@@ -171,7 +271,7 @@ const CreateRequirementDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label>Risk Level</Label>
+              <Label>Risk level</Label>
               <Select value={riskLevel} onValueChange={(v) => setRiskLevel(v as RiskLevel)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -186,14 +286,15 @@ const CreateRequirementDialog = ({
           </div>
 
           <div className="space-y-2">
-            <Label>Due Date</Label>
+            <Label>Due date</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
+                  type="button"
                   variant="outline"
                   className={cn(
                     'w-full justify-start text-left font-normal',
-                    !dueDate && 'text-muted-foreground'
+                    !dueDate && 'text-muted-foreground',
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -201,12 +302,7 @@ const CreateRequirementDialog = ({
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={dueDate}
-                  onSelect={setDueDate}
-                  initialFocus
-                />
+                <Calendar mode="single" selected={dueDate} onSelect={setDueDate} initialFocus />
               </PopoverContent>
             </Popover>
           </div>
@@ -217,7 +313,7 @@ const CreateRequirementDialog = ({
               id="tags"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              placeholder="e.g., safety, training, documentation"
+              placeholder="e.g. safety, training, documentation"
             />
           </div>
 
@@ -228,7 +324,7 @@ const CreateRequirementDialog = ({
                 checked={evidenceRequired}
                 onCheckedChange={setEvidenceRequired}
               />
-              <Label htmlFor="evidenceRequired">Evidence Required</Label>
+              <Label htmlFor="evidenceRequired">Evidence required</Label>
             </div>
             <div className="flex items-center space-x-2">
               <Switch
@@ -236,20 +332,16 @@ const CreateRequirementDialog = ({
                 checked={requiresReview}
                 onCheckedChange={setRequiresReview}
               />
-              <Label htmlFor="requiresReview">Requires Review</Label>
+              <Label htmlFor="requiresReview">Requires review</Label>
             </div>
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !title.trim() || !selectedTypeId}>
-              {loading ? 'Creating...' : 'Create Requirement'}
+            <Button type="submit" disabled={loading || !canSubmit}>
+              {loading ? 'Creating…' : 'Add requirement'}
             </Button>
           </DialogFooter>
         </form>
