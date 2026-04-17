@@ -91,7 +91,8 @@ export const DocumentTemplates = ({ schoolId }: DocumentTemplatesProps) => {
       formData.append('schoolId', schoolId);
 
       const token = localStorage.getItem('access_token');
-      const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      // const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+      const API_BASE = 'http://76.13.177.120:8091/api';
       const res = await fetch(`${API_BASE}/document-templates`, {
         method: 'POST',
         headers: token ? { 'Authorization': `Bearer ${token}` } : {},
