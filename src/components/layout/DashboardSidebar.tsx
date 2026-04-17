@@ -21,6 +21,7 @@ import {
   Bell,
   Search,
   ClipboardCheck,
+  ClipboardList,
   Briefcase,
   LayoutGrid,
   Scale,
@@ -152,6 +153,8 @@ export function DashboardSidebar({
           { title: "Schools", url: '/admin/schools', icon: School },
           { title: "Directors", url: '/admin/directors', icon: UserCog },
           { title: "Documents", url: '/admin/documents', icon: FileText },
+          { title: "Student requirements", url: '/admin/required-documents', icon: ClipboardList },
+          { title: "Staff requirements", url: '/admin/staff-requirements', icon: GraduationCap },
           { title: "Audit Logs", url: '/admin/audit-logs', icon: Shield },
           { title: "Reminders", url: '/admin/reminders', icon: Bell },
           { title: "Privacy & policy", url: '/admin/privacy-settings', icon: Scale },
@@ -226,10 +229,15 @@ export function DashboardSidebar({
         items: [
           { title: "Branches", url: '/school/branches', icon: MapPin },
           { title: "Requirements", url: '/admin/required-documents', icon: Shield },
+          { title: "Staff requirements", url: '/admin/staff-requirements', icon: GraduationCap },
           { title: "School settings", url: '/school/settings', icon: Settings },
         ],
         collapsible: true,
-        defaultOpen: location.pathname.includes('/settings') || location.pathname.includes('/branches'),
+        defaultOpen:
+          location.pathname.includes('/settings') ||
+          location.pathname.includes('/branches') ||
+          location.pathname.includes('/required-documents') ||
+          location.pathname.includes('/staff-requirements'),
       });
 
       return groups;
@@ -280,10 +288,15 @@ export function DashboardSidebar({
       groups.push({
         label: "Settings",
         items: [
+          { title: "Requirements", url: '/admin/required-documents', icon: Shield },
+          { title: "Staff requirements", url: '/admin/staff-requirements', icon: GraduationCap },
           { title: "School settings", url: '/school/settings', icon: Settings },
         ],
         collapsible: true,
-        defaultOpen: false,
+        defaultOpen:
+          location.pathname.includes('/settings') ||
+          location.pathname.includes('/required-documents') ||
+          location.pathname.includes('/staff-requirements'),
       });
 
       return groups;

@@ -90,6 +90,9 @@ export default function RequiredDocumentsPage() {
     branchId: "",
     isMandatory: true,
   });
+  const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -205,6 +208,10 @@ export default function RequiredDocumentsPage() {
       toast.error("Name is required");
       return;
     }
+    if (!form.complianceCategoryId.trim()) {
+      toast.error("Compliance category is required");
+      return;
+    }
 
     if (!effectiveSchoolId) {
       toast.error(
@@ -219,15 +226,10 @@ export default function RequiredDocumentsPage() {
           name: form.name.trim(),
           isMandatory: form.isMandatory,
           renewalPeriod: "NONE",
-          complianceCategoryId: form.complianceCategoryId.trim()
-            ? form.complianceCategoryId.trim()
-            : null,
+          complianceCategoryId: form.complianceCategoryId.trim(),
         });
-        const row = updated as DocumentTypeRow;
         toast.success("Document updated");
-        setDocs((prev) =>
-          prev.map((d) => (d.id === editing.id ? { ...d, ...row } : d)),
-        );
+        await loadDocuments();
       } else {
         const payload: Record<string, unknown> = {
           name: form.name.trim(),
@@ -235,20 +237,65 @@ export default function RequiredDocumentsPage() {
           schoolId: effectiveSchoolId,
           renewalPeriod: "NONE",
           isMandatory: form.isMandatory,
+          complianceCategoryId: form.complianceCategoryId.trim(),
         };
-        if (form.complianceCategoryId.trim()) {
-          payload.complianceCategoryId = form.complianceCategoryId.trim();
-        }
         if (showBranchField && form.branchId.trim()) {
           payload.branchId = form.branchId.trim();
         }
-        const created = await documentTypeService.create(payload);
+        await documentTypeService.create(payload);
         toast.success("Document added");
-        setDocs((prev) => [...prev, created as DocumentTypeRow]);
+        await loadDocuments();
       }
       setOpen(false);
     } catch {
       toast.error("Failed to save document");
+    }
+  };
+
+  const makeSlug = (name: string): string =>
+    name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+
+  const createCategory = async () => {
+    const name = newCategoryName.trim();
+    if (!name) {
+      toast.error("Category name is required");
+      return;
+    }
+    if (!effectiveSchoolId) {
+      toast.error(isAdmin ? "Select a school first" : "No school associated with your account");
+      return;
+    }
+    const slug = makeSlug(name);
+    if (!slug) {
+      toast.error("Enter a valid category name");
+      return;
+    }
+
+    setCreatingCategory(true);
+    try {
+      await complianceService.createCategory({
+        name,
+        slug,
+        schoolId: effectiveSchoolId,
+      });
+      const catRes = await complianceService.listCategories(effectiveSchoolId);
+      const next = unwrapList<ComplianceCategoryOption>(catRes);
+      setCategories(next);
+      const created = next.find((c) => makeSlug(c.name) === slug);
+      if (created) {
+        setForm((f) => ({ ...f, complianceCategoryId: created.id }));
+      }
+      setCreateCategoryOpen(false);
+      setNewCategoryName("");
+      toast.success("Compliance category created");
+    } catch {
+      toast.error("Failed to create category");
+    } finally {
+      setCreatingCategory(false);
     }
   };
 
@@ -439,7 +486,7 @@ export default function RequiredDocumentsPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Compliance category</Label>
+              <Label>Compliance category *</Label>
               <Select
                 value={form.complianceCategoryId || NONE}
                 onValueChange={(v) =>
@@ -447,10 +494,10 @@ export default function RequiredDocumentsPage() {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Optional" />
+                  <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={NONE}>None</SelectItem>
+                  <SelectItem value={NONE}>Select category...</SelectItem>
                   {categories.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.name}
@@ -458,6 +505,21 @@ export default function RequiredDocumentsPage() {
                   ))}
                 </SelectContent>
               </Select>
+              {categories.length === 0 && (
+                <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                  <p className="text-xs text-muted-foreground">
+                    No compliance categories found for this school.
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setCreateCategoryOpen(true)}
+                  >
+                    Create category
+                  </Button>
+                </div>
+              )}
             </div>
             {showBranchField && !editing && (
               <div className="space-y-2">
@@ -516,6 +578,36 @@ export default function RequiredDocumentsPage() {
               </Button>
               <Button onClick={save}>
                 {editing ? "Save Changes" : "Add Requirement"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={createCategoryOpen} onOpenChange={setCreateCategoryOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create compliance category</DialogTitle>
+            <DialogDescription>
+              Add a category so requirements can be grouped in compliance views.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="new-compliance-category">Category name *</Label>
+              <Input
+                id="new-compliance-category"
+                placeholder="e.g. Health & Safety"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button type="button" variant="outline" onClick={() => setCreateCategoryOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="button" onClick={createCategory} disabled={creatingCategory}>
+                {creatingCategory ? "Creating..." : "Create"}
               </Button>
             </div>
           </div>

@@ -24,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Search, Mail, Phone, Users, Calendar, UserPlus } from 'lucide-react';
+import { Search, Mail, Phone, Users, Calendar, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface Parent {
@@ -80,13 +80,24 @@ const AdminParents = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
   const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   const [newParent, setNewParent] = useState({
     email: '',
     first_name: '',
     last_name: '',
     phone: '',
     school_id: '' as string,
+  });
+  const [createMode, setCreateMode] = useState<'otp' | 'manual'>('otp');
+  const [manualPassword, setManualPassword] = useState('');
+  const [editParent, setEditParent] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
   });
 
   const canAddParent =
@@ -211,6 +222,17 @@ const AdminParents = () => {
       first_name: first,
       last_name: last,
     };
+    if (createMode === 'manual') {
+      if (manualPassword.trim().length < 8) {
+        toast({
+          variant: 'destructive',
+          title: 'Password required',
+          description: 'Manual mode needs a password with at least 8 characters.',
+        });
+        return;
+      }
+      payload.password = manualPassword.trim();
+    }
     if (newParent.phone.trim()) {
       payload.phone = newParent.phone.trim();
     }
@@ -240,7 +262,13 @@ const AdminParents = () => {
         return;
       }
 
-      toast({ title: 'Parent added', description: `${first} ${last} can sign in after they complete email verification (if enabled).` });
+      toast({
+        title: 'Parent added',
+        description:
+          createMode === 'manual'
+            ? `${first} ${last} was created with manual password.`
+            : `${first} ${last} can sign in after email verification (if enabled).`,
+      });
       setAddOpen(false);
       setNewParent({
         email: '',
@@ -249,10 +277,82 @@ const AdminParents = () => {
         phone: '',
         school_id: '',
       });
+      setCreateMode('otp');
+      setManualPassword('');
       await fetchParents();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to create parent';
       toast({ variant: 'destructive', title: 'Could not add parent', description: message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openEditDialog = (parent: Parent) => {
+    const parts = parent.full_name.trim().split(/\s+/).filter(Boolean);
+    setSelectedParent(parent);
+    setEditParent({
+      first_name: parts[0] ?? '',
+      last_name: parts.slice(1).join(' '),
+      email: parent.email,
+      phone: parent.phone ?? '',
+    });
+    setEditOpen(true);
+  };
+
+  const handleUpdateParent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedParent) return;
+
+    const first = editParent.first_name.trim();
+    const last = editParent.last_name.trim();
+    const email = editParent.email.trim().toLowerCase();
+    if (!first || !last || !email) {
+      toast({
+        variant: 'destructive',
+        title: 'Missing fields',
+        description: 'First name, last name, and email are required.',
+      });
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await userService.update(selectedParent.id, {
+        first_name: first,
+        last_name: last,
+        email,
+        phone: editParent.phone.trim() || null,
+      });
+      toast({ title: 'Parent updated', description: 'Parent profile was updated successfully.' });
+      setEditOpen(false);
+      setSelectedParent(null);
+      await fetchParents();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update parent';
+      toast({ variant: 'destructive', title: 'Could not update parent', description: message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const openDeleteDialog = (parent: Parent) => {
+    setSelectedParent(parent);
+    setDeleteOpen(true);
+  };
+
+  const handleDeleteParent = async () => {
+    if (!selectedParent) return;
+    setSaving(true);
+    try {
+      await userService.remove(selectedParent.id);
+      toast({ title: 'Parent deleted', description: 'Parent account removed successfully.' });
+      setDeleteOpen(false);
+      setSelectedParent(null);
+      await fetchParents();
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete parent';
+      toast({ variant: 'destructive', title: 'Could not delete parent', description: message });
     } finally {
       setSaving(false);
     }
@@ -393,6 +493,16 @@ const AdminParents = () => {
                           {parent.students.length} {parent.students.length === 1 ? 'child' : 'children'}
                         </Badge>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="sm" onClick={() => openEditDialog(parent)}>
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Edit
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={() => openDeleteDialog(parent)}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </Button>
+                      </div>
 
                       {parent.students.length > 0 && (
                         <div className="pt-3 border-t">
@@ -489,6 +599,31 @@ const AdminParents = () => {
                 onChange={(e) => setNewParent((p) => ({ ...p, phone: e.target.value }))}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Account setup mode</Label>
+              <Select value={createMode} onValueChange={(v: 'otp' | 'manual') => setCreateMode(v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="otp">OTP invite (user sets password)</SelectItem>
+                  <SelectItem value="manual">Manual password</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {createMode === 'manual' && (
+              <div className="space-y-2">
+                <Label>Temporary password *</Label>
+                <Input
+                  type="password"
+                  value={manualPassword}
+                  onChange={(e) => setManualPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  minLength={8}
+                  required
+                />
+              </div>
+            )}
             <DialogFooter className="gap-2 sm:gap-0">
               <Button type="button" variant="outline" onClick={() => setAddOpen(false)}>
                 Cancel
@@ -498,6 +633,93 @@ const AdminParents = () => {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={editOpen}
+        onOpenChange={(open) => {
+          setEditOpen(open);
+          if (!open) setSelectedParent(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit parent</DialogTitle>
+            <DialogDescription>Update parent account details.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdateParent} className="space-y-3">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={editParent.email}
+                onChange={(e) => setEditParent((p) => ({ ...p, email: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <Label>First name</Label>
+                <Input
+                  value={editParent.first_name}
+                  onChange={(e) => setEditParent((p) => ({ ...p, first_name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Last name</Label>
+                <Input
+                  value={editParent.last_name}
+                  onChange={(e) => setEditParent((p) => ({ ...p, last_name: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Phone</Label>
+              <Input
+                type="tel"
+                value={editParent.phone}
+                onChange={(e) => setEditParent((p) => ({ ...p, phone: e.target.value }))}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? 'Saving…' : 'Save changes'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={deleteOpen}
+        onOpenChange={(open) => {
+          setDeleteOpen(open);
+          if (!open) setSelectedParent(null);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete parent account?</DialogTitle>
+            <DialogDescription>
+              {selectedParent
+                ? `This will remove ${selectedParent.full_name} (${selectedParent.email}).`
+                : 'This will remove the selected parent account.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setDeleteOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" variant="destructive" onClick={handleDeleteParent} disabled={saving}>
+              {saving ? 'Deleting…' : 'Delete'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

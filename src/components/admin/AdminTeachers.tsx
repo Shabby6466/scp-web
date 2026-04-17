@@ -127,6 +127,8 @@ const AdminTeachers = () => {
     certification_expiry: '',
     employment_status: 'active',
   });
+  const [createMode, setCreateMode] = useState<'otp' | 'manual'>('otp');
+  const [manualPassword, setManualPassword] = useState('');
 
   useEffect(() => {
     fetchSchools();
@@ -216,11 +218,26 @@ const AdminTeachers = () => {
   const handleAddTeacher = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await userService.create({ ...newTeacher, role: 'TEACHER' });
+      if (createMode === 'manual' && manualPassword.trim().length < 8) {
+        toast({
+          variant: "destructive",
+          title: "Password required",
+          description: "Manual mode needs a password with at least 8 characters.",
+        });
+        return;
+      }
+      const payload: Record<string, unknown> = { ...newTeacher, role: 'TEACHER' };
+      if (createMode === 'manual') {
+        payload.password = manualPassword.trim();
+      }
+      await userService.create(payload);
 
       toast({
         title: "Teacher added",
-        description: "New teacher has been added successfully.",
+        description:
+          createMode === 'manual'
+            ? "Teacher added with manual password."
+            : "Teacher added. OTP invite sent (if enabled).",
       });
 
       setIsAddDialogOpen(false);
@@ -235,6 +252,8 @@ const AdminTeachers = () => {
         certification_expiry: '',
         employment_status: 'active',
       });
+      setCreateMode('otp');
+      setManualPassword('');
       fetchTeachers();
     } catch (error: any) {
       toast({
@@ -634,6 +653,31 @@ const AdminTeachers = () => {
                 />
               </div>
             </div>
+            <div className="space-y-2">
+              <Label>Account setup mode</Label>
+              <Select value={createMode} onValueChange={(v: 'otp' | 'manual') => setCreateMode(v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="otp">OTP invite (user sets password)</SelectItem>
+                  <SelectItem value="manual">Manual password</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {createMode === 'manual' && (
+              <div className="space-y-2">
+                <Label>Temporary password *</Label>
+                <Input
+                  type="password"
+                  value={manualPassword}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setManualPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  minLength={8}
+                  required
+                />
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Email *</Label>

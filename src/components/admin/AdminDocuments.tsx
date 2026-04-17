@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { FileText, Eye, Search, Filter, Shield } from 'lucide-react';
 import { documentService } from '@/services/documentService';
+import { unwrapList } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
 import { User, GraduationCap, Briefcase } from 'lucide-react';
 
@@ -40,9 +41,141 @@ type DocumentWithStudent = {
     first_name: string;
     last_name: string;
     grade_level: string | null;
+    date_of_birth?: string;
   } | null;
+  teachers?: {
+    first_name: string;
+    last_name: string;
+  } | null;
+  /** Dialog / details (camelCase from API) */
+  fileName?: string;
+  createdAt?: string;
+  expiration_date?: string | null;
+  file_size?: number;
   [key: string]: any;
 };
+
+function slugifyCategoryLabel(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_|_$/g, '') || 'document';
+}
+
+function isValidDate(d: Date): boolean {
+  return !Number.isNaN(d.getTime());
+}
+
+/** ISO string for sorting/API; empty string if missing or invalid (never throws). */
+function safeToIsoString(raw: unknown): string {
+  if (raw == null || raw === '') return '';
+  const d = new Date(typeof raw === 'number' ? raw : String(raw));
+  return isValidDate(d) ? d.toISOString() : '';
+}
+
+/** `YYYY-MM-DD` or null; never throws. */
+function safeToDateOnly(raw: unknown): string | null {
+  if (raw == null || raw === '') return null;
+  const d = new Date(typeof raw === 'number' ? raw : String(raw));
+  if (!isValidDate(d)) return null;
+  return d.toISOString().slice(0, 10);
+}
+
+function isPastExpiry(expiresAt: unknown): boolean {
+  if (expiresAt == null || expiresAt === '') return false;
+  const d = new Date(typeof expiresAt === 'number' ? expiresAt : String(expiresAt));
+  if (!isValidDate(d)) return false;
+  return d < new Date();
+}
+
+/** Map `GET /documents/search` rows (Nest camelCase + relations) to list + dialog shape. */
+function normalizeAdminDocument(raw: unknown): DocumentWithStudent {
+  const d = raw as Record<string, unknown>;
+  const dt = d.documentType as Record<string, unknown> | undefined;
+  const cat = dt?.category as Record<string, unknown> | undefined;
+  const categorySlug =
+    (typeof cat?.slug === 'string' && cat.slug.trim()
+      ? cat.slug.trim()
+      : null) ??
+    (typeof cat?.name === 'string' && cat.name.trim()
+      ? slugifyCategoryLabel(cat.name)
+      : null) ??
+    (typeof dt?.name === 'string' && dt.name.trim()
+      ? slugifyCategoryLabel(String(dt.name))
+      : 'document');
+
+  const verifiedAt = d.verifiedAt ?? d.verified_at;
+  const expiresAt = d.expiresAt ?? d.expires_at;
+  let status = 'pending';
+  if (verifiedAt) {
+    status = 'approved';
+  } else if (isPastExpiry(expiresAt)) {
+    status = 'expired';
+  }
+
+  const sp = d.studentProfile as Record<string, unknown> | undefined;
+  const hasStudent = sp != null && sp.id != null;
+  const students = hasStudent
+    ? {
+        first_name: String(sp.firstName ?? sp.first_name ?? ''),
+        last_name: String(sp.lastName ?? sp.last_name ?? ''),
+        grade_level:
+          (sp.gradeLevel ?? sp.grade_level ?? null) as string | null,
+        date_of_birth:
+          safeToDateOnly(sp.dateOfBirth) ??
+          safeToDateOnly(sp.date_of_birth) ??
+          undefined,
+      }
+    : null;
+
+  const ou = d.ownerUser as Record<string, unknown> | undefined;
+  const role = String(ou?.role ?? '');
+  const teachers =
+    !hasStudent && (role === 'TEACHER' || role === 'BRANCH_DIRECTOR') && ou
+      ? (() => {
+          const name = String(ou.name ?? '');
+          const parts = name.trim().split(/\s+/).filter(Boolean);
+          return {
+            first_name: parts[0] ?? '',
+            last_name: parts.slice(1).join(' ') || '',
+          };
+        })()
+      : null;
+
+  const fileName = String(d.fileName ?? d.file_name ?? '');
+  const createdRaw = d.createdAt ?? d.created_at;
+  const created_at = safeToIsoString(createdRaw);
+
+  const sizeBytes = d.sizeBytes ?? d.file_size;
+  const file_size =
+    typeof sizeBytes === 'number'
+      ? sizeBytes
+      : typeof sizeBytes === 'string'
+        ? Number(sizeBytes)
+        : 0;
+
+  const expRaw = d.expiresAt ?? d.expiration_date;
+  const expiration_date = safeToDateOnly(expRaw);
+
+  return {
+    id: String(d.id),
+    file_name: fileName,
+    fileName,
+    category: categorySlug,
+    status,
+    notes: (d.notes as string | null) ?? null,
+    created_at,
+    createdAt: created_at,
+    student_id: hasStudent ? String(sp.id) : null,
+    students,
+    teachers,
+    expiration_date,
+    file_size,
+    documentType: dt,
+    ownerUser: ou,
+    studentProfile: sp,
+  };
+}
 
 const AdminDocuments = () => {
   const [documents, setDocuments] = useState<DocumentWithStudent[]>([]);
@@ -64,8 +197,9 @@ const AdminDocuments = () => {
 
   const fetchDocuments = async () => {
     try {
-      const data = await documentService.search();
-      setDocuments(data || []);
+      const raw = await documentService.search({ limit: 200 });
+      const rows = unwrapList<unknown>(raw);
+      setDocuments(rows.map(normalizeAdminDocument));
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -90,10 +224,12 @@ const AdminDocuments = () => {
 
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(doc => 
-        doc.file_name.toLowerCase().includes(query) ||
-        doc.students?.first_name.toLowerCase().includes(query) ||
-        doc.students?.last_name.toLowerCase().includes(query)
+      filtered = filtered.filter((doc) =>
+        (doc.file_name ?? (doc as { fileName?: string }).fileName ?? '')
+          .toLowerCase()
+          .includes(query) ||
+        (doc.students?.first_name ?? '').toLowerCase().includes(query) ||
+        (doc.students?.last_name ?? '').toLowerCase().includes(query),
       );
     }
 
@@ -266,7 +402,9 @@ const AdminDocuments = () => {
                         <FileText className="h-5 w-5" />
                       </div>
                       <div>
-                        <CardTitle className="text-lg font-display font-semibold">{doc.file_name}</CardTitle>
+                        <CardTitle className="text-lg font-display font-semibold">
+                          {doc.file_name || (doc as { fileName?: string }).fileName || 'Untitled'}
+                        </CardTitle>
                         <div className="flex items-center gap-2 mt-0.5">
                           <Badge variant={STATUS_COLORS[doc.status] || 'secondary'} className="capitalize font-medium">
                             {doc.status}
@@ -277,7 +415,8 @@ const AdminDocuments = () => {
                         </div>
                       </div>
                     </div>
-                    <CardDescription>
+                    {/* CardDescription renders as <p>; block layout must use a div to avoid validateDOMNesting warnings */}
+                    <div className="text-xs text-muted-foreground">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 mt-3">
                         {doc.students ? (
                           <div className="flex items-center gap-2 text-foreground/80">
@@ -298,10 +437,16 @@ const AdminDocuments = () => {
                         )}
                         <div className="text-xs text-muted-foreground flex items-center gap-2">
                           <Shield className="h-3 w-3" />
-                          Uploaded: {new Date(doc.created_at).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                          Uploaded:{' '}
+                          {doc.created_at &&
+                          isValidDate(new Date(doc.created_at))
+                            ? new Date(doc.created_at).toLocaleDateString(undefined, {
+                                dateStyle: 'medium',
+                              })
+                            : '—'}
                         </div>
                       </div>
-                    </CardDescription>
+                    </div>
                   </div>
                 </div>
               </CardHeader>
