@@ -7,6 +7,7 @@ import { documentService } from '@/services/documentService';
 import { studentParentService } from '@/services/studentParentService';
 import { studentProfileService } from '@/services/studentProfileService';
 import { studentsService } from '@/services/studentsService';
+import { userService } from '@/services/userService';
 import { ApiError } from '@/lib/api';
 import { invitationService } from '@/services/invitationService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -53,6 +54,12 @@ interface Student {
 interface School {
   id: string;
   name: string;
+}
+
+interface ParentOption {
+  id: string;
+  name: string;
+  email: string;
 }
 
 /** Backend may send null, odd strings, or objects; never throw from Date parsing. */
@@ -122,6 +129,13 @@ const AdminStudents = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [inviteStudent, setInviteStudent] = useState<Student | null>(null);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [linkStudent, setLinkStudent] = useState<Student | null>(null);
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [availableParents, setAvailableParents] = useState<ParentOption[]>([]);
+  const [selectedParentId, setSelectedParentId] = useState('');
+  const [relation, setRelation] = useState('');
+  const [linkingParent, setLinkingParent] = useState(false);
+  const [loadingParents, setLoadingParents] = useState(false);
   const [savingStudent, setSavingStudent] = useState(false);
   /** School at dialog open — only send `schoolId` on PATCH if this changed (avoids 403 for branch directors). */
   const [editSchoolSnapshot, setEditSchoolSnapshot] = useState<string | null>(null);
@@ -474,6 +488,74 @@ const AdminStudents = () => {
       description:
         `${student.first_name} ${student.last_name} is an enrolled profile, not a login account. Manage enrollment from your school tools.`,
     });
+  };
+
+  const openLinkParentDialog = async (student: Student) => {
+    setLinkStudent(student);
+    setSelectedParentId('');
+    setRelation('');
+    setIsLinkDialogOpen(true);
+    setLoadingParents(true);
+
+    try {
+      const schoolScope = student.school_id || viewerSchoolId || undefined;
+      const rows = await userService.list(
+        schoolScope
+          ? { role: 'PARENT', schoolId: schoolScope }
+          : { role: 'PARENT' },
+      );
+      const parents = (Array.isArray(rows) ? rows : []).map((p: any) => ({
+        id: String(p.id),
+        name: String(p.full_name ?? p.name ?? '').trim() || 'Parent',
+        email: String(p.email ?? '').trim(),
+      }));
+      setAvailableParents(parents);
+    } catch (error: any) {
+      setAvailableParents([]);
+      toastHook({
+        variant: 'destructive',
+        title: 'Failed to load parents',
+        description: error?.message ?? 'Could not load parent accounts',
+      });
+    } finally {
+      setLoadingParents(false);
+    }
+  };
+
+  const handleDirectParentLink = async () => {
+    if (!linkStudent || !selectedParentId) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Select a parent',
+        description: 'Pick an existing parent account to link.',
+      });
+      return;
+    }
+
+    setLinkingParent(true);
+    try {
+      await studentParentService.createLink({
+        studentProfileId: linkStudent.id,
+        parentId: selectedParentId,
+        relation: relation.trim() || undefined,
+        isPrimary: true,
+      });
+      toastHook({
+        title: 'Parent linked',
+        description: 'Parent was linked to student successfully.',
+      });
+      setIsLinkDialogOpen(false);
+      setLinkStudent(null);
+      await fetchStudents();
+    } catch (error: any) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Failed to link parent',
+        description: error?.message ?? 'Could not link parent to this student',
+      });
+    } finally {
+      setLinkingParent(false);
+    }
   };
 
   if (loading) {
@@ -853,6 +935,14 @@ const AdminStudents = () => {
                             <FileText className="h-4 w-4 mr-2" />
                             View Checklist
                           </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openLinkParentDialog(student)}
+                          >
+                            <UserCheck className="h-4 w-4 mr-2" />
+                            Link Parent
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -1046,6 +1136,74 @@ const AdminStudents = () => {
           onSuccess={fetchStudents}
         />
       )}
+
+      <Dialog
+        open={isLinkDialogOpen}
+        onOpenChange={(open) => {
+          setIsLinkDialogOpen(open);
+          if (!open) setLinkStudent(null);
+        }}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Link Existing Parent</DialogTitle>
+            <DialogDescription>
+              {linkStudent
+                ? `Assign an existing parent to ${linkStudent.first_name} ${linkStudent.last_name}.`
+                : 'Assign an existing parent to this student.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Parent account</Label>
+              <Select value={selectedParentId} onValueChange={setSelectedParentId} disabled={loadingParents}>
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingParents ? 'Loading parents...' : 'Select parent'} />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableParents.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name} ({p.email})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {!loadingParents && availableParents.length === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  No parent accounts found for this school. Add a parent in `/admin/parents` first.
+                </p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Relation (optional)</Label>
+              <Input
+                value={relation}
+                onChange={(e) => setRelation(e.target.value)}
+                placeholder="e.g. Mother, Father, Guardian"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsLinkDialogOpen(false);
+                  setLinkStudent(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                disabled={!selectedParentId || linkingParent || loadingParents}
+                onClick={handleDirectParentLink}
+              >
+                {linkingParent ? 'Linking…' : 'Link Parent'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

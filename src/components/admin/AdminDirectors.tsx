@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { UserPlus, Trash2, Search, Building2, ShieldCheck, MapPin } from 'lucide-react';
 import { branchService } from '@/services/branchService';
+import { unwrapList } from '@/lib/api';
 
 interface School {
   id: string;
@@ -18,14 +19,22 @@ interface School {
   state: string;
 }
 
-interface User {
+interface DirectorUser {
   id: string;
-  full_name: string;
+  full_name?: string;
+  name?: string;
   email: string;
+  school_id?: string;
+  schoolId?: string;
+  branch_id?: string;
+  branchId?: string;
+  school?: School;
+  branch?: Branch;
 }
 
 interface Branch {
   id: string;
+  name?: string;
   branch_name: string;
 }
 
@@ -34,20 +43,29 @@ interface DirectorAssignment {
   user_id: string;
   school_id: string;
   branch_id?: string;
-  user: User;
+  user: {
+    id: string;
+    full_name: string;
+    email: string;
+  };
   school: School;
   branch?: Branch;
 }
 
 export const AdminDirectors = () => {
   const [schools, setSchools] = useState<School[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [assignments, setAssignments] = useState<DirectorAssignment[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSchool, setSelectedSchool] = useState<string>('');
   const [selectedBranch, setSelectedBranch] = useState<string>('');
-  const [selectedUser, setSelectedUser] = useState<string>('');
+  const [newDirector, setNewDirector] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+  });
+  const [createMode, setCreateMode] = useState<'otp' | 'manual'>('otp');
+  const [manualPassword, setManualPassword] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -66,7 +84,11 @@ export const AdminDirectors = () => {
   const fetchBranches = async (schoolId: string) => {
     try {
       const data = await branchService.listBySchool(schoolId);
-      setBranches(data || []);
+      const rows = unwrapList<Branch>(data).map((b) => ({
+        ...b,
+        branch_name: b.branch_name ?? b.name ?? 'Branch',
+      }));
+      setBranches(rows);
     } catch {
       setBranches([]);
     }
@@ -76,30 +98,27 @@ export const AdminDirectors = () => {
     try {
       setLoading(true);
 
-      const [schoolsData, usersData, directorsData] = await Promise.all([
+      const [schoolsData, directorsData] = await Promise.all([
         schoolService.list(),
-        userService.list(),
         userService.list({ role: 'director' }),
       ]);
 
-      setSchools((schoolsData as School[]) || []);
-      setUsers((usersData as User[]) || []);
+      setSchools(unwrapList<School>(schoolsData));
       
-      const transformedAssignments = (directorsData || []).map((assignment: any) => {
-        const schoolId = assignment.school_id ?? assignment.schoolId ?? '';
-        const userId = assignment.user_id ?? assignment.userId ?? assignment.id;
-        const u = assignment.user || assignment.profiles;
+      const transformedAssignments = unwrapList<DirectorUser>(directorsData).map((assignment) => {
+        const schoolId = assignment.school_id ?? assignment.schoolId ?? assignment.school?.id ?? '';
+        const userId = assignment.id;
         const displayName =
-          u?.full_name ?? u?.name ?? assignment.name ?? '';
-        const email = u?.email ?? assignment.email ?? '';
-        const sch = assignment.school || assignment.schools;
+          assignment.full_name ?? assignment.name ?? '';
+        const email = assignment.email ?? '';
+        const sch = assignment.school;
         return {
-          id: assignment.id,
+          id: userId,
           user_id: userId,
           school_id: schoolId,
-          branch_id: assignment.branch_id ?? assignment.branchId,
+          branch_id: assignment.branch_id ?? assignment.branchId ?? assignment.branch?.id,
           user: {
-            id: u?.id ?? userId,
+            id: userId,
             full_name: displayName,
             email,
           },
@@ -109,7 +128,7 @@ export const AdminDirectors = () => {
             city: sch?.city ?? '',
             state: sch?.state ?? '',
           },
-          branch: assignment.branch || assignment.branches || null,
+          branch: assignment.branch || null,
         };
       });
       
@@ -122,24 +141,14 @@ export const AdminDirectors = () => {
     }
   };
 
-  const handleAssignDirector = async () => {
-    if (!selectedSchool || !selectedUser) {
-      toast.error('Please select both a school and a user');
-      return;
-    }
-
-    // Check if assignment already exists
-    const existingAssignment = assignments.find(
-      (a) => a.school_id === selectedSchool && a.user_id === selectedUser
-    );
-
-    if (existingAssignment) {
-      toast.error('This user is already a director at this school');
+  const handleCreateDirector = async () => {
+    if (!selectedSchool || !newDirector.first_name.trim() || !newDirector.last_name.trim() || !newDirector.email.trim()) {
+      toast.error('Please provide school, first name, last name, and email');
       return;
     }
 
     const otherDirector = assignments.find(
-      (a) => a.school_id === selectedSchool && a.user_id !== selectedUser,
+      (a) => a.school_id === selectedSchool,
     );
     if (otherDirector) {
       toast.error(
@@ -152,39 +161,52 @@ export const AdminDirectors = () => {
       !selectedBranch || selectedBranch === '_none_' ? null : selectedBranch;
 
     try {
-      await userService.update(selectedUser, {
-        role: 'director',
+      const payload: Record<string, unknown> = {
+        first_name: newDirector.first_name.trim(),
+        last_name: newDirector.last_name.trim(),
+        email: newDirector.email.trim().toLowerCase(),
+        role: 'DIRECTOR',
         school_id: selectedSchool,
         branch_id: branchPayload,
-      });
+      };
+      if (createMode === 'manual') {
+        if (manualPassword.trim().length < 8) {
+          toast.error('Manual mode needs a password with at least 8 characters.');
+          return;
+        }
+        payload.password = manualPassword.trim();
+      }
+      await userService.create(payload);
 
-      toast.success('Director assigned successfully');
+      toast.success(
+        createMode === 'manual'
+          ? 'Director created with manual password.'
+          : 'Director account created. OTP invite sent (if enabled).',
+      );
       setSelectedSchool('');
       setSelectedBranch('');
-      setSelectedUser('');
+      setNewDirector({ first_name: '', last_name: '', email: '' });
+      setCreateMode('otp');
+      setManualPassword('');
       fetchData();
     } catch (error: unknown) {
-      console.error('Error assigning director:', error);
+      console.error('Error creating director:', error);
       const message =
-        error instanceof Error ? error.message : 'Failed to assign director';
+        error instanceof Error ? error.message : 'Failed to create director';
       toast.error(message);
     }
   };
 
   const handleRemoveDirector = async (assignmentId: string) => {
-    if (!confirm("Are you sure you want to remove this director's administrative access?")) return;
+    if (!confirm("Are you sure you want to delete this director account?")) return;
     try {
-      await userService.update(assignmentId, { 
-        role: null,
-        school_id: null,
-        branch_id: null
-      });
+      await userService.remove(assignmentId);
 
-      toast.success('Director access revoked successfully');
+      toast.success('Director account deleted successfully');
       fetchData();
     } catch (error) {
       console.error('Error removing director:', error);
-      toast.error('Failed to remove director');
+      toast.error('Failed to delete director');
     }
   };
 
@@ -212,9 +234,9 @@ export const AdminDirectors = () => {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Card>
         <CardHeader>
-          <CardTitle>Assign Director to School</CardTitle>
+          <CardTitle>Create Director</CardTitle>
           <CardDescription>
-            Directors have full administrative access to their assigned school's data
+            Create a dedicated director account and assign it to a school
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -236,6 +258,28 @@ export const AdminDirectors = () => {
             </div>
 
             <div className="space-y-2">
+              <Label>First name</Label>
+              <Input
+                value={newDirector.first_name}
+                onChange={(e) =>
+                  setNewDirector((prev) => ({ ...prev, first_name: e.target.value }))
+                }
+                placeholder="John"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Last name</Label>
+              <Input
+                value={newDirector.last_name}
+                onChange={(e) =>
+                  setNewDirector((prev) => ({ ...prev, last_name: e.target.value }))
+                }
+                placeholder="Doe"
+              />
+            </div>
+
+            <div className="space-y-2">
               <Label>Select Branch (Optional)</Label>
               <Select value={selectedBranch} onValueChange={setSelectedBranch} disabled={!selectedSchool}>
                 <SelectTrigger>
@@ -253,25 +297,55 @@ export const AdminDirectors = () => {
             </div>
 
             <div className="space-y-2">
-              <Label>Select User</Label>
-              <Select value={selectedUser} onValueChange={setSelectedUser}>
+              <Label>Email</Label>
+              <Input
+                type="email"
+                value={newDirector.email}
+                onChange={(e) =>
+                  setNewDirector((prev) => ({ ...prev, email: e.target.value }))
+                }
+                placeholder="director@school.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Account setup mode</Label>
+              <Select value={createMode} onValueChange={(v: 'otp' | 'manual') => setCreateMode(v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Choose a user" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.full_name} ({user.email})
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="otp">OTP invite (user sets password)</SelectItem>
+                  <SelectItem value="manual">Manual password</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            {createMode === 'manual' && (
+              <div className="space-y-2">
+                <Label>Temporary password *</Label>
+                <Input
+                  type="password"
+                  value={manualPassword}
+                  onChange={(e) => setManualPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  minLength={8}
+                  required
+                />
+              </div>
+            )}
 
             <div className="flex items-end">
-              <Button onClick={handleAssignDirector} className="w-full h-10 shadow-sm" disabled={!selectedSchool || !selectedUser}>
+              <Button
+                onClick={handleCreateDirector}
+                className="w-full h-10 shadow-sm"
+                disabled={
+                  !selectedSchool ||
+                  !newDirector.first_name.trim() ||
+                  !newDirector.last_name.trim() ||
+                  !newDirector.email.trim()
+                }
+              >
                 <UserPlus className="mr-2 h-4 w-4" />
-                Assign Director
+                Create Director
               </Button>
             </div>
           </div>

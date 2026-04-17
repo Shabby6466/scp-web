@@ -347,6 +347,10 @@ const App = () => (
                       <StaffRequiredDocumentsPage />
                     </SchoolRoute>
                   } />
+                  <Route
+                    path="/admin/staff-required-documents"
+                    element={<Navigate to="/admin/staff-requirements" replace />}
+                  />
                   <Route path="/admin/teacher/:teacherId" element={
                     <SchoolRoute>
                       <TeacherDetailPage />

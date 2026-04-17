@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { documentService } from '@/services/documentService';
+import { ApiError } from '@/lib/api';
 import {
   Dialog,
   DialogContent,
@@ -64,6 +65,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   medical_records: 'Medical Records',
 };
 
+function getDocumentFileName(doc: Record<string, unknown>): string {
+  const n = doc.file_name ?? doc.fileName;
+  return typeof n === 'string' ? n : '';
+}
+
 const DocumentReviewDialog = ({
   document,
   open,
@@ -94,15 +100,23 @@ const DocumentReviewDialog = ({
     try {
       const data = await documentService.getDownloadUrl(document.id);
       setFileUrl(data.url || data.signedUrl);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to load document URL:', error);
+      const status = error instanceof ApiError ? error.status : undefined;
+      const description =
+        error instanceof Error ? error.message : 'Failed to load preview URL';
+      toast({
+        variant: 'destructive',
+        title: status === 503 ? 'File storage not configured' : 'Preview unavailable',
+        description,
+      });
     }
   };
 
   const authenticateDocument = async () => {
     if (!document || !fileUrl) return;
 
-    if (isPdfFile(document.file_name)) {
+    if (isPdfFile(getDocumentFileName(document as Record<string, unknown>))) {
       setAuthentication({
         authenticityScore: 50,
         isAuthentic: true,
@@ -218,6 +232,8 @@ const DocumentReviewDialog = ({
 
   if (!document) return null;
 
+  const docFileName = getDocumentFileName(document as Record<string, unknown>);
+
   const getScoreColor = (score: number) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 50) return 'text-yellow-600';
@@ -239,10 +255,10 @@ const DocumentReviewDialog = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Review Document: {document.file_name}
+            Review Document: {docFileName || 'Document'}
           </DialogTitle>
           <DialogDescription>
-            {CATEGORY_LABELS[document.category]}
+            {CATEGORY_LABELS[document.category] ?? document.category ?? 'Document'}
             {document.students && (
               <span className="ml-2">
                 • {document.students.first_name} {document.students.last_name}
@@ -270,13 +286,13 @@ const DocumentReviewDialog = ({
           <TabsContent value="preview" className="flex-1 overflow-auto mt-4">
             {fileUrl && (
               <div className="h-full bg-muted rounded-lg overflow-hidden">
-                {isPdfFile(document.file_name) ? (
+                {isPdfFile(docFileName) ? (
                   <PdfViewer url={fileUrl} className="h-full" />
                 ) : (
                   <div className="h-full p-4 flex items-center justify-center">
                     <img
                       src={fileUrl}
-                      alt={document.file_name}
+                      alt={docFileName || 'Document'}
                       className="max-w-full max-h-full mx-auto object-contain rounded shadow-md"
                     />
                   </div>
@@ -290,7 +306,7 @@ const DocumentReviewDialog = ({
               <div>
                 <Label className="text-sm font-medium">Category</Label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {CATEGORY_LABELS[document.category]}
+                  {CATEGORY_LABELS[document.category] ?? document.category ?? '—'}
                 </p>
               </div>
               <div>
@@ -313,7 +329,9 @@ const DocumentReviewDialog = ({
                   <div>
                     <Label className="text-sm font-medium">Date of Birth</Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {new Date(document.students.date_of_birth).toLocaleDateString()}
+                      {document.students.date_of_birth
+                        ? new Date(document.students.date_of_birth).toLocaleDateString()
+                        : '—'}
                     </p>
                   </div>
                 </>
@@ -338,7 +356,7 @@ const DocumentReviewDialog = ({
               <div>
                 <Label className="text-sm font-medium">File Size</Label>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {(document.file_size / 1024 / 1024).toFixed(2)} MB
+                  {((Number(document.file_size) || 0) / (1024 * 1024)).toFixed(2)} MB
                 </p>
               </div>
             </div>
@@ -360,7 +378,7 @@ const DocumentReviewDialog = ({
                 <p className="text-muted-foreground mb-4">
                   Use AI to authenticate this document and detect potential forgeries
                 </p>
-                {isPdfFile(document.file_name) && (
+                {isPdfFile(docFileName) && (
                   <div className="flex items-center justify-center gap-2 mb-4 text-sm text-amber-600 bg-amber-50 dark:bg-amber-950/30 rounded-lg py-2 px-4 max-w-md mx-auto">
                     <FileText className="h-4 w-4" />
                     <span>PDF files require manual review - AI analysis works best with images</span>
@@ -379,7 +397,7 @@ const DocumentReviewDialog = ({
                   ) : (
                     <>
                       <Shield className="h-4 w-4 mr-2" />
-                      {isPdfFile(document.file_name) ? 'Review PDF Document' : 'Authenticate Document'}
+                      {isPdfFile(docFileName) ? 'Review PDF Document' : 'Authenticate Document'}
                     </>
                   )}
                 </Button>
