@@ -20,6 +20,7 @@ export const useUserRole = () => {
     isBranchDirector: role === 'BRANCH_DIRECTOR',
     isTeacher: role === 'TEACHER',
     isParent: role === 'PARENT',
+    isStudent: role === 'STUDENT',
     isSchool: role === 'DIRECTOR' || role === 'BRANCH_DIRECTOR',
     isStaff: role === 'ADMIN' || role === 'DIRECTOR',
     isAdminOrStaff: role === 'ADMIN' || role === 'DIRECTOR',
@@ -36,6 +37,7 @@ export const useUserRole = () => {
         if (r === 'admin') return role === 'ADMIN';
         if (r === 'teacher') return role === 'TEACHER';
         if (r === 'parent') return role === 'PARENT';
+        if (r === 'student') return role === 'STUDENT';
         return r === role;
       });
     },
@@ -44,6 +46,7 @@ export const useUserRole = () => {
       if (role === 'ADMIN') return '/admin';
       if (role === 'DIRECTOR' || role === 'BRANCH_DIRECTOR') return '/school-dashboard';
       if (role === 'TEACHER') return '/eligibility';
+      if (role === 'STUDENT') return '/dashboard';
       return '/dashboard';
     },
     getRoleDisplayName: () => {
@@ -53,6 +56,7 @@ export const useUserRole = () => {
         BRANCH_DIRECTOR: 'Branch Director',
         TEACHER: 'Teacher',
         PARENT: 'Parent',
+        STUDENT: 'Student',
       };
       return names[role ?? ''] ?? 'User';
     },

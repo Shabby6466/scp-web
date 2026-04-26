@@ -27,6 +27,12 @@ export const analyticsService = {
     if (params?.limit) qs.set('limit', String(params.limit));
     return api.get(`/analytics/documents/expired?${qs.toString()}`);
   },
+  /** @deprecated Prefer `getExpiringDocuments` — kept for dashboard reminder widgets. */
+  expiringDocuments: (days: number, schoolId: string) =>
+    analyticsService.getExpiringDocuments({ schoolId, days }),
+  /** @deprecated Prefer `getExpiredDocuments` */
+  expiredDocuments: (schoolId: string) =>
+    analyticsService.getExpiredDocuments({ schoolId }),
   getComplianceSummary: (schoolId?: string) => api.get(`/analytics/compliance${schoolId ? `?schoolId=${schoolId}` : ''}`),
   getDashboard: (schoolId?: string) => api.get(`/analytics/dashboard${schoolId ? `?schoolId=${schoolId}` : ''}`),
 };

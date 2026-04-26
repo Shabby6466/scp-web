@@ -44,6 +44,13 @@ const profileSchema = z.object({
 });
 
 const studentSchema = z.object({
+  childEmail: z.string().trim().email('Enter a valid login email for your child'),
+  password: z
+    .string()
+    .optional()
+    .refine((v) => !v || v.length === 0 || v.length >= 8, {
+      message: 'Password must be at least 8 characters',
+    }),
   firstName: z.string().trim().min(1, 'First name is required').max(100),
   lastName: z.string().trim().min(1, 'Last name is required').max(100),
   dateOfBirth: z.string().min(1, 'Date of birth is required'),
@@ -84,6 +91,8 @@ const ParentOnboarding = () => {
   const studentForm = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
+      childEmail: '',
+      password: '',
       firstName: '',
       lastName: '',
       dateOfBirth: '',
@@ -167,12 +176,13 @@ const ParentOnboarding = () => {
     setLoading(true);
     try {
       const created = await api.post<{ id: string }>('/students', {
-        parentId: user.id,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        dateOfBirth: data.dateOfBirth,
-        gradeLevel: data.gradeLevel || null,
-        schoolName: data.schoolName || null,
+        parent_id: user.id,
+        email: data.childEmail.trim().toLowerCase(),
+        first_name: data.firstName,
+        last_name: data.lastName,
+        date_of_birth: data.dateOfBirth,
+        grade_level: data.gradeLevel || null,
+        ...(data.password?.trim() ? { password: data.password.trim() } : {}),
       });
 
       setStudentId(created?.id ?? null);
@@ -307,6 +317,36 @@ const ParentOnboarding = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={studentForm.handleSubmit(handleStudentSubmit)} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="childEmail">Child login email *</Label>
+                    <Input
+                      id="childEmail"
+                      type="email"
+                      autoComplete="off"
+                      {...studentForm.register('childEmail')}
+                      placeholder="child@example.com"
+                    />
+                    {studentForm.formState.errors.childEmail && (
+                      <p className="text-sm text-destructive">
+                        {studentForm.formState.errors.childEmail.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="childPassword">Initial password (optional)</Label>
+                    <Input
+                      id="childPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      {...studentForm.register('password')}
+                      placeholder="At least 8 characters, or leave blank for invite"
+                    />
+                    {studentForm.formState.errors.password && (
+                      <p className="text-sm text-destructive">
+                        {studentForm.formState.errors.password.message}
+                      </p>
+                    )}
+                  </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name *</Label>

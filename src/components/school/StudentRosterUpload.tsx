@@ -24,6 +24,7 @@ interface ParsedStudent {
   firstName: string;
   lastName: string;
   dateOfBirth: string;
+  childLoginEmail: string;
   classroom?: string;
   parentName?: string;
   parentEmail?: string;
@@ -37,6 +38,7 @@ interface ColumnMapping {
   firstName: string;
   lastName: string;
   dateOfBirth: string;
+  childLoginEmail: string;
   classroom: string;
   parentName: string;
   parentEmail: string;
@@ -48,6 +50,7 @@ const DEFAULT_MAPPING: ColumnMapping = {
   firstName: 'child_first_name',
   lastName: 'child_last_name',
   dateOfBirth: 'date_of_birth',
+  childLoginEmail: 'student_email',
   classroom: 'classroom',
   parentName: 'parent_name',
   parentEmail: 'parent_email',
@@ -59,6 +62,13 @@ const COLUMN_ALIASES: Record<string, string[]> = {
   firstName: ['first_name', 'firstname', 'child_first_name', 'student_first_name', 'first'],
   lastName: ['last_name', 'lastname', 'child_last_name', 'student_last_name', 'last', 'surname'],
   dateOfBirth: ['date_of_birth', 'dob', 'birth_date', 'birthdate', 'birthday'],
+  childLoginEmail: [
+    'student_email',
+    'child_email',
+    'student_login_email',
+    'login_email',
+    'student_login',
+  ],
   classroom: ['classroom', 'class', 'room', 'grade', 'grade_level'],
   parentName: ['parent_name', 'guardian_name', 'parent', 'guardian'],
   parentEmail: ['parent_email', 'guardian_email', 'email', 'parent_email_address'],
@@ -83,6 +93,7 @@ const StudentRosterUpload = ({ schoolId, onSuccess }: StudentRosterUploadProps) 
       'child_first_name',
       'child_last_name',
       'date_of_birth',
+      'student_email',
       'classroom',
       'parent_name',
       'parent_email',
@@ -93,6 +104,7 @@ const StudentRosterUpload = ({ schoolId, onSuccess }: StudentRosterUploadProps) 
       'Emma',
       'Johnson',
       '2020-03-15',
+      'emma.johnson.student@example.com',
       'Butterflies',
       'Sarah Johnson',
       'sarah.johnson@email.com',
@@ -219,9 +231,11 @@ const StudentRosterUpload = ({ schoolId, onSuccess }: StudentRosterUploadProps) 
     const firstName = getValue('firstName').trim();
     const lastName = getValue('lastName').trim();
     const dateOfBirth = getValue('dateOfBirth').trim();
-    
+    const childLoginEmail = getValue('childLoginEmail').trim().toLowerCase();
+
     const errors: string[] = [];
-    
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(childLoginEmail);
+
     if (!firstName) errors.push('Missing first name');
     if (!lastName) errors.push('Missing last name');
     if (!dateOfBirth) {
@@ -232,11 +246,17 @@ const StudentRosterUpload = ({ schoolId, onSuccess }: StudentRosterUploadProps) 
         errors.push('Invalid date format (use YYYY-MM-DD)');
       }
     }
+    if (!childLoginEmail) {
+      errors.push('Missing student login email');
+    } else if (!emailOk) {
+      errors.push('Invalid student login email');
+    }
 
     return {
       firstName,
       lastName,
       dateOfBirth,
+      childLoginEmail,
       classroom: getValue('classroom').trim() || undefined,
       parentName: getValue('parentName').trim() || undefined,
       parentEmail: getValue('parentEmail').trim() || undefined,
@@ -289,13 +309,13 @@ const StudentRosterUpload = ({ schoolId, onSuccess }: StudentRosterUploadProps) 
         if (!user) throw new Error('Not authenticated');
 
         await api.post('/students', {
+          email: student.childLoginEmail,
           first_name: student.firstName,
           last_name: student.lastName,
           date_of_birth: student.dateOfBirth,
           school_id: schoolId,
           grade_level: student.classroom || null,
           parent_id: user.id,
-          school_name: null,
         });
 
         successCount++;
@@ -409,6 +429,7 @@ const StudentRosterUpload = ({ schoolId, onSuccess }: StudentRosterUploadProps) 
                 { key: 'firstName', label: 'First Name', required: true },
                 { key: 'lastName', label: 'Last Name', required: true },
                 { key: 'dateOfBirth', label: 'Date of Birth', required: true },
+                { key: 'childLoginEmail', label: 'Student login email', required: true },
                 { key: 'classroom', label: 'Classroom', required: false },
                 { key: 'parentName', label: 'Parent Name', required: false },
                 { key: 'parentEmail', label: 'Parent Email', required: false },
@@ -496,6 +517,7 @@ const StudentRosterUpload = ({ schoolId, onSuccess }: StudentRosterUploadProps) 
                     <TableHead>Name</TableHead>
                     <TableHead>Date of Birth</TableHead>
                     <TableHead>Classroom</TableHead>
+                    <TableHead>Student email</TableHead>
                     <TableHead>Parent Email</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -524,6 +546,7 @@ const StudentRosterUpload = ({ schoolId, onSuccess }: StudentRosterUploadProps) 
                       </TableCell>
                       <TableCell>{student.dateOfBirth || '-'}</TableCell>
                       <TableCell>{student.classroom || '-'}</TableCell>
+                      <TableCell>{student.childLoginEmail || '-'}</TableCell>
                       <TableCell>{student.parentEmail || '-'}</TableCell>
                     </TableRow>
                   ))}

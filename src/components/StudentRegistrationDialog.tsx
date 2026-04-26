@@ -19,6 +19,13 @@ import { Label } from '@/components/ui/label';
 import { UserPlus } from 'lucide-react';
 
 const studentSchema = z.object({
+  childEmail: z.string().trim().email('Enter a valid login email for your child'),
+  password: z
+    .string()
+    .optional()
+    .refine((v) => !v || v.length === 0 || v.length >= 8, {
+      message: 'Password must be at least 8 characters',
+    }),
   firstName: z.string().trim().min(1, 'First name is required').max(100),
   lastName: z.string().trim().min(1, 'Last name is required').max(100),
   dateOfBirth: z.string().min(1, 'Date of birth is required'),
@@ -39,6 +46,8 @@ const StudentRegistrationDialog = ({ onStudentAdded, children }: StudentRegistra
   const form = useForm<StudentFormData>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
+      childEmail: '',
+      password: '',
       firstName: '',
       lastName: '',
       dateOfBirth: '',
@@ -52,10 +61,12 @@ const StudentRegistrationDialog = ({ onStudentAdded, children }: StudentRegistra
 
     try {
       await studentParentService.registerChild({
+        childEmail: data.childEmail.trim().toLowerCase(),
         firstName: data.firstName,
         lastName: data.lastName,
         dateOfBirth: data.dateOfBirth,
         gradeLevel: data.gradeLevel || null,
+        ...(data.password?.trim() ? { password: data.password.trim() } : {}),
       });
 
       toast({
@@ -89,10 +100,36 @@ const StudentRegistrationDialog = ({ onStudentAdded, children }: StudentRegistra
         <DialogHeader>
           <DialogTitle>Register Student</DialogTitle>
           <DialogDescription>
-            Add your child's information to start uploading documents.
+            Add your child’s login email and details so they have an account linked to yours.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="childEmail">Child login email *</Label>
+            <Input
+              id="childEmail"
+              type="email"
+              autoComplete="off"
+              {...form.register('childEmail')}
+              placeholder="child@example.com"
+            />
+            {form.formState.errors.childEmail && (
+              <p className="text-sm text-destructive">{form.formState.errors.childEmail.message}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="childPassword">Initial password (optional)</Label>
+            <Input
+              id="childPassword"
+              type="password"
+              autoComplete="new-password"
+              {...form.register('password')}
+              placeholder="At least 8 characters, or leave blank for invite"
+            />
+            {form.formState.errors.password && (
+              <p className="text-sm text-destructive">{form.formState.errors.password.message}</p>
+            )}
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name</Label>

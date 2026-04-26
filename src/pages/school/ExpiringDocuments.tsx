@@ -10,7 +10,7 @@ import { useComplianceData } from '@/hooks/useComplianceData';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/contexts/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AlertCircle, Clock, Mail, Search, FileWarning } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Clock, RefreshCw, Search, FileWarning, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
@@ -42,7 +42,9 @@ export default function ExpiringDocuments() {
   const [searchQuery, setSearchQuery] = useState('');
   const [entityFilter, setEntityFilter] = useState<'all' | 'student' | 'teacher'>('all');
   const [severityFilter, setSeverityFilter] = useState<'all' | 'critical' | 'urgent' | 'upcoming'>('all');
-  const [sendingReminder, setSendingReminder] = useState(false);
+  const [sending30, setSending30] = useState(false);
+  const [sending7, setSending7] = useState(false);
+  const [sendingExpired, setSendingExpired] = useState(false);
 
   // Role-based access control
   useEffect(() => {
@@ -113,24 +115,74 @@ export default function ExpiringDocuments() {
     return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  const handleSendReminders = async () => {
-    setSendingReminder(true);
-    try {
-      await api.post('/notifications/expiration-reminders', { threshold: 30 });
+  const schoolIdForReminders = user?.schoolId ?? undefined;
 
+  const postExpirationReminders = async (body: {
+    threshold: number;
+    includeExpired?: boolean;
+  }) => {
+    if (!schoolIdForReminders) {
       toast({
-        title: "Reminders Sent",
-        description: "Expiration reminder emails have been sent successfully.",
+        title: 'Cannot send',
+        description: 'Your account is not linked to a school.',
+        variant: 'destructive',
       });
-    } catch (error: any) {
-      console.error('Error sending reminders:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to send reminder emails.",
-        variant: "destructive",
-      });
+      return;
+    }
+    const data = (await api.post('/reminders/send-expiration', {
+      ...body,
+      schoolId: schoolIdForReminders,
+    })) as {
+      sent?: number;
+      skipped?: number;
+      message?: string;
+    };
+    const extra =
+      (data.skipped ?? 0) > 0
+        ? ` (${data.skipped} skipped: cooldown or no email)`
+        : '';
+    toast({
+      title: 'Reminders sent',
+      description: `Sent ${data.sent ?? 0} email(s).${extra}`,
+    });
+  };
+
+  const handleSend30 = async () => {
+    setSending30(true);
+    try {
+      await postExpirationReminders({ threshold: 30 });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to send reminder emails.';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
     } finally {
-      setSendingReminder(false);
+      setSending30(false);
+    }
+  };
+
+  const handleSend7 = async () => {
+    setSending7(true);
+    try {
+      await postExpirationReminders({ threshold: 7 });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to send reminder emails.';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+    } finally {
+      setSending7(false);
+    }
+  };
+
+  const handleSendExpired = async () => {
+    setSendingExpired(true);
+    try {
+      await postExpirationReminders({ threshold: 0, includeExpired: true });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to send reminder emails.';
+      toast({ title: 'Error', description: message, variant: 'destructive' });
+    } finally {
+      setSendingExpired(false);
     }
   };
 
@@ -148,21 +200,81 @@ export default function ExpiringDocuments() {
     );
   }
 
-  const criticalCount = expiringDocs.filter(d => d.days_until_expiry <= 7).length;
-  const urgentCount = expiringDocs.filter(d => d.days_until_expiry > 7 && d.days_until_expiry <= 30).length;
-  const upcomingCount = expiringDocs.filter(d => d.days_until_expiry > 30).length;
+  const criticalCount = expiringDocs.filter((d) => d.days_until_expiry <= 7).length;
+  const urgentCount = expiringDocs.filter(
+    (d) => d.days_until_expiry > 7 && d.days_until_expiry <= 30,
+  ).length;
+  const upcomingCount = expiringDocs.filter((d) => d.days_until_expiry > 30).length;
+  const count30Tier = expiringDocs.filter((d) => d.days_until_expiry <= 30).length;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">Document Expiration Management</h1>
-          <p className="text-muted-foreground mt-1">Monitor and manage expiring documents across your organization</p>
+          <p className="text-muted-foreground mt-1">
+            Monitor expiring documents and send tiered reminder emails to document owners.
+          </p>
         </div>
-        <Button onClick={handleSendReminders} disabled={sendingReminder} className="gap-2">
-          <Mail className="w-4 h-4" />
-          {sendingReminder ? 'Sending...' : 'Send Reminders'}
-        </Button>
+        <div className="flex flex-col gap-2 sm:items-end">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleSend30}
+              disabled={
+                sending30 ||
+                !schoolIdForReminders ||
+                count30Tier === 0
+              }
+              className="gap-2"
+            >
+              {sending30 ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              30-day reminders
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleSend7}
+              disabled={sending7 || !schoolIdForReminders || criticalCount === 0}
+              className="gap-2"
+            >
+              {sending7 ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              7-day reminders
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={handleSendExpired}
+              disabled={
+                sendingExpired || !schoolIdForReminders || expiredDocs.length === 0
+              }
+              className="gap-2"
+            >
+              {sendingExpired ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <AlertTriangle className="h-4 w-4" />
+              )}
+              Expired reminders
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground max-w-md sm:text-right">
+            Emails use MailerSend (or SMTP if configured). Same-tier reminders are not re-sent within the
+            cooldown window.
+          </p>
+        </div>
       </div>
 
       {/* Summary Widgets */}

@@ -106,7 +106,14 @@ interface TeacherCompliance {
 const TeacherCompliance = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-  const { canManageSchool, isParent, schoolId, loading: roleLoading } = useUserRole();
+  const {
+    canManageSchool,
+    isParent,
+    schoolId,
+    branchId,
+    isBranchDirector,
+    loading: roleLoading,
+  } = useUserRole();
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -139,7 +146,17 @@ const TeacherCompliance = () => {
 
     if (!schoolId) return;
     fetchData();
-  }, [user, authLoading, roleLoading, canManageSchool, isParent, navigate, schoolId]);
+  }, [
+    user,
+    authLoading,
+    roleLoading,
+    canManageSchool,
+    isParent,
+    navigate,
+    schoolId,
+    branchId,
+    isBranchDirector,
+  ]);
 
   // Show loading while checking auth/role
   if (authLoading || roleLoading) {
@@ -158,9 +175,16 @@ const TeacherCompliance = () => {
       setLoading(true);
 
       const [teachersData, requiredRaw, docsRaw] = await Promise.all([
-        userService.listTeachers(schoolId),
+        userService.listTeachers(
+          schoolId,
+          isBranchDirector && branchId ? branchId : undefined,
+        ),
         documentTypeService.list({ schoolId, targetRole: 'TEACHER' }),
-        documentService.search({ schoolId, ownerRole: 'TEACHER' }),
+        documentService.search({
+          schoolId,
+          ownerRole: 'TEACHER',
+          ...(branchId && isBranchDirector ? { branchId } : {}),
+        }),
       ]);
 
       const requiredList = mapRequiredTeacherTypesFromApi(unwrapList(requiredRaw));

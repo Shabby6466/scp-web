@@ -10,6 +10,7 @@ import { FileText, Eye, Search, Filter, Shield } from 'lucide-react';
 import { documentService } from '@/services/documentService';
 import { unwrapList } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUserRole } from '@/hooks/useUserRole';
 import { User, GraduationCap, Briefcase } from 'lucide-react';
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -178,6 +179,12 @@ function normalizeAdminDocument(raw: unknown): DocumentWithStudent {
 }
 
 const AdminDocuments = () => {
+  const {
+    isAdmin,
+    schoolId: viewerSchoolId,
+    branchId: viewerBranchId,
+    isBranchDirector,
+  } = useUserRole();
   const [documents, setDocuments] = useState<DocumentWithStudent[]>([]);
   const [filteredDocuments, setFilteredDocuments] = useState<DocumentWithStudent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -187,17 +194,19 @@ const AdminDocuments = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    fetchDocuments();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [documents, categoryFilter, statusFilter, searchQuery]);
-
   const fetchDocuments = async () => {
     try {
-      const raw = await documentService.search({ limit: 200 });
+      const raw = await documentService.search({
+        limit: 200,
+        ...(!isAdmin && viewerSchoolId
+          ? {
+              schoolId: viewerSchoolId,
+              ...(viewerBranchId && isBranchDirector
+                ? { branchId: viewerBranchId }
+                : {}),
+            }
+          : {}),
+      });
       const rows = unwrapList<unknown>(raw);
       setDocuments(rows.map(normalizeAdminDocument));
     } catch (error: any) {
@@ -210,6 +219,14 @@ const AdminDocuments = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    void fetchDocuments();
+  }, [isAdmin, viewerSchoolId, viewerBranchId, isBranchDirector]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [documents, categoryFilter, statusFilter, searchQuery]);
 
   const applyFilters = () => {
     let filtered = [...documents];
