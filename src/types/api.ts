@@ -1,6 +1,12 @@
 // ── Enums (string unions matching Prisma schema) ─────────────────────
 
-export type UserRole = 'ADMIN' | 'DIRECTOR' | 'BRANCH_DIRECTOR' | 'TEACHER' | 'PARENT';
+export type UserRole =
+  | 'ADMIN'
+  | 'DIRECTOR'
+  | 'BRANCH_DIRECTOR'
+  | 'TEACHER'
+  | 'PARENT'
+  | 'STUDENT';
 
 export type StaffPosition = 'LEAD_TEACHER' | 'ASSISTANT_TEACHER' | 'AIDE' | 'SUBSTITUTE' | 'OTHER';
 

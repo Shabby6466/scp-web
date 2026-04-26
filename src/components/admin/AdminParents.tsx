@@ -4,6 +4,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { userService } from '@/services/userService';
 import { studentParentService } from '@/services/studentParentService';
 import { schoolService } from '@/services/schoolService';
+import { branchService } from '@/services/branchService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -73,12 +74,19 @@ function safeLocaleDate(raw: unknown): string {
 }
 
 const AdminParents = () => {
-  const { schoolId, isAdmin, isDirector, isBranchDirector } = useUserRole();
+  const {
+    schoolId,
+    branchId,
+    isAdmin,
+    isDirector,
+    isBranchDirector,
+  } = useUserRole();
   const [parents, setParents] = useState<Parent[]>([]);
   const [filteredParents, setFilteredParents] = useState<Parent[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [schools, setSchools] = useState<{ id: string; name: string }[]>([]);
+  const [branches, setBranches] = useState<{ id: string; name: string }[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -90,6 +98,7 @@ const AdminParents = () => {
     last_name: '',
     phone: '',
     school_id: '' as string,
+    branch_id: '' as string,
   });
   const [createMode, setCreateMode] = useState<'otp' | 'manual'>('otp');
   const [manualPassword, setManualPassword] = useState('');
@@ -123,6 +132,27 @@ const AdminParents = () => {
     applyFilters();
   }, [parents, searchQuery]);
 
+  useEffect(() => {
+    const sid = (isAdmin ? newParent.school_id : schoolId) || '';
+    if (!sid) {
+      setBranches([]);
+      return;
+    }
+    void (async () => {
+      try {
+        const data = await branchService.listBySchool(sid);
+        const list = Array.isArray(data) ? data : [];
+        setBranches(list);
+        if (list.length === 1) {
+          const forced = isBranchDirector && branchId ? branchId : list[0].id;
+          setNewParent((p) => (p.branch_id === forced ? p : { ...p, branch_id: forced }));
+        }
+      } catch {
+        setBranches([]);
+      }
+    })();
+  }, [isAdmin, newParent.school_id, schoolId, isBranchDirector, branchId]);
+
   const fetchParents = async () => {
     try {
       // GET /users is admin-only; school directors must use /schools/:schoolId/users
@@ -133,7 +163,11 @@ const AdminParents = () => {
 
       const parentProfiles = await userService.list(
         schoolId
-          ? { schoolId, role: 'PARENT' }
+          ? {
+              schoolId,
+              role: 'PARENT',
+              ...(isBranchDirector && branchId ? { branchId } : {}),
+            }
           : { role: 'PARENT' },
       );
 
@@ -237,17 +271,44 @@ const AdminParents = () => {
       payload.phone = newParent.phone.trim();
     }
 
+    const targetSchoolId = (isAdmin ? newParent.school_id : schoolId) || '';
+    if (!targetSchoolId.trim()) {
+      toast({
+        variant: 'destructive',
+        title: 'School required',
+        description: isAdmin ? 'Select which school this parent is linked to.' : 'Your account is not linked to a school.',
+      });
+      return;
+    }
+    if (branches.length === 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Branch required',
+        description: 'This school has no branches yet. Create at least one branch before adding parents.',
+      });
+      return;
+    }
+    const resolvedBranchId = (
+      isBranchDirector && branchId ? branchId : newParent.branch_id || ''
+    ).trim();
+    if (!resolvedBranchId) {
+      toast({
+        variant: 'destructive',
+        title: 'Branch required',
+        description: 'Select which branch this parent is associated with.',
+      });
+      return;
+    }
+    payload.branchId = resolvedBranchId;
+    payload.branch_id = resolvedBranchId;
+
     setSaving(true);
     try {
       if (isAdmin) {
-        if (newParent.school_id) {
-          await userService.createInSchool(newParent.school_id, {
-            ...payload,
-            schoolId: newParent.school_id,
-          });
-        } else {
-          await userService.create(payload);
-        }
+        await userService.createInSchool(newParent.school_id, {
+          ...payload,
+          schoolId: newParent.school_id,
+        });
       } else if (schoolId) {
         await userService.createInSchool(schoolId, {
           ...payload,
@@ -276,6 +337,7 @@ const AdminParents = () => {
         last_name: '',
         phone: '',
         school_id: '',
+        branch_id: '',
       });
       setCreateMode('otp');
       setManualPassword('');
@@ -531,25 +593,28 @@ const AdminParents = () => {
           <DialogHeader>
             <DialogTitle>Add parent</DialogTitle>
             <DialogDescription>
-              Creates a parent login. {isAdmin ? 'Optionally link them to a school.' : 'They are linked to your school.'}{' '}
+              Creates a parent login linked to a school and branch.{' '}
               If email verification is on, they will receive an invite code.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleAddParent} className="space-y-3">
             {isAdmin && (
               <div className="space-y-2">
-                <Label>School (optional)</Label>
+                <Label>School *</Label>
                 <Select
-                  value={newParent.school_id || '_none_'}
+                  value={newParent.school_id || undefined}
                   onValueChange={(v) =>
-                    setNewParent((p) => ({ ...p, school_id: v === '_none_' ? '' : v }))
+                    setNewParent((p) => ({
+                      ...p,
+                      school_id: v,
+                      branch_id: '',
+                    }))
                   }
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Platform-wide (no school)" />
+                    <SelectValue placeholder="Choose a school" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="_none_">No school (platform)</SelectItem>
                     {schools.map((s) => (
                       <SelectItem key={s.id} value={s.id}>
                         {s.name}
@@ -559,6 +624,40 @@ const AdminParents = () => {
                 </Select>
               </div>
             )}
+            <div className="space-y-2">
+              <Label>Branch *</Label>
+              <Select
+                value={
+                  (isBranchDirector && branchId ? branchId : newParent.branch_id) ||
+                  undefined
+                }
+                onValueChange={(v) => setNewParent((p) => ({ ...p, branch_id: v }))}
+                disabled={
+                  (isBranchDirector && !!branchId) ||
+                  !(isAdmin ? newParent.school_id : schoolId) ||
+                  branches.length === 0
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      !(isAdmin ? newParent.school_id : schoolId)
+                        ? 'Choose a school first'
+                        : branches.length === 0
+                          ? 'No branches — add one in school settings'
+                          : 'Choose a branch'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {branches.map((b) => (
+                    <SelectItem key={b.id} value={b.id}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="parent-email">Email</Label>
               <Input

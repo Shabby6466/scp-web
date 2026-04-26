@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUserRole } from '@/hooks/useUserRole';
 import { toast as toastHook } from '@/hooks/use-toast';
 import { schoolService } from '@/services/schoolService';
+import { branchService } from '@/services/branchService';
 import { documentService } from '@/services/documentService';
 import { studentParentService } from '@/services/studentParentService';
 import { studentProfileService } from '@/services/studentProfileService';
@@ -30,6 +31,7 @@ interface Student {
   grade_level: string | null;
   school_name: string | null;
   school_id: string | null;
+  branch_id?: string | null;
   parent_id: string;
   created_at: string;
   parent?: {
@@ -52,6 +54,10 @@ interface Student {
 }
 
 interface School {
+  id: string;
+  name: string;
+}
+interface BranchOption {
   id: string;
   name: string;
 }
@@ -116,10 +122,17 @@ function getEnrollmentStatus(student: Student) {
 
 const AdminStudents = () => {
   const navigate = useNavigate();
-  const { schoolId: viewerSchoolId, isAdmin } = useUserRole();
+  const {
+    schoolId: viewerSchoolId,
+    branchId: viewerBranchId,
+    isAdmin,
+    isBranchDirector,
+  } = useUserRole();
   const [students, setStudents] = useState<Student[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
+  const [branchesForAdd, setBranchesForAdd] = useState<BranchOption[]>([]);
+  const [branchesForEdit, setBranchesForEdit] = useState<BranchOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [schoolFilter, setSchoolFilter] = useState<string>('all');
@@ -143,6 +156,9 @@ const AdminStudents = () => {
   const [addSaving, setAddSaving] = useState(false);
   const [newStudent, setNewStudent] = useState({
     school_id: '',
+    branch_id: '',
+    email: '',
+    password: '',
     first_name: '',
     last_name: '',
     date_of_birth: '',
@@ -183,6 +199,43 @@ const AdminStudents = () => {
     applyFilters();
   }, [students, searchQuery, schoolFilter, statusFilter, parentStatusFilter]);
 
+  useEffect(() => {
+    const sid = newStudent.school_id || viewerSchoolId || '';
+    if (!sid) {
+      setBranchesForAdd([]);
+      return;
+    }
+    void (async () => {
+      try {
+        const rows = await branchService.listBySchool(sid);
+        const list = Array.isArray(rows) ? rows : [];
+        setBranchesForAdd(list);
+        if (list.length === 1) {
+          const forced = isBranchDirector && viewerBranchId ? viewerBranchId : list[0].id;
+          setNewStudent((s) => (s.branch_id === forced ? s : { ...s, branch_id: forced }));
+        }
+      } catch {
+        setBranchesForAdd([]);
+      }
+    })();
+  }, [newStudent.school_id, viewerSchoolId, isBranchDirector, viewerBranchId]);
+
+  useEffect(() => {
+    const sid = editingStudent?.school_id || '';
+    if (!sid) {
+      setBranchesForEdit([]);
+      return;
+    }
+    void (async () => {
+      try {
+        const rows = await branchService.listBySchool(sid);
+        setBranchesForEdit(Array.isArray(rows) ? rows : []);
+      } catch {
+        setBranchesForEdit([]);
+      }
+    })();
+  }, [editingStudent?.school_id]);
+
   const fetchSchools = async () => {
     try {
       const data = await schoolService.list();
@@ -196,8 +249,13 @@ const AdminStudents = () => {
     try {
       const schoolsData = await schoolService.list();
       const schoolArr = Array.isArray(schoolsData) ? schoolsData : (schoolsData as any)?.data ?? [];
+      const scopedSchools = isAdmin
+        ? schoolArr
+        : viewerSchoolId
+          ? schoolArr.filter((s: { id: string }) => s.id === viewerSchoolId)
+          : [];
       const studentsList: any[] = [];
-      for (const sch of schoolArr) {
+      for (const sch of scopedSchools) {
         try {
           const list = await schoolService.listStudents(sch.id);
           for (const p of list) {
@@ -220,8 +278,18 @@ const AdminStudents = () => {
       }
 
       const [allDocs, allInvitations] = await Promise.all([
-        documentService.search(),
-        invitationService.list(),
+        documentService.search({
+          limit: 200,
+          ...(!isAdmin && viewerSchoolId
+            ? {
+                schoolId: viewerSchoolId,
+                ...(viewerBranchId && isBranchDirector
+                  ? { branchId: viewerBranchId }
+                  : {}),
+              }
+            : {}),
+        }),
+        invitationService.list(isAdmin ? undefined : viewerSchoolId ?? undefined),
       ]);
 
       const docsByStudent: Record<string, Array<{ id: string; category: string; status: string }>> = {};
@@ -271,6 +339,7 @@ const AdminStudents = () => {
         grade_level: student.gradeLevel ?? student.grade_level ?? null,
         school_name: student.school_name ?? null,
         school_id: student.school_id ?? student.schoolId ?? null,
+        branch_id: student.branch_id ?? student.branchId ?? null,
         parent_id: '',
         created_at: student.createdAt ?? student.created_at ?? '',
         parent: undefined,
@@ -372,6 +441,7 @@ const AdminStudents = () => {
         lastName: last,
         dateOfBirth: editingStudent.date_of_birth.trim(),
         gradeLevel: editingStudent.grade_level?.trim() || null,
+        branchId: editingStudent.branch_id ?? null,
       };
       if (schoolChanged) {
         payload.schoolId = schoolNow;
@@ -411,6 +481,9 @@ const AdminStudents = () => {
       '';
     setNewStudent({
       school_id: defaultSchool,
+      branch_id: isBranchDirector && viewerBranchId ? viewerBranchId : '',
+      email: '',
+      password: '',
       first_name: '',
       last_name: '',
       date_of_birth: '',
@@ -447,19 +520,60 @@ const AdminStudents = () => {
       });
       return;
     }
+    const loginEmail = newStudent.email?.trim().toLowerCase();
+    if (!loginEmail) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Login email required',
+        description: 'Each student needs a unique email to sign in.',
+      });
+      return;
+    }
+    const pwd = newStudent.password?.trim();
+    if (pwd && pwd.length < 8) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Password too short',
+        description: 'If you set a password, use at least 8 characters (or leave blank for invite flow).',
+      });
+      return;
+    }
+    if (branchesForAdd.length === 0) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Branch required',
+        description:
+          'This school has no branches yet. Create at least one branch before adding students.',
+      });
+      return;
+    }
+    const effectiveBranchId =
+      isBranchDirector && viewerBranchId ? viewerBranchId : newStudent.branch_id?.trim() || '';
+    if (!effectiveBranchId) {
+      toastHook({
+        variant: 'destructive',
+        title: 'Branch required',
+        description: 'Select which branch this student is enrolled under.',
+      });
+      return;
+    }
 
     setAddSaving(true);
     try {
       await studentsService.create({
+        email: loginEmail,
         first_name: fn,
         last_name: ln,
         date_of_birth: newStudent.date_of_birth.trim(),
         grade_level: newStudent.grade_level?.trim() || null,
         school_id: newStudent.school_id.trim(),
+        branch_id: effectiveBranchId,
+        ...(pwd ? { password: pwd } : {}),
       });
       toastHook({
         title: 'Student added',
-        description: 'The student profile was created. You can invite a parent from the list.',
+        description:
+          'The student account and profile were created. Link or invite a parent from the list if needed.',
       });
       setIsAddDialogOpen(false);
       await fetchStudents();
@@ -486,7 +600,7 @@ const AdminStudents = () => {
       variant: 'destructive',
       title: 'Removal not available here',
       description:
-        `${student.first_name} ${student.last_name} is an enrolled profile, not a login account. Manage enrollment from your school tools.`,
+        `${student.first_name} ${student.last_name} is an enrolled student. Manage enrollment or user accounts from your school tools.`,
     });
   };
 
@@ -501,7 +615,13 @@ const AdminStudents = () => {
       const schoolScope = student.school_id || viewerSchoolId || undefined;
       const rows = await userService.list(
         schoolScope
-          ? { role: 'PARENT', schoolId: schoolScope }
+          ? {
+              role: 'PARENT',
+              schoolId: schoolScope,
+              ...(isBranchDirector && viewerBranchId
+                ? { branchId: viewerBranchId }
+                : {}),
+            }
           : { role: 'PARENT' },
       );
       const parents = (Array.isArray(rows) ? rows : []).map((p: any) => ({
@@ -959,7 +1079,7 @@ const AdminStudents = () => {
           <DialogHeader>
             <DialogTitle>Add student</DialogTitle>
             <DialogDescription>
-              Creates an enrolled child profile for the selected school. Link or invite a parent afterward from the list.
+              Creates a student login and profile for the selected school. Link or invite a parent afterward from the list.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleAddStudent} className="space-y-4">
@@ -968,7 +1088,11 @@ const AdminStudents = () => {
               <Select
                 value={newStudent.school_id || '__none__'}
                 onValueChange={(v) =>
-                  setNewStudent((s) => ({ ...s, school_id: v === '__none__' ? '' : v }))
+                  setNewStudent((s) => ({
+                    ...s,
+                    school_id: v === '__none__' ? '' : v,
+                    branch_id: isBranchDirector && viewerBranchId ? viewerBranchId : '',
+                  }))
                 }
                 disabled={schoolsForAdd.length === 0}
               >
@@ -989,6 +1113,58 @@ const AdminStudents = () => {
               {schoolsForAdd.length === 0 && (
                 <p className="text-xs text-muted-foreground">No schools available. Try again after schools load.</p>
               )}
+            </div>
+            <div className="space-y-2">
+              <Label>Branch *</Label>
+              <Select
+                value={newStudent.branch_id || undefined}
+                onValueChange={(v) => setNewStudent((s) => ({ ...s, branch_id: v }))}
+                disabled={
+                  (isBranchDirector && !!viewerBranchId) ||
+                  !newStudent.school_id?.trim() ||
+                  branchesForAdd.length === 0
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      !newStudent.school_id?.trim()
+                        ? 'Select a school first'
+                        : branchesForAdd.length === 0
+                          ? 'No branches — add one in school settings'
+                          : 'Select branch'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {branchesForAdd.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      {branch.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Student login email *</Label>
+              <Input
+                type="email"
+                autoComplete="off"
+                value={newStudent.email}
+                onChange={(e) => setNewStudent((s) => ({ ...s, email: e.target.value }))}
+                placeholder="student.name@example.com"
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Initial password (optional)</Label>
+              <Input
+                type="password"
+                autoComplete="new-password"
+                value={newStudent.password}
+                onChange={(e) => setNewStudent((s) => ({ ...s, password: e.target.value }))}
+                placeholder="Leave blank to use email verification / invite"
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1095,7 +1271,11 @@ const AdminStudents = () => {
                 <Select
                   value={editingStudent.school_id || '_none_'}
                   onValueChange={(value) =>
-                    setEditingStudent({ ...editingStudent, school_id: value === '_none_' ? null : value })
+                    setEditingStudent({
+                      ...editingStudent,
+                      school_id: value === '_none_' ? null : value,
+                      branch_id: isBranchDirector && viewerBranchId ? viewerBranchId : null,
+                    })
                   }
                 >
                   <SelectTrigger>
@@ -1106,6 +1286,31 @@ const AdminStudents = () => {
                     {schools.map((school) => (
                       <SelectItem key={school.id} value={school.id}>
                         {school.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Branch</Label>
+                <Select
+                  value={editingStudent.branch_id || '_none_'}
+                  onValueChange={(value) =>
+                    setEditingStudent({
+                      ...editingStudent,
+                      branch_id: value === '_none_' ? null : value,
+                    })
+                  }
+                  disabled={isBranchDirector && !!viewerBranchId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select branch" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none_">No branch</SelectItem>
+                    {branchesForEdit.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        {branch.name}
                       </SelectItem>
                     ))}
                   </SelectContent>

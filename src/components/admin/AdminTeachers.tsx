@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUserRole } from '@/hooks/useUserRole';
 import { toast } from '@/hooks/use-toast';
 import { schoolService } from '@/services/schoolService';
+import { branchService } from '@/services/branchService';
 import { userService } from '@/services/userService';
 import { documentService } from '@/services/documentService';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -47,6 +48,10 @@ interface Teacher {
 }
 
 interface School {
+  id: string;
+  name: string;
+}
+interface BranchOption {
   id: string;
   name: string;
 }
@@ -102,10 +107,15 @@ function normalizeTeacherRow(raw: Record<string, any>, schoolMap: Map<string, st
 
 const AdminTeachers = () => {
   const navigate = useNavigate();
-  const { schoolId: viewerSchoolId } = useUserRole();
+  const {
+    schoolId: viewerSchoolId,
+    branchId: viewerBranchId,
+    isBranchDirector,
+  } = useUserRole();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [filteredTeachers, setFilteredTeachers] = useState<Teacher[]>([]);
   const [schools, setSchools] = useState<School[]>([]);
+  const [branches, setBranches] = useState<BranchOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [schoolFilter, setSchoolFilter] = useState<string>('all');
@@ -118,6 +128,7 @@ const AdminTeachers = () => {
   const [selectedTeacher, setSelectedTeacher] = useState<{ id: string; name: string; schoolId: string } | null>(null);
   const [newTeacher, setNewTeacher] = useState({
     school_id: '',
+    branch_id: '',
     first_name: '',
     last_name: '',
     email: '',
@@ -136,7 +147,28 @@ const AdminTeachers = () => {
 
   useEffect(() => {
     fetchTeachers();
-  }, [viewerSchoolId]);
+  }, [viewerSchoolId, viewerBranchId, isBranchDirector]);
+
+  useEffect(() => {
+    const sid = newTeacher.school_id || viewerSchoolId || '';
+    if (!sid) {
+      setBranches([]);
+      return;
+    }
+    void (async () => {
+      try {
+        const data = await branchService.listBySchool(sid);
+        const list = Array.isArray(data) ? data : [];
+        setBranches(list);
+        if (list.length === 1) {
+          const forced = isBranchDirector && viewerBranchId ? viewerBranchId : list[0].id;
+          setNewTeacher((t) => (t.branch_id === forced ? t : { ...t, branch_id: forced }));
+        }
+      } catch {
+        setBranches([]);
+      }
+    })();
+  }, [newTeacher.school_id, viewerSchoolId, isBranchDirector, viewerBranchId]);
 
   useEffect(() => {
     applyFilters();
@@ -154,11 +186,26 @@ const AdminTeachers = () => {
   const fetchTeachers = async () => {
     try {
       const listParams = viewerSchoolId
-        ? { role: 'TEACHER' as const, schoolId: viewerSchoolId }
+        ? {
+            role: 'TEACHER' as const,
+            schoolId: viewerSchoolId,
+            ...(isBranchDirector && viewerBranchId
+              ? { branchId: viewerBranchId }
+              : {}),
+          }
         : { role: 'TEACHER' as const };
       const teachersList = await userService.list(listParams);
       const [allDocs, schoolsList] = await Promise.all([
-        documentService.search(viewerSchoolId ? { schoolId: viewerSchoolId } : undefined),
+        documentService.search(
+          viewerSchoolId
+            ? {
+                schoolId: viewerSchoolId,
+                ...(viewerBranchId && isBranchDirector
+                  ? { branchId: viewerBranchId }
+                  : {}),
+              }
+            : undefined,
+        ),
         schoolService.list(),
       ]);
 
@@ -226,7 +273,38 @@ const AdminTeachers = () => {
         });
         return;
       }
-      const payload: Record<string, unknown> = { ...newTeacher, role: 'TEACHER' };
+      if (!newTeacher.school_id?.trim()) {
+        toast({
+          variant: 'destructive',
+          title: 'School required',
+          description: 'Select which school this teacher belongs to.',
+        });
+        return;
+      }
+      if (branches.length === 0) {
+        toast({
+          variant: 'destructive',
+          title: 'Branch required',
+          description:
+            'This school has no branches yet. Create at least one branch before adding teachers.',
+        });
+        return;
+      }
+      const effectiveBranchId =
+        isBranchDirector && viewerBranchId ? viewerBranchId : newTeacher.branch_id?.trim() || '';
+      if (!effectiveBranchId) {
+        toast({
+          variant: 'destructive',
+          title: 'Branch required',
+          description: 'Select which branch this teacher is assigned to.',
+        });
+        return;
+      }
+      const payload: Record<string, unknown> = {
+        ...newTeacher,
+        role: 'TEACHER',
+        branch_id: effectiveBranchId,
+      };
       if (createMode === 'manual') {
         payload.password = manualPassword.trim();
       }
@@ -243,6 +321,7 @@ const AdminTeachers = () => {
       setIsAddDialogOpen(false);
       setNewTeacher({
         school_id: '',
+        branch_id: '',
         first_name: '',
         last_name: '',
         email: '',
@@ -315,6 +394,18 @@ const AdminTeachers = () => {
         description: error.message,
       });
     }
+  };
+
+  const openAddTeacherDialog = () => {
+    setNewTeacher((prev) => ({
+      ...prev,
+      school_id: viewerSchoolId ?? prev.school_id ?? '',
+      branch_id:
+        isBranchDirector && viewerBranchId
+          ? viewerBranchId
+          : prev.branch_id ?? '',
+    }));
+    setIsAddDialogOpen(true);
   };
 
   const getComplianceStatus = (teacher: Teacher) => {
@@ -445,7 +536,7 @@ const AdminTeachers = () => {
           <CardTitle>Teacher Management</CardTitle>
           <div className="flex gap-2">
             <TeacherInviteDialog onInviteSent={fetchTeachers} />
-            <Button onClick={() => setIsAddDialogOpen(true)} variant="outline">
+            <Button onClick={openAddTeacherDialog} variant="outline">
               <UserPlus className="h-4 w-4 mr-2" />
               Add Manually
             </Button>
@@ -494,7 +585,7 @@ const AdminTeachers = () => {
                 icon={Users}
                 title="No teachers found"
                 description={searchQuery ? "Try adjusting your search or filters" : "Add your first teacher to get started"}
-                action={{ label: "Add Teacher", onClick: () => setIsAddDialogOpen(true) }}
+                action={{ label: "Add Teacher", onClick: openAddTeacherDialog }}
               />
             ) : (
               filteredTeachers.map((teacher) => {
@@ -620,7 +711,13 @@ const AdminTeachers = () => {
               <Label>School *</Label>
               <Select
                 value={newTeacher.school_id}
-                onValueChange={(value: string) => setNewTeacher({ ...newTeacher, school_id: value })}
+                onValueChange={(value: string) =>
+                  setNewTeacher({
+                    ...newTeacher,
+                    school_id: value,
+                    branch_id: isBranchDirector && viewerBranchId ? viewerBranchId : '',
+                  })
+                }
                 required
               >
                 <SelectTrigger>
@@ -630,6 +727,42 @@ const AdminTeachers = () => {
                   {schools.map((school) => (
                     <SelectItem key={school.id} value={school.id}>
                       {school.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Branch *</Label>
+              <Select
+                value={newTeacher.branch_id || undefined}
+                onValueChange={(value: string) =>
+                  setNewTeacher({
+                    ...newTeacher,
+                    branch_id: value,
+                  })
+                }
+                disabled={
+                  (isBranchDirector && !!viewerBranchId) ||
+                  !newTeacher.school_id?.trim() ||
+                  branches.length === 0
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue
+                    placeholder={
+                      !newTeacher.school_id?.trim()
+                        ? 'Select a school first'
+                        : branches.length === 0
+                          ? 'No branches — add one in school settings'
+                          : 'Select branch'
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {branches.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      {branch.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

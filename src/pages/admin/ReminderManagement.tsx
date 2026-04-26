@@ -18,6 +18,11 @@ import {
 interface ReminderResult {
   message: string;
   sent: number;
+  skipped?: number;
+  skippedCooldown?: number;
+  skippedNoEmail?: number;
+  failed?: number;
+  totalCandidates?: number;
   total_expiring?: number;
 }
 
@@ -56,7 +61,11 @@ const ReminderManagement = () => {
       return data as ReminderResult;
     },
     onSuccess: (data) => {
-      toast.success(`Sent ${data.sent} reminder emails`);
+      const extra =
+        (data.skipped ?? 0) > 0
+          ? ` (${data.skipped} skipped: cooldown or no email)`
+          : '';
+      toast.success(`Sent ${data.sent} reminder email(s)${extra}`);
     },
     onError: (error: any) => {
       toast.error(`Failed to send reminders: ${error.message}`);
@@ -69,7 +78,11 @@ const ReminderManagement = () => {
       return data as ReminderResult;
     },
     onSuccess: (data) => {
-      toast.success(`Sent ${data.sent} reminder emails for expired documents`);
+      const extra =
+        (data.skipped ?? 0) > 0
+          ? ` (${data.skipped} skipped: cooldown or no email)`
+          : '';
+      toast.success(`Sent ${data.sent} expired-document reminder(s)${extra}`);
     },
     onError: (error: any) => {
       toast.error(`Failed to send reminders: ${error.message}`);

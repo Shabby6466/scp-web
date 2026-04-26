@@ -104,7 +104,14 @@ const STATUS_FILTERS = [
 
 const PendingDocuments = () => {
   const { user, loading: authLoading } = useAuth();
-  const { canManageSchool, isParent, schoolId, loading: roleLoading } = useUserRole();
+  const {
+    canManageSchool,
+    isParent,
+    schoolId,
+    branchId,
+    isBranchDirector,
+    loading: roleLoading,
+  } = useUserRole();
   const navigate = useNavigate();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
@@ -192,7 +199,10 @@ const PendingDocuments = () => {
     if (!user || !schoolId) return;
 
     try {
-      const data = await documentService.search({ schoolId });
+      const data = await documentService.search({
+        schoolId,
+        ...(branchId && isBranchDirector ? { branchId } : {}),
+      });
       setDocuments(data || []);
     } catch (error: any) {
       console.error('Error fetching documents:', error);
