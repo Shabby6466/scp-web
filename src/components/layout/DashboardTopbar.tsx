@@ -47,6 +47,7 @@ const routeLabels: Record<string, string> = {
   '/admin/staff-documents': 'Staff document requirements',
   '/school/student-requirements': 'Student document requirements',
   '/school/staff-documents': 'Staff document requirements',
+  '/school/requirements': 'Requirement rules',
   '/admin/settings': 'Admin Settings',
   '/admin/reminders': 'Reminders'
 };

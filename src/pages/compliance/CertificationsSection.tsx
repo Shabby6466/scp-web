@@ -1,9 +1,12 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/contexts/AuthContext';
-import { useCertifications, CertificationRecord } from '@/hooks/useCertifications';
 import { useComplianceData } from '@/hooks/useComplianceData';
 import { COMPLIANCE_CATEGORY_SLUG } from '@/constants/complianceCategories';
+import { documentTypeService } from '@/services/documentTypeService';
+import { documentService } from '@/services/documentService';
+import { storageService } from '@/services/storageService';
+import { unwrapList } from '@/lib/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,68 +46,140 @@ import {
   AlertTriangle,
   Clock,
   FileText,
-  MoreHorizontal,
-  Trash2,
-  Edit,
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
 import { format, differenceInDays, parseISO } from 'date-fns';
+
+type CertificationType = {
+  id: string;
+  name: string;
+  validityMonths?: number | null;
+};
+
+type CertificationDocument = {
+  id: string;
+  fileName: string;
+  expiresAt: string | null;
+  createdAt: string | null;
+  reviewStatus: string;
+  ownerUserId: string | null;
+  documentType?: { id: string; name: string } | null;
+};
 
 const CertificationsSection = () => {
   const { user } = useAuth();
   const { schoolId } = useUserRole();
-  const {
-    certificationTypes,
-    records,
-    stats,
-    loading,
-    createRecord,
-    updateRecord,
-    deleteRecord,
-    refresh,
-  } = useCertifications(schoolId);
   const { stats: certDocStats, loading: certDocLoading } = useComplianceData(
     schoolId,
     undefined,
     COMPLIANCE_CATEGORY_SLUG.CERTIFICATIONS,
   );
 
+  const [loading, setLoading] = useState(true);
+  const [certificationTypes, setCertificationTypes] = useState<CertificationType[]>([]);
+  const [records, setRecords] = useState<CertificationDocument[]>([]);
+
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [appliesFilter, setAppliesFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all'); // all | active | expiring | expired
   const [createOpen, setCreateOpen] = useState(false);
 
-  // Form state for creating new certification
+  const [submitting, setSubmitting] = useState(false);
+
+  const [stats, setStats] = useState({ total: 0, active: 0, expiring: 0, expired: 0 });
+
   const [formData, setFormData] = useState({
-    certification_type_id: '',
-    applies_to: 'staff' as 'staff' | 'vendor' | 'facility' | 'other',
-    subject_name: '',
-    issued_date: '',
-    expiry_date: '',
+    documentTypeId: '',
+    file: null as File | null,
+    issuedDate: '',
+    expiryDate: '',
     notes: '',
   });
 
-  const filteredRecords = records.filter((record) => {
+  const loadData = async () => {
+    if (!schoolId) return;
+    setLoading(true);
+    try {
+      const [docTypesRes, docsRes] = await Promise.all([
+        documentTypeService.list({ schoolId, targetRole: 'TEACHER' }),
+        documentService.search({ schoolId, limit: 200 }),
+      ]);
+      const certTypes = unwrapList<any>(docTypesRes).filter((dt) => dt.kind === 'CERTIFICATION');
+      setCertificationTypes(
+        certTypes.map((dt) => ({
+          id: dt.id,
+          name: dt.name,
+          validityMonths: dt.validityMonths ?? null,
+        })),
+      );
+
+      const typeIds = new Set(certTypes.map((dt) => dt.id));
+      const certDocs = unwrapList<any>(docsRes)
+        .filter((doc) => typeIds.has(doc.documentTypeId ?? doc.document_type_id))
+        .map((doc) => ({
+          id: doc.id,
+          fileName: doc.fileName ?? doc.file_name ?? 'Certification file',
+          expiresAt: doc.expiresAt ?? doc.expiration_date ?? null,
+          createdAt: doc.createdAt ?? doc.created_at ?? null,
+          reviewStatus: (doc.reviewStatus ?? doc.status ?? 'PENDING').toString(),
+          ownerUserId: doc.ownerUserId ?? doc.owner_user_id ?? null,
+          documentType: doc.documentType ?? null,
+        }));
+      setRecords(certDocs);
+
+      const now = new Date();
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+      const nextStats = certDocs.reduce(
+        (acc, record) => {
+          acc.total += 1;
+          if (!record.expiresAt) {
+            acc.active += 1;
+            return acc;
+          }
+          const expiryDate = new Date(record.expiresAt);
+          if (expiryDate < now) acc.expired += 1;
+          else if (expiryDate <= thirtyDaysFromNow) acc.expiring += 1;
+          else acc.active += 1;
+          return acc;
+        },
+        { total: 0, active: 0, expiring: 0, expired: 0 },
+      );
+      setStats(nextStats);
+    } catch {
+      toast.error('Failed to load certifications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadData();
+  }, [schoolId]);
+
+  const filteredRecords = useMemo(() => records.filter((record) => {
     const matchesSearch =
       !searchQuery ||
-      record.subject_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.certification_type?.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || record.status === statusFilter;
-    const matchesApplies = appliesFilter === 'all' || record.applies_to === appliesFilter;
-    return matchesSearch && matchesStatus && matchesApplies;
-  });
+      record.fileName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.documentType?.name?.toLowerCase().includes(searchQuery.toLowerCase());
 
-  const getStatusBadge = (record: CertificationRecord) => {
     const now = new Date();
-    if (!record.expiry_date) {
+    const status =
+      !record.expiresAt
+        ? 'active'
+        : new Date(record.expiresAt) < now
+          ? 'expired'
+          : differenceInDays(new Date(record.expiresAt), now) <= 30
+            ? 'expiring'
+            : 'active';
+    const matchesStatus = statusFilter === 'all' || statusFilter === status;
+    return matchesSearch && matchesStatus;
+  }), [records, searchQuery, statusFilter]);
+
+  const getStatusBadge = (record: CertificationDocument) => {
+    const now = new Date();
+    if (!record.expiresAt) {
       return <Badge variant="outline">No Expiry</Badge>;
     }
-    const expiryDate = parseISO(record.expiry_date);
+    const expiryDate = parseISO(record.expiresAt);
     const daysUntilExpiry = differenceInDays(expiryDate, now);
 
     if (daysUntilExpiry < 0) {
@@ -131,52 +206,61 @@ const CertificationsSection = () => {
     );
   };
 
-  const getAppliesLabel = (applies: string) => {
-    switch (applies) {
-      case 'staff':
-        return 'Staff';
-      case 'vendor':
-        return 'Vendor';
-      case 'facility':
-        return 'Facility';
-      case 'other':
-        return 'Other';
-      default:
-        return applies;
-    }
-  };
-
   const handleCreateSubmit = async () => {
-    if (!schoolId || !user) return;
+    if (!schoolId || !user?.id) return;
+    if (!formData.documentTypeId) {
+      toast.error('Select a certification type');
+      return;
+    }
+    if (!formData.file) {
+      toast.error('Please select a file');
+      return;
+    }
 
-    await createRecord({
-      school_id: schoolId,
-      certification_type_id: formData.certification_type_id || null,
-      applies_to: formData.applies_to,
-      subject_id: null,
-      subject_name: formData.subject_name,
-      issued_date: formData.issued_date || null,
-      expiry_date: formData.expiry_date || null,
-      status: 'active',
-      owner_user_id: user.id,
-      notes: formData.notes || null,
-    });
+    setSubmitting(true);
+    try {
+      const presign = await documentService.presign({
+        documentTypeId: formData.documentTypeId,
+        ownerUserId: user.id,
+        fileName: formData.file.name,
+        mimeType: formData.file.type || 'application/octet-stream',
+        sizeBytes: formData.file.size,
+      });
+      const presignedUrl = presign?.presignedUrl ?? presign?.uploadUrl;
+      const s3Key = presign?.s3Key;
+      if (!presignedUrl || !s3Key) {
+        throw new Error('Upload URL missing');
+      }
+
+      await storageService.uploadFile(presignedUrl, formData.file);
+      await documentService.complete({
+        documentTypeId: formData.documentTypeId,
+        ownerUserId: user.id,
+        s3Key,
+        fileName: formData.file.name,
+        mimeType: formData.file.type || 'application/octet-stream',
+        sizeBytes: formData.file.size,
+        notes: formData.notes || undefined,
+        issuedAt: formData.issuedDate || undefined,
+        expiresAt: formData.expiryDate || undefined,
+      } as any);
+
+      toast.success('Certification uploaded');
+      await loadData();
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to upload certification');
+    } finally {
+      setSubmitting(false);
+    }
 
     setFormData({
-      certification_type_id: '',
-      applies_to: 'staff',
-      subject_name: '',
-      issued_date: '',
-      expiry_date: '',
+      documentTypeId: '',
+      file: null,
+      issuedDate: '',
+      expiryDate: '',
       notes: '',
     });
     setCreateOpen(false);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this certification record?')) {
-      await deleteRecord(id);
-    }
   };
 
   return (
@@ -304,18 +388,6 @@ const CertificationsSection = () => {
                     <SelectItem value="expired">Expired</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={appliesFilter} onValueChange={setAppliesFilter}>
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Applies To" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="vendor">Vendor</SelectItem>
-                    <SelectItem value="facility">Facility</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
                 <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                   <DialogTrigger asChild>
                     <Button>
@@ -334,9 +406,9 @@ const CertificationsSection = () => {
                       <div className="space-y-2">
                         <Label>Certification Type</Label>
                         <Select
-                          value={formData.certification_type_id}
+                          value={formData.documentTypeId}
                           onValueChange={(v) =>
-                            setFormData({ ...formData, certification_type_id: v })
+                            setFormData({ ...formData, documentTypeId: v })
                           }
                         >
                           <SelectTrigger>
@@ -355,44 +427,27 @@ const CertificationsSection = () => {
                             No types are defined for your school yet. A director or admin can create
                             them with{' '}
                             <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
-                              POST /api/certification-types
+                              POST /api/document-types
                             </code>{' '}
-                            (body:{' '}
+                            (body includes:{' '}
                             <code className="rounded bg-muted px-1 py-0.5 text-[11px]">
-                              schoolId
+                              name
                             </code>
                             ,{' '}
-                            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">name</code>
-                            , optional description / defaultValidityMonths). Then refresh this page.
+                            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">kind=CERTIFICATION</code>
+                            ,{' '}
+                            <code className="rounded bg-muted px-1 py-0.5 text-[11px]">schoolId</code>
+                            ).
                           </p>
                         )}
                       </div>
                       <div className="space-y-2">
-                        <Label>Applies To</Label>
-                        <Select
-                          value={formData.applies_to}
-                          onValueChange={(v: any) =>
-                            setFormData({ ...formData, applies_to: v })
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="staff">Staff</SelectItem>
-                            <SelectItem value="vendor">Vendor</SelectItem>
-                            <SelectItem value="facility">Facility</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Subject Name</Label>
+                        <Label htmlFor="certFile">Certification File *</Label>
                         <Input
-                          placeholder="e.g., John Smith, ABC Catering, Main Building"
-                          value={formData.subject_name}
+                          id="certFile"
+                          type="file"
                           onChange={(e) =>
-                            setFormData({ ...formData, subject_name: e.target.value })
+                            setFormData((prev) => ({ ...prev, file: e.target.files?.[0] ?? null }))
                           }
                         />
                       </div>
@@ -401,9 +456,9 @@ const CertificationsSection = () => {
                           <Label>Issued Date</Label>
                           <Input
                             type="date"
-                            value={formData.issued_date}
+                            value={formData.issuedDate}
                             onChange={(e) =>
-                              setFormData({ ...formData, issued_date: e.target.value })
+                              setFormData({ ...formData, issuedDate: e.target.value })
                             }
                           />
                         </div>
@@ -411,9 +466,9 @@ const CertificationsSection = () => {
                           <Label>Expiry Date</Label>
                           <Input
                             type="date"
-                            value={formData.expiry_date}
+                            value={formData.expiryDate}
                             onChange={(e) =>
-                              setFormData({ ...formData, expiry_date: e.target.value })
+                              setFormData({ ...formData, expiryDate: e.target.value })
                             }
                           />
                         </div>
@@ -431,7 +486,9 @@ const CertificationsSection = () => {
                       <Button variant="outline" onClick={() => setCreateOpen(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={handleCreateSubmit}>Create</Button>
+                      <Button onClick={handleCreateSubmit} disabled={submitting}>
+                        {submitting ? 'Uploading...' : 'Upload'}
+                      </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
@@ -469,62 +526,24 @@ const CertificationsSection = () => {
                   <TableHeader>
                     <TableRow>
                       <TableHead>Certification</TableHead>
-                      <TableHead>Subject</TableHead>
-                      <TableHead>Applies To</TableHead>
+                      <TableHead>Type</TableHead>
                       <TableHead>Expiry Date</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Evidence</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredRecords.map((record) => (
                       <TableRow key={record.id}>
                         <TableCell className="font-medium">
-                          {record.certification_type?.name || 'Custom'}
+                          {record.fileName}
                         </TableCell>
-                        <TableCell>{record.subject_name || '-'}</TableCell>
+                        <TableCell>{record.documentType?.name || '-'}</TableCell>
                         <TableCell>
-                          <Badge variant="outline">{getAppliesLabel(record.applies_to)}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          {record.expiry_date
-                            ? format(parseISO(record.expiry_date), 'MMM d, yyyy')
+                          {record.expiresAt
+                            ? format(parseISO(record.expiresAt), 'MMM d, yyyy')
                             : '-'}
                         </TableCell>
                         <TableCell>{getStatusBadge(record)}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span>{record.evidence_count || 0}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem>
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit
-                              </DropdownMenuItem>
-                              <DropdownMenuItem>
-                                <FileText className="h-4 w-4 mr-2" />
-                                Add Evidence
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-destructive"
-                                onClick={() => handleDelete(record.id)}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

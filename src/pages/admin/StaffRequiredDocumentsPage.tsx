@@ -39,6 +39,8 @@ type StaffRequiredDocument = {
   name: string;
   description: string | null;
   is_mandatory: boolean;
+  kind: "DOCUMENT" | "CERTIFICATION";
+  validityMonths: number | null;
 };
 
 type ComplianceCategoryOption = {
@@ -80,6 +82,9 @@ const normalizeDocument = (raw: unknown): StaffRequiredDocument | null => {
     name: toText(row.name),
     description: row.description == null ? null : toText(row.description),
     is_mandatory: Boolean(row.is_mandatory ?? row.isMandatory),
+    kind: toText(row.kind) === "CERTIFICATION" ? "CERTIFICATION" : "DOCUMENT",
+    validityMonths:
+      row.validityMonths == null ? null : Number(row.validityMonths),
   };
 };
 
@@ -102,6 +107,8 @@ export default function StaffRequiredDocumentsPage() {
     name: "",
     description: "",
     is_mandatory: true,
+    kind: "DOCUMENT" as "DOCUMENT" | "CERTIFICATION",
+    validityMonths: "",
   });
 
   useEffect(() => {
@@ -162,6 +169,8 @@ export default function StaffRequiredDocumentsPage() {
       name: "",
       description: "",
       is_mandatory: true,
+      kind: "DOCUMENT",
+      validityMonths: "",
     });
     setOpen(true);
   };
@@ -173,6 +182,8 @@ export default function StaffRequiredDocumentsPage() {
       name: doc.name ?? "",
       description: doc.description ?? "",
       is_mandatory: doc.is_mandatory,
+      kind: doc.kind ?? "DOCUMENT",
+      validityMonths: doc.validityMonths != null ? String(doc.validityMonths) : "",
     });
     setOpen(true);
   };
@@ -205,13 +216,33 @@ export default function StaffRequiredDocumentsPage() {
       return;
     }
 
+    const parsedValidityMonths =
+      form.kind === "CERTIFICATION" && form.validityMonths.trim()
+        ? Number(form.validityMonths.trim())
+        : null;
+    if (
+      form.kind === "CERTIFICATION" &&
+      parsedValidityMonths !== null &&
+      (!Number.isFinite(parsedValidityMonths) || parsedValidityMonths <= 0)
+    ) {
+      toast({
+        title: "Validation Error",
+        description: "Validity months must be a positive number",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const payload = {
       name: form.name.trim(),
       complianceCategoryId: form.complianceCategoryId.trim(),
       isMandatory: form.is_mandatory,
+      description: form.description.trim() || null,
       schoolId: effectiveSchoolId,
       targetRole: 'TEACHER' as const,
       renewalPeriod: "NONE" as const,
+      kind: form.kind,
+      validityMonths: parsedValidityMonths,
     };
 
     try {
@@ -432,6 +463,41 @@ export default function StaffRequiredDocumentsPage() {
                 onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Type *</Label>
+              <Select
+                value={form.kind}
+                onValueChange={(v) =>
+                  setForm((f) => ({
+                    ...f,
+                    kind: v as "DOCUMENT" | "CERTIFICATION",
+                    validityMonths:
+                      v === "CERTIFICATION" ? f.validityMonths : "",
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DOCUMENT">Document</SelectItem>
+                  <SelectItem value="CERTIFICATION">Certification</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {form.kind === "CERTIFICATION" && (
+              <div className="space-y-2">
+                <Label htmlFor="validityMonths">Validity (months)</Label>
+                <Input
+                  id="validityMonths"
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 12"
+                  value={form.validityMonths}
+                  onChange={(e) => setForm((f) => ({ ...f, validityMonths: e.target.value }))}
+                />
+              </div>
+            )}
             <div className="flex items-center justify-between rounded-lg border p-3">
               <div>
                 <Label htmlFor="mandatory" className="font-medium">Mandatory</Label>

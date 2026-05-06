@@ -73,8 +73,30 @@ export async function apiFetch<T = any>(
   return text ? JSON.parse(text) : (null as T);
 }
 
+type QueryValue = string | number | boolean | null | undefined;
+type QueryParams = Record<string, QueryValue | QueryValue[]>;
+
+function withQuery(path: string, params?: QueryParams): string {
+  if (!params) return path;
+  const search = new URLSearchParams();
+
+  for (const [key, rawValue] of Object.entries(params)) {
+    if (rawValue === null || rawValue === undefined) continue;
+    const values = Array.isArray(rawValue) ? rawValue : [rawValue];
+    for (const value of values) {
+      if (value === null || value === undefined) continue;
+      search.append(key, String(value));
+    }
+  }
+
+  const query = search.toString();
+  if (!query) return path;
+  return `${path}${path.includes('?') ? '&' : '?'}${query}`;
+}
+
 export const api = {
-  get: <T = any>(path: string) => apiFetch<T>(path),
+  get: <T = any>(path: string, options?: { params?: QueryParams }) =>
+    apiFetch<T>(withQuery(path, options?.params)),
 
   post: <T = any>(path: string, body?: any) =>
     apiFetch<T>(path, {

@@ -331,6 +331,7 @@ export function DashboardSidebar({
       groups.push({
         label: "Requirements",
         items: [
+          { title: "Requirement rules", url: '/school/requirements', icon: ClipboardCheck },
           { title: "Student document requirements", url: '/school/student-requirements', icon: ClipboardList },
           { title: "Staff document requirements", url: '/school/staff-documents', icon: GraduationCap },
         ],
@@ -393,6 +394,7 @@ export function DashboardSidebar({
       groups.push({
         label: "Requirements",
         items: [
+          { title: "Requirement rules", url: '/school/requirements', icon: ClipboardCheck },
           { title: "Student document requirements", url: '/school/student-requirements', icon: ClipboardList },
           { title: "Staff document requirements", url: '/school/staff-documents', icon: GraduationCap },
         ],

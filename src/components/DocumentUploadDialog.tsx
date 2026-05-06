@@ -4,9 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { api } from '@/lib/api';
 import { documentService } from '@/services/documentService';
+import { documentTypeService } from '@/services/documentTypeService';
 import { storageService } from '@/services/storageService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { unwrapList } from '@/lib/api';
 import {
   Dialog,
   DialogContent,
@@ -59,6 +61,7 @@ interface DocumentUploadDialogProps {
   onDocumentUploaded: () => void;
   children?: React.ReactNode;
   defaultStudentId?: string;
+  assignmentId?: string;
 }
 
 interface ScanResultData {
@@ -120,7 +123,8 @@ const DocumentUploadDialog = ({
   students, 
   onDocumentUploaded, 
   children,
-  defaultStudentId 
+  defaultStudentId,
+  assignmentId,
 }: DocumentUploadDialogProps) => {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -130,6 +134,7 @@ const DocumentUploadDialog = ({
   const [overallMatch, setOverallMatch] = useState(true);
   const [autoScanning, setAutoScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResultData | null>(null);
+  const [documentTypeByCategory, setDocumentTypeByCategory] = useState<Record<string, string>>({});
   const { user } = useAuth();
   const form = useForm<UploadFormData>({
     resolver: zodResolver(uploadSchema),
@@ -144,6 +149,30 @@ const DocumentUploadDialog = ({
       form.setValue('studentId', defaultStudentId);
     }
   }, [defaultStudentId, form]);
+
+  useEffect(() => {
+    if (!open || !user?.schoolId) return;
+    (async () => {
+      try {
+        const types = await documentTypeService.list({
+          schoolId: user.schoolId,
+          targetRole: 'STUDENT',
+        });
+        const mapping: Record<string, string> = {};
+        for (const type of unwrapList<any>(types)) {
+          const slug =
+            type?.category?.slug ??
+            type?.categorySlug ??
+            null;
+          if (!slug || mapping[slug]) continue;
+          mapping[slug] = type.id;
+        }
+        setDocumentTypeByCategory(mapping);
+      } catch {
+        setDocumentTypeByCategory({});
+      }
+    })();
+  }, [open, user?.schoolId]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -540,26 +569,37 @@ const DocumentUploadDialog = ({
     try {
       const actingUserId = user.id;
       const isChildProfile = data.studentId !== actingUserId;
+      const documentTypeId = documentTypeByCategory[data.category];
+      if (!documentTypeId) {
+        throw new Error('No document type is configured for this category yet.');
+      }
       const presignData = await documentService.presign({
-        documentTypeId: data.category,
+        documentTypeId,
         ownerUserId: actingUserId,
         ...(isChildProfile ? { studentProfileId: data.studentId } : {}),
+        ...(assignmentId ? { assignmentId } : {}),
         fileName: file.name,
         mimeType: file.type,
         sizeBytes: file.size,
       });
 
-      await storageService.uploadFile(presignData.presignedUrl, file);
+      const uploadUrl = presignData.presignedUrl ?? presignData.uploadUrl;
+      if (!uploadUrl) {
+        throw new Error('Failed to get upload URL');
+      }
+      await storageService.uploadFile(uploadUrl, file);
 
       await documentService.complete({
-        documentTypeId: data.category,
+        documentTypeId,
         ownerUserId: actingUserId,
         ...(isChildProfile ? { studentProfileId: data.studentId } : {}),
+        ...(assignmentId ? { assignmentId } : {}),
         s3Key: presignData.s3Key,
         fileName: file.name,
         mimeType: file.type,
         sizeBytes: file.size,
         notes: data.notes || undefined,
+        expiresAt: data.expirationDate || undefined,
       });
 
       toast({
