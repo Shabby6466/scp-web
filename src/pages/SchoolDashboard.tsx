@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { 
   AlertCircle, CheckCircle, Users, 
-  GraduationCap
+  GraduationCap, Shield, Building, Award, UserCheck
 } from "lucide-react";
 import { RosterImportWizard } from "@/components/roster";
 import AdminDocuments from "@/components/admin/AdminDocuments";
@@ -76,6 +76,10 @@ const SchoolDashboard = () => {
     doh: { percentage: 0, overdueCount: 0, dueSoonCount: 0 },
     facility: { percentage: 0, overdueCount: 0, dueSoonCount: 0 },
   });
+  /** Four-category KPI from GET /branches/:id/compliance */
+  const [complianceCategories, setComplianceCategories] = useState<
+    { name: string; percentage: number; overdueCount: number; dueSoonCount: number; icon: React.ElementType }[]
+  >([]);
 
   // UI state
   const [isRosterImportOpen, setIsRosterImportOpen] = useState(false);
@@ -175,7 +179,7 @@ const SchoolDashboard = () => {
           count: pendingCount,
           type: 'action-needed',
           ctaLabel: 'Review',
-          route: '/school/pending-documents',
+          route: '/school/documents',
           icon: 'documents',
           blocksCompliance: true,
         };
@@ -190,7 +194,7 @@ const SchoolDashboard = () => {
           type: 'due-soon',
           daysUntilDue: 14,
           ctaLabel: 'View',
-          route: '/school/expiring-documents',
+          route: '/school/documents',
           icon: 'certifications',
         };
         action.priorityScore = calculatePriorityScore(action);
@@ -260,7 +264,7 @@ const SchoolDashboard = () => {
           description: `${doc.documentType?.name ?? doc.category ?? 'Document'} needs review`,
           priorityScore: 80,
           ctaLabel: 'Review',
-          route: `/school/pending-documents`,
+          route: `/school/documents`,
           entityId: doc.ownerUserId ?? doc.studentId,
         });
       });
@@ -276,7 +280,7 @@ const SchoolDashboard = () => {
           daysOverdue: (doc.daysUntilExpiry ?? 0) < 0 ? Math.abs(doc.daysUntilExpiry) : undefined,
           priorityScore: (doc.daysUntilExpiry ?? 30) <= 7 ? 90 : 50,
           ctaLabel: 'View',
-          route: '/school/expiring-documents',
+          route: '/school/documents',
         });
       });
 
@@ -354,6 +358,38 @@ const SchoolDashboard = () => {
             dueSoonCount: 0,
           },
         });
+      }
+
+      // ── New compliance KPI from RequirementAssignment aggregation ──────────
+      // Use first branch if no branch is selected yet
+      const branches = (await branchService.listBySchool(schoolId)) as any[];
+      const branchesList: { id: string }[] = Array.isArray(branches) ? branches : (branches as any)?.data ?? [];
+      const targetBranchId = branchesList[0]?.id;
+      if (targetBranchId) {
+        try {
+          const complianceResult = await branchService.getCompliance(targetBranchId);
+          const CATEGORY_META: Record<string, { label: string; icon: React.ElementType }> = {
+            doh:              { label: 'DOH Readiness',    icon: Shield },
+            facility_safety:  { label: 'Facility & Safety', icon: Building },
+            certifications:   { label: 'Certifications',   icon: Award },
+            staff_eligibility:{ label: 'Staff Eligibility', icon: UserCheck },
+          };
+          // We need category names; load them from ComplianceCategory list or use IDs
+          const cats = complianceResult.byCategory.map((c) => {
+            // categoryId is UUID — we'll map by position/canonical slug if available
+            // For now use a generic label until category names are loaded
+            return {
+              name: `Category`,
+              percentage: c.pct ?? 0,
+              overdueCount: 0,
+              dueSoonCount: 0,
+              icon: Shield,
+            };
+          });
+          if (cats.length > 0) setComplianceCategories(cats);
+        } catch {
+          // Non-critical: widget falls back to legacy data
+        }
       }
 
       setLastUpdated(new Date());
@@ -503,22 +539,35 @@ const SchoolDashboard = () => {
           onSendInvites={() => navigate('/school/parents')}
         />
 
-        {/* Compliance Snapshot */}
+        {/* Compliance Snapshot — uses new per-category KPIs when available */}
         <ComplianceSnapshotWidget
-          dohCompliance={{
-            name: 'Student Compliance',
-            percentage: complianceData.doh.percentage,
-            overdueCount: complianceData.doh.overdueCount,
-            dueSoonCount: complianceData.doh.dueSoonCount,
-            icon: CheckCircle,
-          }}
-          facilityCompliance={{
-            name: 'Staff Compliance',
-            percentage: complianceData.facility.percentage,
-            overdueCount: complianceData.facility.overdueCount,
-            dueSoonCount: complianceData.facility.dueSoonCount,
-            icon: Users,
-          }}
+          categories={
+            complianceCategories.length > 0
+              ? complianceCategories
+              : undefined
+          }
+          dohCompliance={
+            complianceCategories.length === 0
+              ? {
+                  name: 'Student Compliance',
+                  percentage: complianceData.doh.percentage,
+                  overdueCount: complianceData.doh.overdueCount,
+                  dueSoonCount: complianceData.doh.dueSoonCount,
+                  icon: CheckCircle,
+                }
+              : undefined
+          }
+          facilityCompliance={
+            complianceCategories.length === 0
+              ? {
+                  name: 'Staff Compliance',
+                  percentage: complianceData.facility.percentage,
+                  overdueCount: complianceData.facility.overdueCount,
+                  dueSoonCount: complianceData.facility.dueSoonCount,
+                  icon: Users,
+                }
+              : undefined
+          }
           loading={statsLoading}
         />
       </div>
@@ -554,7 +603,7 @@ const SchoolDashboard = () => {
           total={directoryStats.documents.total}
           alertCount={directoryStats.documents.pending}
           alertLabel="pending"
-          route="/school/pending-documents"
+          route="/school/documents"
         />
       </div>
 

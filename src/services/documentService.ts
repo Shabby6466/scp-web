@@ -24,10 +24,22 @@ export const documentService = {
   review: (id: string, data: { status: 'APPROVED' | 'REJECTED'; rejectionReason?: string }) =>
     api.patch(`/documents/${id}/review`, data),
   verify: (id: string) => api.patch(`/documents/${id}/verify`),
-  search: (params?: { ownerUserId?: string; documentTypeId?: string; schoolId?: string; branchId?: string; status?: string; limit?: number; offset?: number }) => {
+  search: (params?: {
+    ownerUserId?: string;
+    documentTypeId?: string;
+    schoolId?: string;
+    branchId?: string;
+    status?: string;
+    query?: string;
+    ownerRole?: string;
+    limit?: number;
+    offset?: number;
+  }) => {
     const qs = new URLSearchParams();
     if (params) {
-      Object.entries(params).forEach(([k, v]) => { if (v !== undefined) qs.set(k, String(v)); });
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== undefined && v !== '') qs.set(k, String(v));
+      });
     }
     return api.get(`/documents/search?${qs.toString()}`);
   },

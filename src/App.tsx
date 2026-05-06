@@ -42,14 +42,12 @@ import SchoolApprovalStatus from "./pages/SchoolApprovalStatus";
 
 // School Dashboard Pages - Content Components
 import SchoolDashboard from "./pages/SchoolDashboard";
-import PendingDocuments from "./pages/school/PendingDocuments";
-import ExpiringDocuments from "./pages/school/ExpiringDocuments";
-import TeacherCompliance from "./pages/school/TeacherCompliance";
+import SchoolDocumentsPage from "./pages/school/SchoolDocumentsPage";
+import AllDocumentsPage from "./pages/AllDocumentsPage";
 import SchoolBranches from "./pages/school/SchoolBranches";
 import SchoolPeoplePortal from "./pages/school/SchoolPeoplePortal";
 import SchoolSettings from "./pages/school/SchoolSettings";
 import SchoolFilePage from "./pages/school/SchoolFilePage";
-import AllDocumentsPage from "./pages/AllDocumentsPage";
 import PersonFilePage from "./pages/PersonFilePage";
 
 // Director Pages
@@ -216,21 +214,14 @@ const App = () => (
                     <Route path="/school/parents" element={<AdminParents />} />
                     <Route path="/school/branch-directors" element={<AdminLeadershipDirectory />} />
                   </Route>
-                  <Route path="/school/pending-documents" element={
+                  <Route path="/school/documents" element={
                     <SchoolRoute>
-                      <PendingDocuments />
+                      <SchoolDocumentsPage />
                     </SchoolRoute>
                   } />
-                  <Route path="/school/expiring-documents" element={
-                    <SchoolRoute>
-                      <ExpiringDocuments />
-                    </SchoolRoute>
-                  } />
-                  <Route path="/school/teacher-compliance" element={
-                    <SchoolRoute>
-                      <TeacherCompliance />
-                    </SchoolRoute>
-                  } />
+                  <Route path="/school/pending-documents" element={<Navigate to="/school/documents" replace />} />
+                  <Route path="/school/expiring-documents" element={<Navigate to="/school/documents" replace />} />
+                  <Route path="/school/teacher-compliance" element={<Navigate to="/school/documents?tab=staff" replace />} />
                   <Route path="/school/branches" element={
                     <SchoolRoute>
                       <SchoolBranches />
@@ -264,7 +255,6 @@ const App = () => (
                     </SchoolRoute>
                   } />
 
-                  {/* All Documents CRM Page */}
                   <Route path="/all-documents" element={
                     <SchoolRoute>
                       <AllDocumentsPage />

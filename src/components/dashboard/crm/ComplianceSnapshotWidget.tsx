@@ -19,8 +19,11 @@ interface ComplianceCategory {
 }
 
 interface ComplianceSnapshotWidgetProps {
+  /** Legacy two-prop API kept for backwards compat. */
   dohCompliance?: ComplianceCategory;
   facilityCompliance?: ComplianceCategory;
+  /** New: pass all four categories from GET /branches/:id/compliance */
+  categories?: ComplianceCategory[];
   loading?: boolean;
 }
 
@@ -81,8 +84,11 @@ function ComplianceCard({ category }: { category: ComplianceCategory }) {
 export function ComplianceSnapshotWidget({
   dohCompliance,
   facilityCompliance,
+  categories,
   loading = false,
 }: ComplianceSnapshotWidgetProps) {
+  const skeletonCount = categories ? Math.max(categories.length, 2) : 2;
+
   if (loading) {
     return (
       <Card>
@@ -94,7 +100,7 @@ export function ComplianceSnapshotWidget({
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-3 mb-3">
-            {[...Array(2)].map((_, i) => (
+            {[...Array(skeletonCount)].map((_, i) => (
               <div key={i} className="p-3 rounded-lg bg-muted/30">
                 <div className="flex items-center justify-between mb-2">
                   <Skeleton className="h-4 w-20" />
@@ -110,21 +116,13 @@ export function ComplianceSnapshotWidget({
     );
   }
 
-  const defaultDoh: ComplianceCategory = dohCompliance || {
-    name: 'DOH Readiness',
-    percentage: 0,
-    overdueCount: 0,
-    dueSoonCount: 0,
-    icon: Shield,
-  };
-
-  const defaultFacility: ComplianceCategory = facilityCompliance || {
-    name: 'Facility & Safety',
-    percentage: 0,
-    overdueCount: 0,
-    dueSoonCount: 0,
-    icon: Building,
-  };
+  // Build display categories: prefer new `categories` prop, fall back to legacy props
+  const displayCategories: ComplianceCategory[] = categories && categories.length > 0
+    ? categories
+    : [
+        dohCompliance ?? { name: 'DOH Readiness', percentage: 0, overdueCount: 0, dueSoonCount: 0, icon: Shield },
+        facilityCompliance ?? { name: 'Facility & Safety', percentage: 0, overdueCount: 0, dueSoonCount: 0, icon: Building },
+      ];
 
   return (
     <Card>
@@ -136,8 +134,9 @@ export function ComplianceSnapshotWidget({
       </CardHeader>
       <CardContent>
         <div className="grid md:grid-cols-2 gap-3">
-          <ComplianceCard category={{ ...defaultDoh, icon: Shield }} />
-          <ComplianceCard category={{ ...defaultFacility, icon: Building }} />
+          {displayCategories.map((cat) => (
+            <ComplianceCard key={cat.name} category={cat} />
+          ))}
         </div>
         <p className="text-xs text-muted-foreground mt-3">
           Open compliance sections from the sidebar.

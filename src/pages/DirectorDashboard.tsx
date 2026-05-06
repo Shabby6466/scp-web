@@ -14,7 +14,6 @@ import {
   Users,
   GraduationCap,
   FileText,
-  Clock,
   ClipboardList,
 } from 'lucide-react';
 import { useComplianceData } from '@/hooks/useComplianceData';
@@ -184,21 +183,17 @@ const DirectorDashboard = () => {
                 <ClipboardList className="h-4 w-4 mr-2 shrink-0" />
                 Compliance center
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => navigate('/school/pending-documents')}>
+              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => navigate('/school/documents')}>
                 <FileText className="h-4 w-4 mr-2 shrink-0" />
-                Pending document review
+                School documents
               </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => navigate('/school/expiring-documents')}>
-                <Clock className="h-4 w-4 mr-2 shrink-0" />
-                Expiring documents
-              </Button>
-              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => navigate('/school/teacher-compliance')}>
+              <Button variant="outline" className="justify-start h-auto py-3" onClick={() => navigate('/school/documents?tab=staff')}>
                 <GraduationCap className="h-4 w-4 mr-2 shrink-0" />
-                Staff compliance
+                Staff coverage
               </Button>
               <Button variant="outline" className="justify-start h-auto py-3" onClick={() => navigate('/all-documents')}>
                 <Users className="h-4 w-4 mr-2 shrink-0" />
-                All documents
+                Browse by person
               </Button>
             </CardContent>
           </Card>
