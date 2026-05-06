@@ -163,7 +163,7 @@ export function PendingDocumentsWidget({
         <Button
           variant="ghost"
           className="w-full justify-center gap-2 mt-2"
-          onClick={() => navigate('/school/pending-documents')}
+          onClick={() => navigate('/school/documents')}
         >
           See all pending documents
           <ArrowRight className="h-4 w-4" />

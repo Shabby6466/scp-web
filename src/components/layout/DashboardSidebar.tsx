@@ -6,7 +6,6 @@ import {
   GraduationCap,
   UserCircle,
   FileText,
-  Clock,
   AlertTriangle,
   Shield,
   Settings,
@@ -178,6 +177,7 @@ export function DashboardSidebar({
     location.pathname.startsWith('/eligibility');
 
   const documentsGroupOpen =
+    location.pathname.startsWith('/school/documents') ||
     location.pathname.startsWith('/school/pending-documents') ||
     location.pathname.startsWith('/school/expiring-documents') ||
     location.pathname.startsWith('/school/teacher-compliance') ||
@@ -316,10 +316,13 @@ export function DashboardSidebar({
       groups.push({
         label: "Document tracking",
         items: [
-          { title: "Pending review", url: '/school/pending-documents', icon: Clock, badge: stats.pendingDocs, isUrgent: (stats.pendingDocs ?? 0) > 0 },
-          { title: "Expiring soon", url: '/school/expiring-documents', icon: AlertTriangle, badge: stats.expiringDocs, isUrgent: (stats.expiringDocs ?? 0) > 0 },
-          { title: "Staff compliance", url: '/school/teacher-compliance', icon: Users },
-          { title: "All documents", url: '/all-documents', icon: FileText },
+          {
+            title: "Documents",
+            url: '/school/documents',
+            icon: FileText,
+            badge: stats.pendingDocs,
+            isUrgent: (stats.pendingDocs ?? 0) > 0 || (stats.expiringDocs ?? 0) > 0,
+          },
         ],
         collapsible: true,
         defaultOpen: documentsGroupOpen,
@@ -375,10 +378,13 @@ export function DashboardSidebar({
       groups.push({
         label: "Document tracking",
         items: [
-          { title: "Pending review", url: '/school/pending-documents', icon: Clock, badge: stats.pendingDocs, isUrgent: (stats.pendingDocs ?? 0) > 0 },
-          { title: "Expiring soon", url: '/school/expiring-documents', icon: AlertTriangle, badge: stats.expiringDocs, isUrgent: (stats.expiringDocs ?? 0) > 0 },
-          { title: "Staff compliance", url: '/school/teacher-compliance', icon: Users },
-          { title: "All documents", url: '/all-documents', icon: FileText },
+          {
+            title: "Documents",
+            url: '/school/documents',
+            icon: FileText,
+            badge: stats.pendingDocs,
+            isUrgent: (stats.pendingDocs ?? 0) > 0 || (stats.expiringDocs ?? 0) > 0,
+          },
         ],
         collapsible: true,
         defaultOpen: documentsGroupOpen,

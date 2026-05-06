@@ -17,6 +17,19 @@ export type BranchWritePayload = {
   branchDirectorUserId?: string | null;
 };
 
+export type BranchCategoryKpi = {
+  categoryId: string | null;
+  approvedCount: number;
+  totalCount: number;
+  pct: number | null;
+};
+
+export type BranchComplianceResult = {
+  branchId: string;
+  overallPct: number | null;
+  byCategory: BranchCategoryKpi[];
+};
+
 export const branchService = {
   listBySchool: (schoolId: string) => api.get(`/schools/${schoolId}/branches`),
   getById: (id: string) => api.get(`/branches/${id}`),
@@ -25,4 +38,7 @@ export const branchService = {
   update: (id: string, body: Partial<BranchWritePayload>) =>
     api.patch(`/branches/${id}`, body),
   remove: (id: string) => api.delete(`/branches/${id}`),
+  /** Returns per-category compliance % for a branch. */
+  getCompliance: (branchId: string) =>
+    api.get<BranchComplianceResult>(`/branches/${branchId}/compliance`),
 };

@@ -227,7 +227,7 @@ export default function SchoolFilePage() {
               </CardContent>
             </Card>
 
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/school/teacher-compliance")}>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate("/school/documents?tab=staff")}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Teachers</CardTitle>
                 <GraduationCap className="h-4 w-4 text-muted-foreground" />
@@ -240,7 +240,7 @@ export default function SchoolFilePage() {
               </CardContent>
             </Card>
 
-            <Card className={`cursor-pointer hover:shadow-md transition-shadow ${stats?.pendingDocs ? "border-yellow-200" : ""}`} onClick={() => navigate("/school/pending-documents")}>
+            <Card className={`cursor-pointer hover:shadow-md transition-shadow ${stats?.pendingDocs ? "border-yellow-200" : ""}`} onClick={() => navigate("/school/documents")}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
                 <Clock className={`h-4 w-4 ${stats?.pendingDocs ? "text-yellow-500" : "text-muted-foreground"}`} />
@@ -253,7 +253,7 @@ export default function SchoolFilePage() {
               </CardContent>
             </Card>
 
-            <Card className={`cursor-pointer hover:shadow-md transition-shadow ${stats?.expiringDocs ? "border-red-200" : ""}`} onClick={() => navigate("/school/expiring-documents")}>
+            <Card className={`cursor-pointer hover:shadow-md transition-shadow ${stats?.expiringDocs ? "border-red-200" : ""}`} onClick={() => navigate("/school/documents")}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium">Expiring Soon</CardTitle>
                 <AlertTriangle className={`h-4 w-4 ${stats?.expiringDocs ? "text-red-500" : "text-muted-foreground"}`} />
@@ -372,7 +372,7 @@ export default function SchoolFilePage() {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-4 gap-3">
-                <Button variant="outline" className="justify-start" onClick={() => navigate("/school/pending-documents")}>
+                <Button variant="outline" className="justify-start" onClick={() => navigate("/school/documents")}>
                   <FileText className="h-4 w-4 mr-2" />
                   Review Documents
                   {(stats?.pendingDocs || 0) > 0 && (

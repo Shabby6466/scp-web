@@ -187,7 +187,7 @@ export function UrgentActionsWidget({
             variant="ghost"
             size="sm"
             className="w-full mt-2 text-xs text-muted-foreground"
-            onClick={() => navigate('/school/pending-documents')}
+            onClick={() => navigate('/school/documents')}
           >
             View all {actions.length} items
             <ChevronRight className="h-3 w-3 ml-1" />
