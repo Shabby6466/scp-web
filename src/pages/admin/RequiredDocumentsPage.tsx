@@ -41,6 +41,8 @@ type DocumentTypeRow = {
   id: string;
   name: string;
   isMandatory: boolean;
+  kind?: "DOCUMENT" | "CERTIFICATION";
+  validityMonths?: number | null;
   renewalPeriod?: string;
   branchId?: string | null;
   schoolId?: string | null;
@@ -89,6 +91,8 @@ export default function RequiredDocumentsPage() {
     complianceCategoryId: "",
     branchId: "",
     isMandatory: true,
+    kind: "DOCUMENT" as "DOCUMENT" | "CERTIFICATION",
+    validityMonths: "",
   });
   const [createCategoryOpen, setCreateCategoryOpen] = useState(false);
   const [creatingCategory, setCreatingCategory] = useState(false);
@@ -188,6 +192,8 @@ export default function RequiredDocumentsPage() {
       complianceCategoryId: "",
       branchId: "",
       isMandatory: true,
+      kind: "DOCUMENT",
+      validityMonths: "",
     });
     setOpen(true);
   };
@@ -199,6 +205,8 @@ export default function RequiredDocumentsPage() {
       complianceCategoryId: doc.category?.id ?? "",
       branchId: "",
       isMandatory: Boolean(doc.isMandatory),
+      kind: doc.kind ?? "DOCUMENT",
+      validityMonths: doc.validityMonths != null ? String(doc.validityMonths) : "",
     });
     setOpen(true);
   };
@@ -221,12 +229,27 @@ export default function RequiredDocumentsPage() {
     }
 
     try {
+      const parsedValidityMonths =
+        form.kind === "CERTIFICATION" && form.validityMonths.trim()
+          ? Number(form.validityMonths.trim())
+          : null;
+      if (
+        form.kind === "CERTIFICATION" &&
+        parsedValidityMonths !== null &&
+        (!Number.isFinite(parsedValidityMonths) || parsedValidityMonths <= 0)
+      ) {
+        toast.error("Validity months must be a positive number");
+        return;
+      }
+
       if (editing) {
         const updated = await documentTypeService.update(editing.id, {
           name: form.name.trim(),
           isMandatory: form.isMandatory,
           renewalPeriod: "NONE",
           complianceCategoryId: form.complianceCategoryId.trim(),
+          kind: form.kind,
+          validityMonths: parsedValidityMonths,
         });
         toast.success("Document updated");
         await loadDocuments();
@@ -238,6 +261,8 @@ export default function RequiredDocumentsPage() {
           renewalPeriod: "NONE",
           isMandatory: form.isMandatory,
           complianceCategoryId: form.complianceCategoryId.trim(),
+          kind: form.kind,
+          validityMonths: parsedValidityMonths,
         };
         if (showBranchField && form.branchId.trim()) {
           payload.branchId = form.branchId.trim();
@@ -485,6 +510,43 @@ export default function RequiredDocumentsPage() {
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Type *</Label>
+              <Select
+                value={form.kind}
+                onValueChange={(v) =>
+                  setForm((f) => ({
+                    ...f,
+                    kind: v as "DOCUMENT" | "CERTIFICATION",
+                    validityMonths:
+                      v === "CERTIFICATION" ? f.validityMonths : "",
+                  }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="DOCUMENT">Document</SelectItem>
+                  <SelectItem value="CERTIFICATION">Certification</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {form.kind === "CERTIFICATION" && (
+              <div className="space-y-2">
+                <Label htmlFor="validityMonths">Validity (months)</Label>
+                <Input
+                  id="validityMonths"
+                  type="number"
+                  min={1}
+                  placeholder="e.g. 12"
+                  value={form.validityMonths}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, validityMonths: e.target.value }))
+                  }
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Compliance category *</Label>
               <Select

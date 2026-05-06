@@ -5,19 +5,23 @@ export const documentService = {
     documentTypeId: string;
     ownerUserId: string;
     studentProfileId?: string;
+    assignmentId?: string;
     fileName: string;
     mimeType: string;
     sizeBytes: number;
-  }) => api.post('/documents/presign', data),
+  }) => api.post<{ uploadUrl?: string; presignedUrl?: string; s3Key: string }>('/documents/presign', data),
   complete: (data: {
     documentTypeId: string;
     ownerUserId: string;
     studentProfileId?: string;
+    assignmentId?: string;
     s3Key: string;
     fileName: string;
     mimeType: string;
     sizeBytes: number;
     notes?: string;
+    issuedAt?: string;
+    expiresAt?: string;
   }) => api.post('/documents/complete', data),
   getById: (id: string) => api.get(`/documents/${id}`),
   getDownloadUrl: (id: string) => api.get(`/documents/${id}/download-url`),

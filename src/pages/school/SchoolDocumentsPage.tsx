@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { documentService } from '@/services/documentService';
 import { schoolService } from '@/services/schoolService';
+import { requirementService, type RequirementAssignment } from '@/services/requirementService';
 import { api } from '@/lib/api';
 import { unwrapList } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
@@ -65,7 +66,8 @@ async function fetchAllDocumentPages(params: {
 export default function SchoolDocumentsPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const tab = searchParams.get('tab') === 'staff' ? 'staff' : 'documents';
+  const tabParam = searchParams.get('tab');
+  const tab = tabParam === 'staff' ? 'staff' : tabParam === 'assignments' ? 'assignments' : 'documents';
 
   const { user, loading: authLoading } = useAuth();
   const {
@@ -99,6 +101,8 @@ export default function SchoolDocumentsPage() {
   const [sending30, setSending30] = useState(false);
   const [sending7, setSending7] = useState(false);
   const [sendingExpired, setSendingExpired] = useState(false);
+  const [assignmentRows, setAssignmentRows] = useState<RequirementAssignment[]>([]);
+  const [loadingAssignments, setLoadingAssignments] = useState(false);
 
   const effectiveSchoolId = isAdmin && !schoolId ? adminSchoolId : schoolId ?? '';
 
@@ -267,12 +271,46 @@ export default function SchoolDocumentsPage() {
   };
 
   const setTab = (value: string) => {
-    if (value === 'staff') {
-      setSearchParams({ tab: 'staff' }, { replace: true });
+    if (value === 'staff' || value === 'assignments') {
+      setSearchParams({ tab: value }, { replace: true });
     } else {
       setSearchParams({}, { replace: true });
     }
   };
+
+  const loadAssignments = useCallback(async () => {
+    if (!effectiveSchoolId) return;
+    setLoadingAssignments(true);
+    try {
+      const statuses = ['PENDING', 'REJECTED', 'EXPIRING', 'EXPIRED'] as const;
+      const chunks = await Promise.all(
+        statuses.map((status) =>
+          requirementService.listAssignments({
+            ...(isBranchDirector && branchId ? { branchId } : {}),
+            status,
+          }),
+        ),
+      );
+      const unique = new Map<string, RequirementAssignment>();
+      chunks.flat().forEach((row) => unique.set(row.id, row));
+      setAssignmentRows(Array.from(unique.values()));
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to load requirement assignments',
+      });
+      setAssignmentRows([]);
+    } finally {
+      setLoadingAssignments(false);
+    }
+  }, [effectiveSchoolId, isBranchDirector, branchId]);
+
+  useEffect(() => {
+    if (tab === 'assignments') {
+      void loadAssignments();
+    }
+  }, [tab, loadAssignments]);
 
   if (authLoading || roleLoading) {
     return (
@@ -345,6 +383,10 @@ export default function SchoolDocumentsPage() {
           <TabsTrigger value="staff" className="gap-2">
             <Users className="h-4 w-4" />
             Staff coverage
+          </TabsTrigger>
+          <TabsTrigger value="assignments" className="gap-2">
+            <Clock className="h-4 w-4" />
+            Assignments
           </TabsTrigger>
         </TabsList>
 
@@ -578,6 +620,45 @@ export default function SchoolDocumentsPage() {
           >
             <TeacherCompliance />
           </Suspense>
+        </TabsContent>
+        <TabsContent value="assignments" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Pending and expiring assignments</CardTitle>
+              <CardDescription>
+                Requirements that still need upload or review action.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingAssignments ? (
+                <p className="text-sm text-muted-foreground">Loading assignments…</p>
+              ) : assignmentRows.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No pending assignments found.</p>
+              ) : (
+                <div className="space-y-2">
+                  {assignmentRows.map((a) => (
+                    <div key={a.id} className="rounded border p-3 flex items-center justify-between gap-3">
+                      <div>
+                        <p className="font-medium">{a.documentType?.name ?? a.documentTypeId}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Subject: {a.subjectUserId ?? a.subjectStudentProfileId ?? '—'}
+                        </p>
+                      </div>
+                      <Badge
+                        variant={
+                          a.status === 'EXPIRED' || a.status === 'REJECTED'
+                            ? 'destructive'
+                            : 'secondary'
+                        }
+                      >
+                        {a.status}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

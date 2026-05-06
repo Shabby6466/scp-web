@@ -15,8 +15,10 @@ import { userService } from "@/services/userService";
 import { schoolService } from "@/services/schoolService";
 import { documentTypeService } from "@/services/documentTypeService";
 import { studentProfileService } from "@/services/studentProfileService";
+import { requirementService, type RequirementAssignment } from "@/services/requirementService";
 import { useUserRole } from "@/hooks/useUserRole";
 import { PersonFileCard } from "@/components/documents/PersonFileCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Student {
   id: string;
@@ -51,6 +53,7 @@ export default function AllDocumentsPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [studentRequirements, setStudentRequirements] = useState<number>(0);
   const [teacherRequirements, setTeacherRequirements] = useState<number>(0);
+  const [myAssignments, setMyAssignments] = useState<RequirementAssignment[]>([]);
 
   useEffect(() => {
     loadData();
@@ -147,6 +150,13 @@ export default function AllDocumentsPage() {
           requiredCount: teacherReqList.length,
         }))
       );
+
+      try {
+        const mine = await requirementService.myAssignments();
+        setMyAssignments(Array.isArray(mine) ? mine : []);
+      } catch {
+        setMyAssignments([]);
+      }
     } catch (error) {
       console.error("Error loading data:", error);
     } finally {
@@ -213,6 +223,25 @@ export default function AllDocumentsPage() {
 
   return (
     <div className="p-6 space-y-8">
+      {myAssignments.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">My requirement checklist</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {myAssignments.slice(0, 8).map((a) => (
+                <div key={a.id} className="flex items-center justify-between border rounded px-3 py-2">
+                  <span className="text-sm">{a.documentType?.name ?? a.documentTypeId}</span>
+                  <Badge variant={a.status === "APPROVED" ? "secondary" : "default"}>
+                    {a.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

@@ -65,6 +65,23 @@ const CATEGORY_LABELS: Record<string, string> = {
   medical_records: 'Medical Records',
 };
 
+function getCategoryLabel(document: Record<string, any>): string {
+  const category = document.category;
+  if (!category) return 'Document';
+  if (typeof category === 'string') {
+    return CATEGORY_LABELS[category] ?? category;
+  }
+  if (typeof category === 'object') {
+    return category.name ?? category.slug ?? 'Document';
+  }
+  return 'Document';
+}
+
+function getReviewStatus(document: Record<string, any>): string {
+  const raw = document.reviewStatus ?? document.review_status ?? document.status ?? 'PENDING';
+  return String(raw).toUpperCase();
+}
+
 function getDocumentFileName(doc: Record<string, unknown>): string {
   const n = doc.file_name ?? doc.fileName;
   return typeof n === 'string' ? n : '';
@@ -258,7 +275,7 @@ const DocumentReviewDialog = ({
             Review Document: {docFileName || 'Document'}
           </DialogTitle>
           <DialogDescription>
-            {CATEGORY_LABELS[document.category] ?? document.category ?? 'Document'}
+            {getCategoryLabel(document)}
             {document.students && (
               <span className="ml-2">
                 • {document.students.first_name} {document.students.last_name}
@@ -312,7 +329,7 @@ const DocumentReviewDialog = ({
               <div>
                 <Label className="text-sm font-medium">Status</Label>
                 <p className="text-sm text-muted-foreground mt-1 capitalize">
-                  {document.status}
+                  {getReviewStatus(document)}
                 </p>
               </div>
               {document.students && (
@@ -505,7 +522,7 @@ const DocumentReviewDialog = ({
         </Tabs>
 
         <DialogFooter className="border-t pt-4">
-          {document.status === 'pending' && (
+          {getReviewStatus(document) === 'PENDING' && (
             <div className="w-full space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>

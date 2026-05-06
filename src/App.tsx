@@ -47,6 +47,7 @@ import AllDocumentsPage from "./pages/AllDocumentsPage";
 import SchoolBranches from "./pages/school/SchoolBranches";
 import SchoolPeoplePortal from "./pages/school/SchoolPeoplePortal";
 import SchoolSettings from "./pages/school/SchoolSettings";
+import SchoolRequirementsPage from "./pages/school/SchoolRequirementsPage";
 import SchoolFilePage from "./pages/school/SchoolFilePage";
 import PersonFilePage from "./pages/PersonFilePage";
 
@@ -242,6 +243,11 @@ const App = () => (
                   <Route path="/school/staff-documents" element={
                     <SchoolRoute>
                       <StaffRequiredDocumentsPage />
+                    </SchoolRoute>
+                  } />
+                  <Route path="/school/requirements" element={
+                    <SchoolRoute>
+                      <SchoolRequirementsPage />
                     </SchoolRoute>
                   } />
                   <Route path="/school/setup/required-documents" element={<Navigate to="/school/student-requirements" replace />} />

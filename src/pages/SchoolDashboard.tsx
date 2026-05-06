@@ -8,6 +8,7 @@ import { documentService } from "@/services/documentService";
 import { analyticsService } from "@/services/analyticsService";
 import { invitationService } from "@/services/invitationService";
 import { complianceService } from "@/services/complianceService";
+import { requirementService } from "@/services/requirementService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -128,18 +129,17 @@ const SchoolDashboard = () => {
       setSchool(schoolData);
       const branchesList: Branch[] = Array.isArray(branchesData) ? branchesData : (branchesData as any)?.data ?? [];
       setBranches(branchesList);
-      setLoading(false);
-
-      if (schoolData) {
-        fetchCRMStats(user.schoolId);
+      if (!selectedBranchId && branchesList.length > 0) {
+        setSelectedBranchId(branchesList[0].id);
       }
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching school data:", error);
       setLoading(false);
     }
   };
 
-  const fetchCRMStats = useCallback(async (schoolId: string) => {
+  const fetchCRMStats = useCallback(async (schoolId: string, branchId: string | null) => {
     setStatsLoading(true);
     try {
       const [dashboardRes, pendingDocsRes, expiringDocsRes, invitationsRes, complianceStatsRes, requirementsRes] = await Promise.all([
@@ -361,29 +361,48 @@ const SchoolDashboard = () => {
       }
 
       // ── New compliance KPI from RequirementAssignment aggregation ──────────
-      // Use first branch if no branch is selected yet
-      const branches = (await branchService.listBySchool(schoolId)) as any[];
-      const branchesList: { id: string }[] = Array.isArray(branches) ? branches : (branches as any)?.data ?? [];
-      const targetBranchId = branchesList[0]?.id;
+      const targetBranchId = branchId ?? branches[0]?.id ?? null;
       if (targetBranchId) {
         try {
-          const complianceResult = await branchService.getCompliance(targetBranchId);
-          const CATEGORY_META: Record<string, { label: string; icon: React.ElementType }> = {
-            doh:              { label: 'DOH Readiness',    icon: Shield },
-            facility_safety:  { label: 'Facility & Safety', icon: Building },
-            certifications:   { label: 'Certifications',   icon: Award },
-            staff_eligibility:{ label: 'Staff Eligibility', icon: UserCheck },
+          const [complianceResult, categoriesRes, expiringRes, expiredRes] = await Promise.all([
+            branchService.getCompliance(targetBranchId),
+            complianceService.listCategories(schoolId),
+            requirementService.listAssignments({
+              branchId: targetBranchId,
+              status: 'EXPIRING',
+            }),
+            requirementService.listAssignments({
+              branchId: targetBranchId,
+              status: 'EXPIRED',
+            }),
+          ]);
+          const categoryList: any[] = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes as any)?.data ?? [];
+          const categoryById = new Map(categoryList.map((c: any) => [c.id, c]));
+          const expiringCounts = new Map<string, number>();
+          const expiredCounts = new Map<string, number>();
+          for (const a of expiringRes) {
+            if (!a.categoryId) continue;
+            expiringCounts.set(a.categoryId, (expiringCounts.get(a.categoryId) ?? 0) + 1);
+          }
+          for (const a of expiredRes) {
+            if (!a.categoryId) continue;
+            expiredCounts.set(a.categoryId, (expiredCounts.get(a.categoryId) ?? 0) + 1);
+          }
+          const iconBySlug: Record<string, React.ElementType> = {
+            doh: Shield,
+            facility_safety: Building,
+            certifications: Award,
+            staff_eligibility: UserCheck,
           };
-          // We need category names; load them from ComplianceCategory list or use IDs
           const cats = complianceResult.byCategory.map((c) => {
-            // categoryId is UUID — we'll map by position/canonical slug if available
-            // For now use a generic label until category names are loaded
+            const category = c.categoryId ? categoryById.get(c.categoryId) : null;
+            const slug = category?.slug ?? '';
             return {
-              name: `Category`,
+              name: category?.name ?? 'Category',
               percentage: c.pct ?? 0,
-              overdueCount: 0,
-              dueSoonCount: 0,
-              icon: Shield,
+              overdueCount: c.categoryId ? (expiredCounts.get(c.categoryId) ?? 0) : 0,
+              dueSoonCount: c.categoryId ? (expiringCounts.get(c.categoryId) ?? 0) : 0,
+              icon: iconBySlug[slug] ?? Shield,
             };
           });
           if (cats.length > 0) setComplianceCategories(cats);
@@ -398,7 +417,12 @@ const SchoolDashboard = () => {
     } finally {
       setStatsLoading(false);
     }
-  }, []);
+  }, [branches]);
+
+  useEffect(() => {
+    if (!school?.id) return;
+    void fetchCRMStats(school.id, selectedBranchId);
+  }, [school?.id, selectedBranchId, fetchCRMStats]);
 
   const handleSendInvitation = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -415,7 +439,7 @@ const SchoolDashboard = () => {
         description: `Enrollment link sent to ${parentEmail}`
       });
       setParentEmail("");
-      if (school) fetchCRMStats(school.id);
+      if (school) void fetchCRMStats(school.id, selectedBranchId);
     } catch (error: any) {
       toast({
         title: "Failed to send invitation",
@@ -482,7 +506,7 @@ const SchoolDashboard = () => {
         open={isRosterImportOpen} 
         onOpenChange={setIsRosterImportOpen} 
         schoolId={school.id}
-        onComplete={() => fetchCRMStats(school.id)}
+        onComplete={() => fetchCRMStats(school.id, selectedBranchId)}
       />
 
       {/* Approval Warning */}
