@@ -1,0 +1,424 @@
+{
+  "generatedAt": "2026-04-16T13:17:40.556Z",
+  "notFoundUnique": 58,
+  "byDomain": {
+    "auth": [
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/auth/forgot-password",
+        "file": "src/contexts/AuthContext.tsx",
+        "line": 151
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/auth/update-password",
+        "file": "src/contexts/AuthContext.tsx",
+        "line": 172
+      }
+    ],
+    "other": [
+      {
+        "count": 4,
+        "method": "GET",
+        "path": "/teacher-positions",
+        "file": "src/components/eligibility/EligibilityMatrix.tsx",
+        "line": 152
+      },
+      {
+        "count": 3,
+        "method": "GET",
+        "path": "/eligibility-profiles",
+        "file": "src/components/eligibility/EligibilityMatrix.tsx",
+        "line": 158
+      },
+      {
+        "count": 2,
+        "method": "PATCH",
+        "path": "/teacher-positions/:param",
+        "file": "src/components/eligibility/PositionSetup.tsx",
+        "line": 153
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/certification-types",
+        "file": "src/services/certificationService.ts",
+        "line": 5
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/certification-types",
+        "file": "src/services/certificationService.ts",
+        "line": 7
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/certification-types/:param",
+        "file": "src/services/certificationService.ts",
+        "line": 9
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/certification-types/:param",
+        "file": "src/services/certificationService.ts",
+        "line": 6
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/certification-types/:param",
+        "file": "src/services/certificationService.ts",
+        "line": 8
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/compliance/evidence",
+        "file": "src/hooks/useComplianceFramework.ts",
+        "line": 275
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/compliance/evidence",
+        "file": "src/hooks/useComplianceFramework.ts",
+        "line": 253
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/compliance/evidence/:param",
+        "file": "src/hooks/useComplianceFramework.ts",
+        "line": 285
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/eligibility-profiles/user/:param",
+        "file": "src/services/eligibilityService.ts",
+        "line": 4
+      },
+      {
+        "count": 1,
+        "method": "PUT",
+        "path": "/eligibility-profiles/user/:param",
+        "file": "src/services/eligibilityService.ts",
+        "line": 5
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/eligibility-profiles/user/:param/analyze",
+        "file": "src/services/eligibilityService.ts",
+        "line": 6
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/roster/import",
+        "file": "src/components/roster/ImportPreviewStep.tsx",
+        "line": 202
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/roster/import-jobs/:param",
+        "file": "src/pages/roster/ImportReviewPage.tsx",
+        "line": 88
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/roster/import-jobs/:param/students",
+        "file": "src/pages/roster/ImportReviewPage.tsx",
+        "line": 94
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/school-applications",
+        "file": "src/pages/SchoolApplication.tsx",
+        "line": 96
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/teacher-positions",
+        "file": "src/components/eligibility/PositionSetup.tsx",
+        "line": 159
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/teacher-positions/:param",
+        "file": "src/components/eligibility/PositionSetup.tsx",
+        "line": 184
+      }
+    ],
+    "documents": [
+      {
+        "count": 2,
+        "method": "GET",
+        "path": "/storage/download-url",
+        "file": "src/components/eligibility/ResumeUpload.tsx",
+        "line": 121
+      },
+      {
+        "count": 1,
+        "method": "FETCH",
+        "path": "/document-templates",
+        "file": "src/components/DocumentTemplates.tsx",
+        "line": 95
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/document-templates",
+        "file": "src/components/DocumentTemplates.tsx",
+        "line": 59
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/document-templates/:param",
+        "file": "src/components/DocumentTemplates.tsx",
+        "line": 178
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/document-templates/:param",
+        "file": "src/components/DocumentTemplates.tsx",
+        "line": 147
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/document-templates/:param/download-url",
+        "file": "src/components/DocumentTemplates.tsx",
+        "line": 132
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/document-types/:param",
+        "file": "src/services/documentTypeService.ts",
+        "line": 14
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/documents/:param",
+        "file": "src/components/admin/TeacherDocumentsList.tsx",
+        "line": 106
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/documents/:param/review",
+        "file": "src/services/documentService.ts",
+        "line": 25
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/documents/scan",
+        "file": "src/components/DocumentUploadDialog.tsx",
+        "line": 304
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/storage/delete",
+        "file": "src/components/eligibility/ResumeUpload.tsx",
+        "line": 145
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/storage/presign",
+        "file": "src/components/eligibility/ResumeUpload.tsx",
+        "line": 79
+      }
+    ],
+    "platform": [
+      {
+        "count": 4,
+        "method": "POST",
+        "path": "/reminders/send-expiration",
+        "file": "src/components/director/DirectorReminderSection.tsx",
+        "line": 59
+      },
+      {
+        "count": 2,
+        "method": "POST",
+        "path": "/reminders/send",
+        "file": "src/pages/admin/ReminderManagement.tsx",
+        "line": 55
+      },
+      {
+        "count": 2,
+        "method": "GET",
+        "path": "/user-consent",
+        "file": "src/pages/admin/PrivacyPolicySettings.tsx",
+        "line": 79
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/messages",
+        "file": "src/pages/admin/MessageCenter.tsx",
+        "line": 51
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/messages",
+        "file": "src/pages/admin/MessageCenter.tsx",
+        "line": 86
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/messages/:param",
+        "file": "src/pages/admin/MessageCenter.tsx",
+        "line": 108
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/notifications/expiration-reminders",
+        "file": "src/pages/school/ExpiringDocuments.tsx",
+        "line": 119
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/user-consent",
+        "file": "src/pages/Dashboard.tsx",
+        "line": 215
+      }
+    ],
+    "schoolsBranches": [
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/schools/:param/approve",
+        "file": "src/services/schoolService.ts",
+        "line": 13
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/schools/:param/certification-records",
+        "file": "src/services/certificationService.ts",
+        "line": 14
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/schools/:param/certification-records/:param",
+        "file": "src/services/certificationService.ts",
+        "line": 16
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/schools/:param/certification-records/:param",
+        "file": "src/services/certificationService.ts",
+        "line": 15
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/schools/:param/compliance-requirements",
+        "file": "src/services/complianceService.ts",
+        "line": 16
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/schools/:param/compliance-requirements/:param",
+        "file": "src/services/complianceService.ts",
+        "line": 18
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/schools/:param/compliance-requirements/:param",
+        "file": "src/services/complianceService.ts",
+        "line": 17
+      },
+      {
+        "count": 1,
+        "method": "POST",
+        "path": "/schools/:param/inspection-types",
+        "file": "src/services/complianceService.ts",
+        "line": 22
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/schools/:param/inspection-types/:param",
+        "file": "src/services/complianceService.ts",
+        "line": 24
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/schools/:param/inspection-types/:param",
+        "file": "src/services/complianceService.ts",
+        "line": 23
+      }
+    ],
+    "users": [
+      {
+        "count": 2,
+        "method": "POST",
+        "path": "/students",
+        "file": "src/components/school/StudentRosterUpload.tsx",
+        "line": 291
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/students/:param",
+        "file": "src/pages/roster/ImportReviewPage.tsx",
+        "line": 139
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/teachers/:param",
+        "file": "src/pages/eligibility/TeacherEligibilityProfile.tsx",
+        "line": 283
+      },
+      {
+        "count": 1,
+        "method": "GET",
+        "path": "/user-roles",
+        "file": "src/components/school/DirectorManagement.tsx",
+        "line": 55
+      },
+      {
+        "count": 1,
+        "method": "DELETE",
+        "path": "/user-roles/:param",
+        "file": "src/components/school/DirectorManagement.tsx",
+        "line": 84
+      },
+      {
+        "count": 1,
+        "method": "PATCH",
+        "path": "/user-roles/:param",
+        "file": "src/components/school/DirectorManagement.tsx",
+        "line": 104
+      }
+    ]
+  }
+}

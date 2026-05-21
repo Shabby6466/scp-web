@@ -12,7 +12,19 @@ export type StaffPosition = 'LEAD_TEACHER' | 'ASSISTANT_TEACHER' | 'AIDE' | 'SUB
 
 export type RenewalPeriod = 'NONE' | 'ANNUAL' | 'BIENNIAL';
 
-export type DocumentStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'EXPIRED';
+/** Per-user requirement task status (backend requirement_status_enum). */
+export type RequirementStatus =
+  | 'PENDING'
+  | 'SUBMITTED'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'EXPIRED'
+  | 'WAIVED';
+
+/** Uploaded document review status (backend document_review_status_enum). */
+export type DocumentReviewStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+export type DocumentStatus = DocumentReviewStatus | 'EXPIRED';
 
 export type EmploymentStatus = 'ACTIVE' | 'ON_LEAVE' | 'TERMINATED' | 'PROBATION';
 
@@ -20,8 +32,7 @@ export type InvitationStatus = 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED';
 
 export type RequirementPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
-export type RequirementStatus = 'PENDING' | 'UPLOADED' | 'OVERDUE' | 'CANCELLED';
-
+/** @deprecated legacy assignment due type */
 export type DueType = 'FIXED' | 'RELATIVE';
 
 // ── Auth ─────────────────────────────────────────────────────────────
@@ -138,35 +149,94 @@ export interface User {
   updatedAt: string;
 }
 
-// ── Document models ──────────────────────────────────────────────────
+// ── Document models (schema redesign) ────────────────────────────────
+
+export type DocumentTypeFieldDef = {
+  key: string;
+  label: string;
+  type: 'text' | 'textarea' | 'number' | 'date' | 'boolean' | 'select';
+  required?: boolean;
+  options?: string[];
+};
+
+export interface DocumentCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  sortOrder: number;
+  schoolId: string | null;
+  branchId: string | null;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export interface DocumentType {
   id: string;
+  categoryId: string;
   name: string;
-  isMandatory: boolean;
-  renewalPeriod: RenewalPeriod;
+  description: string | null;
+  roles: UserRole[];
+  renewalMonths: number | null;
+  fields: DocumentTypeFieldDef[];
+  requiresFile: boolean;
   sortOrder: number;
   schoolId: string | null;
-  appliesToRoles: UserRole[];
-  createdAt: string;
-  updatedAt: string;
+  branchId: string | null;
+  isActive: boolean;
+  category?: DocumentCategory | null;
+  createdAt?: string;
+  updatedAt?: string;
+  /** @deprecated legacy */
+  isMandatory?: boolean;
+  renewalPeriod?: RenewalPeriod;
+  targetRole?: UserRole;
+  kind?: string;
+}
+
+export interface Requirement {
+  id: string;
+  userId: string;
+  documentTypeId: string;
+  status: RequirementStatus;
+  dueDate: string | null;
+  nextDueDate: string | null;
+  latestDocumentId: string | null;
+  schoolId: string | null;
+  branchId: string | null;
+  documentType?: DocumentType;
+  user?: User;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Document {
   id: string;
-  ownerUserId: string;
+  requirementId: string;
   documentTypeId: string;
-  uploadedById: string;
-  requirementId: string | null;
-  s3Key: string;
-  fileName: string;
-  mimeType: string;
-  sizeBytes: number;
-  uploadedAt: string;
-  verifiedAt: string | null;
+  userId: string;
+  fileName: string | null;
+  s3Key: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  values: Record<string, unknown>;
+  issuedAt: string | null;
   expiresAt: string | null;
+  status: DocumentReviewStatus;
+  reviewedById: string | null;
+  reviewedAt: string | null;
+  rejectionReason: string | null;
+  documentType?: DocumentType;
+  createdAt?: string;
+  updatedAt?: string;
+  /** @deprecated legacy */
+  ownerUserId?: string;
+  uploadedById?: string;
+  verifiedAt?: string | null;
 }
 
+/** @deprecated legacy assignment model */
 export interface UserDocumentRequirement {
   id: string;
   assigneeUserId: string;
@@ -184,8 +254,9 @@ export interface UserDocumentRequirement {
   updatedAt: string;
 }
 
-// ── Compliance models ────────────────────────────────────────────────
+// ── Compliance models (legacy — inspection/compliance-requirement removed) ──
 
+/** @deprecated use DocumentCategory */
 export interface ComplianceCategory {
   id: string;
   name: string;

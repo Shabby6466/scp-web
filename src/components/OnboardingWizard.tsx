@@ -3,6 +3,7 @@ import { Check, Upload, Users, GraduationCap, Mail, BarChart3 } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { COMPLIANCE_CENTER, SCHOOL_PEOPLE, SCHOOL_REQUIREMENTS } from "@/routes/appRoutes";
 
 interface OnboardingWizardProps {
   onComplete: () => void;
@@ -15,35 +16,35 @@ const steps = [
     title: "Upload Required Documents",
     description: "Add your school's required document list and templates",
     icon: Upload,
-    path: "/school/student-requirements",
+    path: SCHOOL_REQUIREMENTS.students,
   },
   {
     id: 2,
     title: "Add Your Staff",
     description: "Invite teachers and administrators to the platform",
     icon: Users,
-    path: "/school/teachers",
+    path: SCHOOL_PEOPLE.staff,
   },
   {
     id: 3,
     title: "Add Your Students",
     description: "Import student rosters and organize classrooms",
     icon: GraduationCap,
-    path: "/school/students",
+    path: SCHOOL_PEOPLE.students,
   },
   {
     id: 4,
     title: "Send Parent Invitations",
     description: "Invite parents to upload required documentation",
     icon: Mail,
-    path: "/school/parents",
+    path: SCHOOL_PEOPLE.parents,
   },
   {
     id: 5,
     title: "Monitor Compliance",
     description: "Track document status and generate reports",
     icon: BarChart3,
-    path: "/school",
+    path: COMPLIANCE_CENTER.root,
   },
 ];
 

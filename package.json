@@ -8,7 +8,17 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "list-api-calls": "node scripts/list-frontend-api-calls.mjs",
+    "list-api-calls:json": "node scripts/list-frontend-api-calls.mjs --json",
+    "enrich-api-report": "node scripts/enrich-api-calls-report.mjs",
+    "critical-api-inventory": "node scripts/extract-critical-api-endpoints.mjs",
+    "critical-not-found-triage": "node scripts/generate-critical-not-found-triage.mjs",
+    "critical-not-found-resolve": "node scripts/triage-critical-not-found.mjs",
+    "critical-robustness-baseline": "node scripts/generate-robustness-baseline.mjs",
+    "critical-signoff": "node scripts/generate-critical-signoff.mjs",
+    "test:contracts": "node scripts/verify-frontend-critical-contracts.mjs",
+    "qa:payload": "npm run critical-api-inventory && npm run critical-not-found-triage && npm run critical-not-found-resolve && npm run critical-robustness-baseline && npm run test:contracts && npm run critical-signoff"
   },
   "dependencies": {
     "@capacitor/android": "^6.0.0",

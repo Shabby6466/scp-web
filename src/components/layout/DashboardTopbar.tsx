@@ -8,49 +8,15 @@ import { Bell, Search, HelpCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import type { UserRole } from "@/hooks/useUserRole";
+import type { UserRole } from "@/types/api";
+import { getHomeLabelForRole, getHomePathForRole, labelForPath, ROUTE_LABELS } from "@/routes/appRoutes";
+
 interface DashboardTopbarProps {
   schoolName?: string;
-  userRole: UserRole;
+  userRole: UserRole | null;
   notificationCount?: number;
 }
 
-// Route to breadcrumb label mapping
-const routeLabels: Record<string, string> = {
-  '/admin': 'Overview',
-  '/admin/students': 'Students',
-  '/admin/parents': 'Parents',
-  '/admin/staff': 'Staff',
-  '/admin/schools': 'Schools',
-  '/admin/directors': 'School directors',
-  '/admin/branch-directors': 'Branch directors',
-  '/admin/documents': 'Documents',
-  '/director-dashboard': 'Director Dashboard',
-  '/school-dashboard': 'School Dashboard',
-  '/dashboard': 'Parent Dashboard',
-  '/compliance-center': 'Compliance Center',
-  '/compliance-center/doh': 'DOH Compliance',
-  '/compliance-center/facility': 'Facility & Safety',
-  '/compliance-center/certifications': 'Certifications',
-  '/school/documents': 'Documents',
-  '/all-documents': 'Browse by person',
-  '/school/pending-documents': 'Documents',
-  '/school/expiring-documents': 'Documents',
-  '/school/settings': 'School Settings',
-  '/school/branches': 'Branches',
-  '/school/branch-directors': 'Branch directors',
-  '/school/students': 'Students',
-  '/school/staff': 'Staff',
-  '/school/parents': 'Parents',
-  '/school/teacher-compliance': 'Documents',
-  '/admin/student-requirements': 'Student document requirements',
-  '/admin/staff-documents': 'Staff document requirements',
-  '/school/student-requirements': 'Student document requirements',
-  '/school/staff-documents': 'Staff document requirements',
-  '/school/requirements': 'Requirement rules',
-  '/admin/settings': 'Admin Settings',
-  '/admin/reminders': 'Reminders'
-};
 export function DashboardTopbar({
   schoolName,
   userRole,
@@ -58,32 +24,9 @@ export function DashboardTopbar({
 }: DashboardTopbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const getDashboardPath = () => {
-    switch (userRole) {
-      case 'admin':
-      case 'school_staff':
-        return '/admin';
-      case 'director':
-        return '/director-dashboard';
-      case 'school':
-        return '/school-dashboard';
-      default:
-        return '/dashboard';
-    }
-  };
-  const getDashboardLabel = () => {
-    switch (userRole) {
-      case 'admin':
-      case 'school_staff':
-        return 'Admin';
-      case 'director':
-        return 'Director';
-      case 'school':
-        return 'School';
-      default:
-        return 'Dashboard';
-    }
-  };
+
+  const dashboardPath = getHomePathForRole(userRole);
+  const dashboardLabel = getHomeLabelForRole(userRole);
 
   // Build breadcrumbs from current path
   const buildBreadcrumbs = (): {
@@ -94,29 +37,24 @@ export function DashboardTopbar({
     navigable?: boolean;
   }[] => {
     const path = location.pathname;
-    const dashboardPath = getDashboardPath();
 
-    // Start with dashboard
     const breadcrumbs: {
       label: string;
       path: string;
       isHome?: boolean;
       navigable?: boolean;
     }[] = [{
-      label: getDashboardLabel(),
+      label: dashboardLabel,
       path: dashboardPath,
       isHome: true
     }];
 
-    // If we're on the dashboard itself, just show it
     if (path === dashboardPath) {
       return breadcrumbs;
     }
 
-    // Get the current page label
-    const currentLabel = routeLabels[path] || path.split('/').pop()?.replace(/-/g, ' ') || 'Page';
+    const currentLabel = ROUTE_LABELS[path] || labelForPath(path);
 
-    // Add parent paths if needed
     if (path.startsWith('/compliance-center/')) {
       breadcrumbs.push({
         label: 'Compliance',
@@ -138,7 +76,6 @@ export function DashboardTopbar({
       });
     }
 
-    // Add current page
     breadcrumbs.push({
       label: currentLabel,
       path: path,

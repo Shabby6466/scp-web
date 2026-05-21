@@ -111,6 +111,7 @@ const AdminTeachers = () => {
     schoolId: viewerSchoolId,
     branchId: viewerBranchId,
     isBranchDirector,
+    isAdmin,
   } = useUserRole();
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [filteredTeachers, setFilteredTeachers] = useState<Teacher[]>([]);
@@ -273,11 +274,16 @@ const AdminTeachers = () => {
         });
         return;
       }
-      if (!newTeacher.school_id?.trim()) {
+      const targetSchoolId = (
+        isAdmin ? newTeacher.school_id : viewerSchoolId
+      )?.trim() || '';
+      if (!targetSchoolId) {
         toast({
           variant: 'destructive',
           title: 'School required',
-          description: 'Select which school this teacher belongs to.',
+          description: isAdmin
+            ? 'Select which school this teacher belongs to.'
+            : 'Your account is not linked to a school.',
         });
         return;
       }
@@ -302,13 +308,17 @@ const AdminTeachers = () => {
       }
       const payload: Record<string, unknown> = {
         ...newTeacher,
+        school_id: targetSchoolId,
         role: 'TEACHER',
         branch_id: effectiveBranchId,
       };
       if (createMode === 'manual') {
         payload.password = manualPassword.trim();
       }
-      await userService.create(payload);
+      await userService.createInSchool(targetSchoolId, {
+        ...payload,
+        schoolId: targetSchoolId,
+      });
 
       toast({
         title: "Teacher added",

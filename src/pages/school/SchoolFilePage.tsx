@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { SCHOOL_REQUIREMENTS } from "@/routes/appRoutes";
 
 /**
  * SchoolFilePage - School profile/overview page
@@ -379,11 +380,11 @@ export default function SchoolFilePage() {
                     <Badge variant="destructive" className="ml-auto">{stats?.pendingDocs}</Badge>
                   )}
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => navigate("/school/student-requirements")}>
+                <Button variant="outline" className="justify-start" onClick={() => navigate(SCHOOL_REQUIREMENTS.students)}>
                   <Shield className="h-4 w-4 mr-2" />
                   Student document requirements
                 </Button>
-                <Button variant="outline" className="justify-start" onClick={() => navigate("/school/staff-documents")}>
+                <Button variant="outline" className="justify-start" onClick={() => navigate(SCHOOL_REQUIREMENTS.staff)}>
                   <GraduationCap className="h-4 w-4 mr-2" />
                   Staff document requirements
                 </Button>

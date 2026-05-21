@@ -1,12 +1,6 @@
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-
-const ADMIN_REDIRECT: Record<string, string> = {
-  '/school/students': '/admin/students',
-  '/school/staff': '/admin/staff',
-  '/school/parents': '/admin/parents',
-  '/school/branch-directors': '/admin/branch-directors',
-};
+import { SCHOOL_TO_ADMIN_PEOPLE } from '@/routes/appRoutes';
 
 const LoadingSpinner = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -15,12 +9,13 @@ const LoadingSpinner = () => (
 );
 
 /**
- * Shell for school directory pages (/school/students|staff|parents|branch-directors).
- * Only directors and branch directors; admins are sent to the equivalent /admin/* routes.
+ * Shell for school directory pages (/school/people/*).
+ * Only directors and branch directors; admins are sent to the equivalent /admin/people/* routes.
  */
 export default function SchoolPeoplePortal() {
   const { user, loading } = useAuth();
   const location = useLocation();
+  const pathKey = location.pathname.replace(/\/$/, '') || '/';
 
   if (loading) {
     return <LoadingSpinner />;
@@ -31,7 +26,7 @@ export default function SchoolPeoplePortal() {
   }
 
   if (user.role === 'ADMIN') {
-    const target = ADMIN_REDIRECT[location.pathname];
+    const target = SCHOOL_TO_ADMIN_PEOPLE[pathKey];
     if (target) {
       return <Navigate to={target} replace />;
     }

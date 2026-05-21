@@ -153,7 +153,7 @@ export default function TeacherDetailPage() {
       };
 
       const [requiredRaw, docsPayload] = await Promise.all([
-        documentTypeService.list({ schoolId: mapped.school_id, targetRole: "TEACHER" }),
+        documentTypeService.list({ schoolId: mapped.school_id, role: "TEACHER" }),
         documentService.listByOwner(id),
       ]);
 

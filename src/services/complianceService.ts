@@ -1,25 +1,18 @@
-import { api } from '@/lib/api';
+/**
+ * @deprecated Legacy compliance API removed from backend.
+ * Use documentCategoryService, documentTypeService, requirementService instead.
+ */
+import { documentCategoryService } from './documentCategoryService';
 
 export const complianceService = {
-  // Compliance Categories
-  listCategories: (schoolId?: string) => api.get(`/compliance-categories${schoolId ? `?schoolId=${schoolId}` : ''}`),
-  getCategoryById: (id: string) => api.get(`/compliance-categories/${id}`),
-  getCategoryBySlug: (slug: string) => api.get(`/compliance-categories/by-slug/${slug}`),
-  getCategoryScore: (id: string) => api.get(`/compliance-categories/${id}/score`),
-  createCategory: (data: any) => api.post('/compliance-categories', data),
-  updateCategory: (id: string, data: any) => api.patch(`/compliance-categories/${id}`, data),
-  deleteCategory: (id: string) => api.delete(`/compliance-categories/${id}`),
+  listCategories: (schoolId?: string) =>
+    documentCategoryService.list(schoolId ? { schoolId } : undefined),
 
-  // Compliance Requirements
-  listRequirements: (schoolId: string) => api.get(`/schools/${schoolId}/compliance-requirements`),
-  getRequirement: (schoolId: string, id: string) => api.get(`/schools/${schoolId}/compliance-requirements/${id}`),
-  createRequirement: (schoolId: string, data: any) => api.post(`/schools/${schoolId}/compliance-requirements`, data),
-  updateRequirement: (schoolId: string, id: string, data: any) => api.patch(`/schools/${schoolId}/compliance-requirements/${id}`, data),
-  deleteRequirement: (schoolId: string, id: string) => api.delete(`/schools/${schoolId}/compliance-requirements/${id}`),
+  createCategory: (data: Parameters<typeof documentCategoryService.create>[0]) =>
+    documentCategoryService.create(data),
 
-  // Inspection Types
-  listInspectionTypes: (schoolId: string) => api.get(`/schools/${schoolId}/inspection-types`),
-  createInspectionType: (schoolId: string, data: any) => api.post(`/schools/${schoolId}/inspection-types`, data),
-  updateInspectionType: (schoolId: string, id: string, data: any) => api.patch(`/schools/${schoolId}/inspection-types/${id}`, data),
-  deleteInspectionType: (schoolId: string, id: string) => api.delete(`/schools/${schoolId}/inspection-types/${id}`),
+  updateCategory: (id: string, data: Parameters<typeof documentCategoryService.update>[1]) =>
+    documentCategoryService.update(id, data),
+
+  deleteCategory: (id: string) => documentCategoryService.remove(id),
 };

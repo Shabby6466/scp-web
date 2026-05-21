@@ -377,6 +377,27 @@ const DocumentReviewDialog = ({
                 </p>
               </div>
             </div>
+            {(() => {
+              const rawValues = document.values ?? document.metadata;
+              if (!rawValues || typeof rawValues !== 'object') return null;
+              const entries = Object.entries(rawValues as Record<string, unknown>).filter(
+                ([, v]) => v !== null && v !== undefined && v !== '',
+              );
+              if (entries.length === 0) return null;
+              return (
+                <div>
+                  <Label className="text-sm font-medium">Submitted fields</Label>
+                  <dl className="mt-2 grid grid-cols-2 gap-2 text-sm">
+                    {entries.map(([key, value]) => (
+                      <div key={key} className="rounded border px-2 py-1">
+                        <dt className="text-xs text-muted-foreground">{key}</dt>
+                        <dd className="font-medium">{String(value)}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              );
+            })()}
 
             {document.notes && (
               <div>

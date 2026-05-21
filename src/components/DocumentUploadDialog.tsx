@@ -5,7 +5,10 @@ import * as z from 'zod';
 import { api } from '@/lib/api';
 import { documentService } from '@/services/documentService';
 import { documentTypeService } from '@/services/documentTypeService';
+import { requirementService } from '@/services/requirementService';
 import { storageService } from '@/services/storageService';
+import DynamicFieldsForm, { validateDynamicFieldValues } from '@/components/requirements/DynamicFieldsForm';
+import type { DocumentTypeFieldDef } from '@/types/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { unwrapList } from '@/lib/api';
@@ -62,6 +65,8 @@ interface DocumentUploadDialogProps {
   children?: React.ReactNode;
   defaultStudentId?: string;
   assignmentId?: string;
+  /** Requirement row to fulfill (new API). Falls back to assignmentId. */
+  requirementId?: string;
 }
 
 interface ScanResultData {
@@ -125,6 +130,7 @@ const DocumentUploadDialog = ({
   children,
   defaultStudentId,
   assignmentId,
+  requirementId: requirementIdProp,
 }: DocumentUploadDialogProps) => {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -135,6 +141,8 @@ const DocumentUploadDialog = ({
   const [autoScanning, setAutoScanning] = useState(false);
   const [scanResult, setScanResult] = useState<ScanResultData | null>(null);
   const [documentTypeByCategory, setDocumentTypeByCategory] = useState<Record<string, string>>({});
+  const [uploadFields, setUploadFields] = useState<DocumentTypeFieldDef[]>([]);
+  const [fieldValues, setFieldValues] = useState<Record<string, unknown>>({});
   const { user } = useAuth();
   const form = useForm<UploadFormData>({
     resolver: zodResolver(uploadSchema),
@@ -156,7 +164,7 @@ const DocumentUploadDialog = ({
       try {
         const types = await documentTypeService.list({
           schoolId: user.schoolId,
-          targetRole: 'STUDENT',
+          role: 'STUDENT',
         });
         const mapping: Record<string, string> = {};
         for (const type of unwrapList<any>(types)) {
@@ -173,6 +181,58 @@ const DocumentUploadDialog = ({
       }
     })();
   }, [open, user?.schoolId]);
+
+  useEffect(() => {
+    if (!open) {
+      setUploadFields([]);
+      setFieldValues({});
+      return;
+    }
+    const presetId = requirementIdProp ?? assignmentId;
+    if (!presetId) return;
+    void (async () => {
+      try {
+        const req = await requirementService.getById(presetId);
+        setUploadFields(req.documentType?.fields ?? []);
+      } catch {
+        setUploadFields([]);
+      }
+    })();
+  }, [open, requirementIdProp, assignmentId]);
+
+  const watchedCategory = form.watch('category');
+  useEffect(() => {
+    if (!open || requirementIdProp || assignmentId || !user?.id || !watchedCategory) {
+      if (!requirementIdProp && !assignmentId) setUploadFields([]);
+      return;
+    }
+    const documentTypeId = documentTypeByCategory[watchedCategory];
+    if (!documentTypeId) {
+      setUploadFields([]);
+      return;
+    }
+    void (async () => {
+      try {
+        const reqs = unwrapList<any>(await requirementService.list({ userId: user.id }));
+        const match = reqs.find(
+          (r) =>
+            r.documentTypeId === documentTypeId &&
+            r.status !== 'APPROVED' &&
+            r.status !== 'WAIVED',
+        );
+        setUploadFields(match?.documentType?.fields ?? []);
+      } catch {
+        setUploadFields([]);
+      }
+    })();
+  }, [
+    open,
+    watchedCategory,
+    documentTypeByCategory,
+    user?.id,
+    requirementIdProp,
+    assignmentId,
+  ]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -569,18 +629,47 @@ const DocumentUploadDialog = ({
     try {
       const actingUserId = user.id;
       const isChildProfile = data.studentId !== actingUserId;
-      const documentTypeId = documentTypeByCategory[data.category];
-      if (!documentTypeId) {
-        throw new Error('No document type is configured for this category yet.');
+      const effectiveRequirementId = requirementIdProp ?? assignmentId;
+
+      let requirementId = effectiveRequirementId;
+      let matchedRequirement: { documentType?: { fields?: DocumentTypeFieldDef[] } } | null =
+        null;
+      if (!requirementId) {
+        const documentTypeId = documentTypeByCategory[data.category];
+        if (!documentTypeId) {
+          throw new Error('No document type is configured for this category yet.');
+        }
+        const reqs = unwrapList<any>(
+          await requirementService.list({ userId: actingUserId }),
+        );
+        const match = reqs.find(
+          (r) =>
+            r.documentTypeId === documentTypeId &&
+            r.status !== 'APPROVED' &&
+            r.status !== 'WAIVED',
+        );
+        if (!match) {
+          throw new Error(
+            'No open requirement found for this document type. Ask your school to configure requirements.',
+          );
+        }
+        requirementId = match.id;
+        matchedRequirement = match;
       }
+
+      const fieldsForUpload =
+        uploadFields.length > 0
+          ? uploadFields
+          : (matchedRequirement?.documentType?.fields ?? []);
+      const fieldError = validateDynamicFieldValues(fieldsForUpload, fieldValues);
+      if (fieldError) {
+        throw new Error(fieldError);
+      }
+
       const presignData = await documentService.presign({
-        documentTypeId,
-        ownerUserId: actingUserId,
-        ...(isChildProfile ? { studentProfileId: data.studentId } : {}),
-        ...(assignmentId ? { assignmentId } : {}),
+        requirementId,
         fileName: file.name,
         mimeType: file.type,
-        sizeBytes: file.size,
       });
 
       const uploadUrl = presignData.presignedUrl ?? presignData.uploadUrl;
@@ -589,16 +678,17 @@ const DocumentUploadDialog = ({
       }
       await storageService.uploadFile(uploadUrl, file);
 
+      const values: Record<string, unknown> = { ...fieldValues };
+      if (data.notes) values.notes = data.notes;
+      if (isChildProfile) values.studentProfileId = data.studentId;
+
       await documentService.complete({
-        documentTypeId,
-        ownerUserId: actingUserId,
-        ...(isChildProfile ? { studentProfileId: data.studentId } : {}),
-        ...(assignmentId ? { assignmentId } : {}),
+        requirementId,
         s3Key: presignData.s3Key,
         fileName: file.name,
         mimeType: file.type,
         sizeBytes: file.size,
-        notes: data.notes || undefined,
+        values: Object.keys(values).length > 0 ? values : undefined,
         expiresAt: data.expirationDate || undefined,
       });
 
@@ -608,6 +698,8 @@ const DocumentUploadDialog = ({
       });
 
       form.reset();
+      setFieldValues({});
+      setUploadFields([]);
       setOpen(false);
       onDocumentUploaded();
     } catch (error: any) {
@@ -879,6 +971,13 @@ const DocumentUploadDialog = ({
               <p className="text-sm text-destructive">{form.formState.errors.file.message as string}</p>
             )}
           </div>
+
+          <DynamicFieldsForm
+            fields={uploadFields}
+            values={fieldValues}
+            onChange={setFieldValues}
+            disabled={uploading || autoScanning}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="expirationDate">Expiration Date (Optional)</Label>

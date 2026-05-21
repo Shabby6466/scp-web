@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { api, unwrapList } from '@/lib/api';
 import { schoolService } from '@/services/schoolService';
+import { documentTypeService } from '@/services/documentTypeService';
+import { documentCategoryService } from '@/services/documentCategoryService';
+import { requirementService } from '@/services/requirementService';
 import { addDays, isBefore } from 'date-fns';
 
 export interface SchoolSetupStatus {
@@ -9,22 +12,33 @@ export interface SchoolSetupStatus {
   hasStudents: boolean;
   hasSentParentInvites: boolean;
   hasComplianceActivity: boolean;
-  
+
   requiredDocumentCount: number;
   staffCount: number;
   studentCount: number;
   parentInviteCount: number;
   approvedDocumentCount: number;
-  
+
   expiringStaffCount: number;
   studentsWithMissingDocs: number;
   pendingInviteCount: number;
   acceptedInviteCount: number;
   dohCompliancePercent: number;
   facilityCompliancePercent: number;
-  
+
   loading: boolean;
   error: string | null;
+}
+
+function compliancePercentForTypes(
+  requirements: { documentTypeId: string; status: string }[],
+  typeIds: string[],
+): number {
+  if (typeIds.length === 0) return 100;
+  const relevant = requirements.filter((r) => typeIds.includes(r.documentTypeId));
+  if (relevant.length === 0) return 0;
+  const approved = relevant.filter((r) => r.status === 'APPROVED').length;
+  return Math.round((approved / relevant.length) * 100);
 }
 
 export const useSchoolSetupStatus = (schoolId: string | null, branchId?: string | null) => {
@@ -51,12 +65,12 @@ export const useSchoolSetupStatus = (schoolId: string | null, branchId?: string 
 
   const fetchStatus = useCallback(async () => {
     if (!schoolId) {
-      setStatus(prev => ({ ...prev, loading: false }));
+      setStatus((prev) => ({ ...prev, loading: false }));
       return;
     }
 
     try {
-      setStatus(prev => ({ ...prev, loading: true, error: null }));
+      setStatus((prev) => ({ ...prev, loading: true, error: null }));
 
       const branchParam = branchId ? `&branchId=${branchId}` : '';
 
@@ -68,11 +82,10 @@ export const useSchoolSetupStatus = (schoolId: string | null, branchId?: string 
         approvedDocsData,
         pendingInvitesData,
         acceptedInvitesData,
-        dohTypesData,
-        complianceReqsData,
-        facilityTypesData,
+        categoriesData,
+        requirementsData,
       ] = await Promise.all([
-        api.get(`/document-types?schoolId=${schoolId}`),
+        documentTypeService.list({ schoolId }),
         api
           .get(
             `/schools/${schoolId}/users?role=TEACHER${branchId ? `&branchId=${branchId}` : ''}&limit=500`,
@@ -88,15 +101,27 @@ export const useSchoolSetupStatus = (schoolId: string | null, branchId?: string 
               : list,
           ),
         api.get(`/invitations?schoolId=${schoolId}${branchParam}`),
-        api.get(`/documents/search?schoolId=${schoolId}&status=approved`),
+        api.get(`/documents/search?schoolId=${schoolId}&status=APPROVED`),
         api.get(`/invitations?schoolId=${schoolId}${branchParam}&status=pending`),
         api.get(`/invitations?schoolId=${schoolId}${branchParam}&status=accepted`),
-        api.get(`/schools/${schoolId}/inspection-types`),
-        api.get(`/schools/${schoolId}/compliance-requirements`),
-        api.get(`/schools/${schoolId}/inspection-types`),
+        documentCategoryService.list({ schoolId }),
+        requirementService.list({ schoolId, ...(branchId ? { branchId } : {}) }),
       ]);
 
-      const requiredDocumentCount = Array.isArray(requiredDocsData) ? requiredDocsData.length : 0;
+      const documentTypes = unwrapList(requiredDocsData);
+      const categories = unwrapList(categoriesData);
+      const requirements = unwrapList(requirementsData);
+
+      const dohCategoryId = categories.find((c) => c.slug === 'doh')?.id;
+      const facilityCategoryId = categories.find((c) => c.slug === 'facility-safety')?.id;
+      const dohTypeIds = documentTypes
+        .filter((t) => t.categoryId === dohCategoryId)
+        .map((t) => t.id);
+      const facilityTypeIds = documentTypes
+        .filter((t) => t.categoryId === facilityCategoryId)
+        .map((t) => t.id);
+
+      const requiredDocumentCount = documentTypes.length;
       const staffCount = Array.isArray(staffData) ? staffData.length : 0;
       const studentCount = Array.isArray(studentsData) ? studentsData.length : 0;
       const parentInviteCount = Array.isArray(invitesData) ? invitesData.length : 0;
@@ -107,20 +132,14 @@ export const useSchoolSetupStatus = (schoolId: string | null, branchId?: string 
       const thirtyDaysFromNow = addDays(new Date(), 30);
       let expiringStaffCount = 0;
       if (Array.isArray(staffData)) {
-        expiringStaffCount = staffData.filter((staff: any) => {
+        expiringStaffCount = staffData.filter((staff: { certification_expiry?: string }) => {
           if (!staff.certification_expiry) return false;
           return isBefore(new Date(staff.certification_expiry), thirtyDaysFromNow);
         }).length;
       }
 
-      const dohTotal = Array.isArray(dohTypesData) ? dohTypesData.length : 1;
-      const completedReqs = Array.isArray(complianceReqsData) ? complianceReqsData.length : 0;
-      const dohCompliancePercent = Math.round((completedReqs / Math.max(dohTotal, 1)) * 100);
-      
-      const facilityTotal = Array.isArray(facilityTypesData) ? facilityTypesData.length : 1;
-      const facilityCompliancePercent = Math.round((completedReqs / Math.max(facilityTotal, 1)) * 100);
-
-      const studentsWithMissingDocs = 0;
+      const dohCompliancePercent = compliancePercentForTypes(requirements, dohTypeIds);
+      const facilityCompliancePercent = compliancePercentForTypes(requirements, facilityTypeIds);
 
       setStatus({
         hasRequiredDocuments: requiredDocumentCount >= 3,
@@ -134,7 +153,7 @@ export const useSchoolSetupStatus = (schoolId: string | null, branchId?: string 
         parentInviteCount,
         approvedDocumentCount,
         expiringStaffCount,
-        studentsWithMissingDocs,
+        studentsWithMissingDocs: 0,
         pendingInviteCount,
         acceptedInviteCount,
         dohCompliancePercent,
@@ -142,18 +161,18 @@ export const useSchoolSetupStatus = (schoolId: string | null, branchId?: string 
         loading: false,
         error: null,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching school setup status:', error);
-      setStatus(prev => ({
+      setStatus((prev) => ({
         ...prev,
         loading: false,
-        error: error.message || 'Failed to load setup status',
+        error: error instanceof Error ? error.message : 'Failed to load setup status',
       }));
     }
   }, [schoolId, branchId]);
 
   useEffect(() => {
-    fetchStatus();
+    void fetchStatus();
   }, [fetchStatus]);
 
   const completedSteps = [

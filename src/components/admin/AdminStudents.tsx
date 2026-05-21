@@ -1375,7 +1375,7 @@ const AdminStudents = () => {
               </Select>
               {!loadingParents && availableParents.length === 0 && (
                 <p className="text-xs text-muted-foreground">
-                  No parent accounts found for this school. Add a parent in `/admin/parents` first.
+                  No parent accounts found for this school. Add a parent from the Parents page first.
                 </p>
               )}
             </div>
