@@ -25,6 +25,7 @@ import TeacherInviteDialog from "@/components/admin/TeacherInviteDialog";
 import SchoolSetupWizard from "@/components/school/SchoolSetupWizard";
 import SchoolReminderSection from "@/components/school/SchoolReminderSection";
 import type { School, Branch } from "@/types/api";
+import { SCHOOL_PEOPLE } from "@/routes/appRoutes";
 
 import {
   UrgentActionsWidget,
@@ -92,15 +93,15 @@ const SchoolDashboard = () => {
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab === 'students') {
-      navigate('/school/students', { replace: true });
+      navigate(SCHOOL_PEOPLE.students, { replace: true });
       return;
     }
     if (tab === 'teachers') {
-      navigate('/school/staff', { replace: true });
+      navigate(SCHOOL_PEOPLE.staff, { replace: true });
       return;
     }
     if (tab === 'parents') {
-      navigate('/school/parents', { replace: true });
+      navigate(SCHOOL_PEOPLE.parents, { replace: true });
       return;
     }
   }, [searchParams, navigate]);
@@ -148,7 +149,7 @@ const SchoolDashboard = () => {
         analyticsService.getExpiringDocuments({ schoolId, days: 30 }),
         invitationService.list(schoolId),
         analyticsService.getComplianceStats({ schoolId }),
-        complianceService.listRequirements(schoolId),
+        requirementService.list({ schoolId }),
       ]);
 
       const dash = dashboardRes as any;
@@ -168,7 +169,7 @@ const SchoolDashboard = () => {
       const invitations: any[] = Array.isArray(invitationsRes) ? invitationsRes : (invitationsRes as any)?.data ?? [];
 
       const allRequirements: any[] = Array.isArray(requirementsRes) ? requirementsRes : (requirementsRes as any)?.data ?? [];
-      const overdueReqs = allRequirements.filter((r: any) => r.status === 'overdue' || r.status === 'OVERDUE');
+      const overdueReqs = allRequirements.filter((r: any) => r.status === 'EXPIRED');
 
       // Build urgent actions with priority scoring
       const actions: UrgentAction[] = [];
@@ -223,7 +224,7 @@ const SchoolDashboard = () => {
           type: 'due-soon',
           daysUntilDue: 30,
           ctaLabel: 'View',
-          route: '/school/staff',
+          route: SCHOOL_PEOPLE.staff,
           icon: 'certifications',
           isLicensingRelated: true,
         };
@@ -243,7 +244,7 @@ const SchoolDashboard = () => {
           count: notInvitedCount,
           type: 'action-needed',
           ctaLabel: 'Send Invites',
-          route: '/school/parents',
+          route: SCHOOL_PEOPLE.parents,
           icon: 'invites',
         };
         action.priorityScore = calculatePriorityScore(action);
@@ -301,7 +302,7 @@ const SchoolDashboard = () => {
           description: 'Invitation pending >7 days',
           priorityScore: 40,
           ctaLabel: 'Resend',
-          route: '/school/parents',
+          route: SCHOOL_PEOPLE.parents,
         });
       });
 
@@ -364,29 +365,32 @@ const SchoolDashboard = () => {
       const targetBranchId = branchId ?? branches[0]?.id ?? null;
       if (targetBranchId) {
         try {
-          const [complianceResult, categoriesRes, expiringRes, expiredRes] = await Promise.all([
+          const [complianceResult, categoriesRes, branchRequirementsRes] = await Promise.all([
             branchService.getCompliance(targetBranchId),
             complianceService.listCategories(schoolId),
-            requirementService.listAssignments({
-              branchId: targetBranchId,
-              status: 'EXPIRING',
-            }),
-            requirementService.listAssignments({
-              branchId: targetBranchId,
-              status: 'EXPIRED',
-            }),
+            requirementService.list({ branchId: targetBranchId, schoolId }),
           ]);
           const categoryList: any[] = Array.isArray(categoriesRes) ? categoriesRes : (categoriesRes as any)?.data ?? [];
           const categoryById = new Map(categoryList.map((c: any) => [c.id, c]));
+          const branchRequirements: any[] = Array.isArray(branchRequirementsRes)
+            ? branchRequirementsRes
+            : (branchRequirementsRes as any)?.data ?? [];
           const expiringCounts = new Map<string, number>();
           const expiredCounts = new Map<string, number>();
-          for (const a of expiringRes) {
-            if (!a.categoryId) continue;
-            expiringCounts.set(a.categoryId, (expiringCounts.get(a.categoryId) ?? 0) + 1);
-          }
-          for (const a of expiredRes) {
-            if (!a.categoryId) continue;
-            expiredCounts.set(a.categoryId, (expiredCounts.get(a.categoryId) ?? 0) + 1);
+          const now = Date.now();
+          const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+          for (const a of branchRequirements) {
+            const categoryId =
+              a.documentType?.categoryId ?? a.documentType?.category?.id ?? null;
+            if (!categoryId) continue;
+            if (a.status === 'EXPIRED') {
+              expiredCounts.set(categoryId, (expiredCounts.get(categoryId) ?? 0) + 1);
+            } else if (a.nextDueDate) {
+              const due = new Date(a.nextDueDate).getTime();
+              if (due > now && due - now <= thirtyDaysMs) {
+                expiringCounts.set(categoryId, (expiringCounts.get(categoryId) ?? 0) + 1);
+              }
+            }
           }
           const iconBySlug: Record<string, React.ElementType> = {
             doh: Shield,
@@ -537,7 +541,7 @@ const SchoolDashboard = () => {
         selectedBranchId={selectedBranchId}
         onBranchChange={setSelectedBranchId}
         onImportRoster={() => setIsRosterImportOpen(true)}
-        onInviteParent={() => navigate('/school/parents')}
+        onInviteParent={() => navigate(SCHOOL_PEOPLE.parents)}
         isApproved={school.isApproved}
       />
 
@@ -560,7 +564,7 @@ const SchoolDashboard = () => {
         <InvitesStatusWidget
           stats={inviteStats}
           loading={statsLoading}
-          onSendInvites={() => navigate('/school/parents')}
+          onSendInvites={() => navigate(SCHOOL_PEOPLE.parents)}
         />
 
         {/* Compliance Snapshot — uses new per-category KPIs when available */}
@@ -603,24 +607,24 @@ const SchoolDashboard = () => {
           total={directoryStats.students.total}
           alertCount={directoryStats.students.missingDocs}
           alertLabel="missing docs"
-          route="/school/students"
-          onClick={() => navigate('/school/students')}
+          route={SCHOOL_PEOPLE.students}
+          onClick={() => navigate(SCHOOL_PEOPLE.students)}
         />
         <DirectoryCard
           type="parents"
           total={directoryStats.parents.total}
           alertCount={directoryStats.parents.notInvited}
           alertLabel="not invited"
-          route="/school/parents"
-          onClick={() => navigate('/school/parents')}
+          route={SCHOOL_PEOPLE.parents}
+          onClick={() => navigate(SCHOOL_PEOPLE.parents)}
         />
         <DirectoryCard
           type="staff"
           total={directoryStats.staff.total}
           alertCount={directoryStats.staff.expiring}
           alertLabel="expiring"
-          route="/school/staff"
-          onClick={() => navigate('/school/staff')}
+          route={SCHOOL_PEOPLE.staff}
+          onClick={() => navigate(SCHOOL_PEOPLE.staff)}
         />
         <DirectoryCard
           type="documents"

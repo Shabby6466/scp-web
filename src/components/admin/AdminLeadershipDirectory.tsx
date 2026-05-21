@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams, useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRole } from '@/hooks/useUserRole';
+import { ADMIN_PEOPLE, SCHOOL_PEOPLE } from '@/routes/appRoutes';
 import { schoolService } from '@/services/schoolService';
 import { userService } from '@/services/userService';
 import { branchService } from '@/services/branchService';
@@ -117,11 +118,20 @@ export default function AdminLeadershipDirectory() {
   const canManageBranchDirectors = isAdmin || isDirector;
 
   const schoolBranchOnly =
-    pathname === '/school/branch-directors' || pathname === '/school/branch-directors/';
+    pathname === SCHOOL_PEOPLE.branchDirectors ||
+    pathname === `${SCHOOL_PEOPLE.branchDirectors}/` ||
+    pathname === '/school/branch-directors' ||
+    pathname === '/school/branch-directors/';
   const onAdminDirectorsPath =
-    pathname === '/admin/directors' || pathname === '/admin/directors/';
+    pathname === ADMIN_PEOPLE.directors ||
+    pathname === `${ADMIN_PEOPLE.directors}/` ||
+    pathname === '/admin/directors' ||
+    pathname === '/admin/directors/';
   const onAdminBranchPath =
-    pathname === '/admin/branch-directors' || pathname === '/admin/branch-directors/';
+    pathname === ADMIN_PEOPLE.branchDirectors ||
+    pathname === `${ADMIN_PEOPLE.branchDirectors}/` ||
+    pathname === '/admin/branch-directors' ||
+    pathname === '/admin/branch-directors/';
 
   const pathImpliedTab: TabKey | null = onAdminDirectorsPath
     ? 'directors'
@@ -144,9 +154,9 @@ export default function AdminLeadershipDirectory() {
     if (schoolBranchOnly) return;
     if (isAdmin && (onAdminDirectorsPath || onAdminBranchPath)) {
       if (t === 'directors') {
-        navigate('/admin/directors', { replace: true });
+        navigate(ADMIN_PEOPLE.directors, { replace: true });
       } else {
-        navigate('/admin/branch-directors', { replace: true });
+        navigate(ADMIN_PEOPLE.branchDirectors, { replace: true });
       }
       return;
     }

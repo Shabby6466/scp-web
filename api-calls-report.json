@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-04-14T17:09:25.923Z",
+  "generatedAt": "2026-04-16T13:35:35.434Z",
   "root": "/Users/moinkhan/Projects/SchoolSystem/SchoolCompliance/frontend",
-  "totalOccurrences": 160,
-  "uniqueEndpoints": 130,
+  "totalOccurrences": 161,
+  "uniqueEndpoints": 132,
   "occurrences": [
     {
       "method": "GET",
@@ -145,11 +145,16 @@
       "pathDisplay": "/auth/forgot-password",
       "pathNorm": "/auth/forgot-password",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 152,
+      "line": 151,
       "snippet": "'/auth/forgot-password'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/auth/forgot-password",
+        "httpMethod": "POST",
+        "controllerFile": "modules/auth/auth.controller.ts",
+        "controllerClass": "AuthController",
+        "handler": "forgotPassword",
+        "serviceCall": "authService.forgotPassword"
       }
     },
     {
@@ -157,7 +162,7 @@
       "pathDisplay": "/auth/login",
       "pathNorm": "/auth/login",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 80,
+      "line": 79,
       "snippet": "'/auth/login'",
       "backend": {
         "status": "matched",
@@ -191,7 +196,7 @@
       "pathDisplay": "/auth/me",
       "pathNorm": "/auth/me",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 57,
+      "line": 56,
       "snippet": "'/auth/me'",
       "backend": {
         "status": "matched",
@@ -208,7 +213,7 @@
       "pathDisplay": "/auth/register",
       "pathNorm": "/auth/register",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 110,
+      "line": 109,
       "snippet": "'/auth/register'",
       "backend": {
         "status": "matched",
@@ -242,11 +247,16 @@
       "pathDisplay": "/auth/update-password",
       "pathNorm": "/auth/update-password",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 173,
+      "line": 172,
       "snippet": "'/auth/update-password'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/auth/update-password",
+        "httpMethod": "POST",
+        "controllerFile": "modules/auth/auth.controller.ts",
+        "controllerClass": "AuthController",
+        "handler": "updatePassword",
+        "serviceCall": "authService.updatePassword"
       }
     },
     {
@@ -308,8 +318,13 @@
       "line": 9,
       "snippet": "`/certification-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "remove",
+        "serviceCall": "repo.delete"
       }
     },
     {
@@ -320,8 +335,13 @@
       "line": 6,
       "snippet": "`/certification-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types/:id",
+        "httpMethod": "GET",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "get",
+        "serviceCall": "repo.findOne"
       }
     },
     {
@@ -332,8 +352,13 @@
       "line": 8,
       "snippet": "`/certification-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "update",
+        "serviceCall": "repo.findOne"
       }
     },
     {
@@ -344,8 +369,13 @@
       "line": 5,
       "snippet": "'/certification-types'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types",
+        "httpMethod": "GET",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "list",
+        "serviceCall": "repo.find"
       }
     },
     {
@@ -356,8 +386,13 @@
       "line": 7,
       "snippet": "'/certification-types'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types",
+        "httpMethod": "POST",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "create",
+        "serviceCall": "repo.save"
       }
     },
     {
@@ -487,8 +522,13 @@
       "line": 285,
       "snippet": "`/compliance/evidence/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/compliance/evidence/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+        "controllerClass": "ComplianceEvidenceController",
+        "handler": "remove",
+        "serviceCall": null
       }
     },
     {
@@ -499,8 +539,13 @@
       "line": 275,
       "snippet": "`/compliance/evidence?requirementId=${requirementId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/compliance/evidence",
+        "httpMethod": "GET",
+        "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+        "controllerClass": "ComplianceEvidenceController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -511,8 +556,13 @@
       "line": 253,
       "snippet": "'/compliance/evidence'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/compliance/evidence",
+        "httpMethod": "POST",
+        "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+        "controllerClass": "ComplianceEvidenceController",
+        "handler": "create",
+        "serviceCall": null
       }
     },
     {
@@ -523,8 +573,13 @@
       "line": 132,
       "snippet": "`/document-templates/${template.id}/download-url`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates/:id/download-url",
+        "httpMethod": "GET",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "downloadUrl",
+        "serviceCall": null
       }
     },
     {
@@ -535,8 +590,13 @@
       "line": 178,
       "snippet": "`/document-templates/${template.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "remove",
+        "serviceCall": null
       }
     },
     {
@@ -547,8 +607,13 @@
       "line": 147,
       "snippet": "`/document-templates/${template.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "update",
+        "serviceCall": null
       }
     },
     {
@@ -559,8 +624,13 @@
       "line": 95,
       "snippet": "`${API_BASE}/document-templates",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates",
+        "httpMethod": "GET",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -571,8 +641,13 @@
       "line": 59,
       "snippet": "`/document-templates?schoolId=${schoolId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates",
+        "httpMethod": "GET",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -617,8 +692,13 @@
       "line": 14,
       "snippet": "`/document-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-types/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/document-type/document-type.controller.ts",
+        "controllerClass": "DocumentTypeController",
+        "handler": "remove",
+        "serviceCall": "documentTypeService.remove"
       }
     },
     {
@@ -660,7 +740,7 @@
       "pathDisplay": "/document-types?schoolId=:param",
       "pathNorm": "/document-types",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 74,
+      "line": 75,
       "snippet": "`/document-types?schoolId=${schoolId}`",
       "backend": {
         "status": "matched",
@@ -711,7 +791,7 @@
       "pathDisplay": "/documents/:param/download-url",
       "pathNorm": "/documents/:param/download-url",
       "file": "src/services/documentService.ts",
-      "line": 9,
+      "line": 23,
       "snippet": "`/documents/${id}/download-url`",
       "backend": {
         "status": "matched",
@@ -728,11 +808,16 @@
       "pathDisplay": "/documents/:param/review",
       "pathNorm": "/documents/:param/review",
       "file": "src/services/documentService.ts",
-      "line": 11,
+      "line": 25,
       "snippet": "`/documents/${id}/review`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/documents/:id/review",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/document/document.controller.ts",
+        "controllerClass": "DocumentController",
+        "handler": "review",
+        "serviceCall": null
       }
     },
     {
@@ -740,7 +825,7 @@
       "pathDisplay": "/documents/:param/verify",
       "pathNorm": "/documents/:param/verify",
       "file": "src/services/documentService.ts",
-      "line": 12,
+      "line": 26,
       "snippet": "`/documents/${id}/verify`",
       "backend": {
         "status": "matched",
@@ -760,8 +845,13 @@
       "line": 106,
       "snippet": "`/documents/${deleteId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/documents/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/document/document.controller.ts",
+        "controllerClass": "DocumentController",
+        "handler": "remove",
+        "serviceCall": null
       }
     },
     {
@@ -769,7 +859,7 @@
       "pathDisplay": "/documents/:param",
       "pathNorm": "/documents/:param",
       "file": "src/services/documentService.ts",
-      "line": 8,
+      "line": 22,
       "snippet": "`/documents/${id}`",
       "backend": {
         "status": "matched",
@@ -786,7 +876,7 @@
       "pathDisplay": "/documents/complete",
       "pathNorm": "/documents/complete",
       "file": "src/services/documentService.ts",
-      "line": 7,
+      "line": 21,
       "snippet": "'/documents/complete'",
       "backend": {
         "status": "matched",
@@ -802,8 +892,25 @@
       "method": "GET",
       "pathDisplay": "/documents/owner/:param",
       "pathNorm": "/documents/owner/:param",
+      "file": "src/components/compliance/StudentComplianceBreakdown.tsx",
+      "line": 66,
+      "snippet": "`/documents/owner/${s.id}`",
+      "backend": {
+        "status": "matched",
+        "path": "/documents/owner/:ownerUserId",
+        "httpMethod": "GET",
+        "controllerFile": "modules/document/document.controller.ts",
+        "controllerClass": "DocumentController",
+        "handler": "listByOwner",
+        "serviceCall": "documentService.listByOwner"
+      }
+    },
+    {
+      "method": "GET",
+      "pathDisplay": "/documents/owner/:param",
+      "pathNorm": "/documents/owner/:param",
       "file": "src/services/documentService.ts",
-      "line": 20,
+      "line": 34,
       "snippet": "`/documents/owner/${ownerUserId}`",
       "backend": {
         "status": "matched",
@@ -820,7 +927,7 @@
       "pathDisplay": "/documents/per-form/:param",
       "pathNorm": "/documents/per-form/:param",
       "file": "src/services/documentService.ts",
-      "line": 22,
+      "line": 36,
       "snippet": "`/documents/per-form/${ownerUserId}`",
       "backend": {
         "status": "matched",
@@ -837,7 +944,7 @@
       "pathDisplay": "/documents/presign",
       "pathNorm": "/documents/presign",
       "file": "src/services/documentService.ts",
-      "line": 5,
+      "line": 11,
       "snippet": "'/documents/presign'",
       "backend": {
         "status": "matched",
@@ -874,25 +981,13 @@
       "line": 304,
       "snippet": "'/documents/scan'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
-      }
-    },
-    {
-      "method": "GET",
-      "pathDisplay": "/documents/search?ownerUserId=:param",
-      "pathNorm": "/documents/search",
-      "file": "src/components/compliance/StudentComplianceBreakdown.tsx",
-      "line": 66,
-      "snippet": "`/documents/search?ownerUserId=${student.id}`",
-      "backend": {
         "status": "matched",
-        "path": "/documents/search",
-        "httpMethod": "GET",
+        "path": "/documents/scan",
+        "httpMethod": "POST",
         "controllerFile": "modules/document/document.controller.ts",
         "controllerClass": "DocumentController",
-        "handler": "unknown",
-        "serviceCall": "documentService.searchDocuments"
+        "handler": "scan",
+        "serviceCall": null
       }
     },
     {
@@ -900,7 +995,7 @@
       "pathDisplay": "/documents/search?schoolId=:param&status=approved",
       "pathNorm": "/documents/search",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 86,
+      "line": 91,
       "snippet": "`/documents/search?schoolId=${schoolId}&status=approved`",
       "backend": {
         "status": "matched",
@@ -917,7 +1012,7 @@
       "pathDisplay": "/documents/search?:param",
       "pathNorm": "/documents/search",
       "file": "src/services/documentService.ts",
-      "line": 18,
+      "line": 32,
       "snippet": "`/documents/search?${qs.toString()}`",
       "backend": {
         "status": "matched",
@@ -934,7 +1029,7 @@
       "pathDisplay": "/documents/summary/:param",
       "pathNorm": "/documents/summary/:param",
       "file": "src/services/documentService.ts",
-      "line": 21,
+      "line": 35,
       "snippet": "`/documents/summary/${ownerUserId}`",
       "backend": {
         "status": "matched",
@@ -954,8 +1049,13 @@
       "line": 6,
       "snippet": "`/eligibility-profiles/user/${userId}/analyze`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles/user/:userId/analyze",
+        "httpMethod": "POST",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "analyze",
+        "serviceCall": "service.analyze"
       }
     },
     {
@@ -966,8 +1066,13 @@
       "line": 4,
       "snippet": "`/eligibility-profiles/user/${userId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles/user/:userId",
+        "httpMethod": "GET",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "getForUser",
+        "serviceCall": "service.getForUser"
       }
     },
     {
@@ -978,8 +1083,13 @@
       "line": 5,
       "snippet": "`/eligibility-profiles/user/${userId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles/user/:userId",
+        "httpMethod": "PUT",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "upsertForUser",
+        "serviceCall": "service.upsertForUser"
       }
     },
     {
@@ -990,8 +1100,13 @@
       "line": 158,
       "snippet": "`/eligibility-profiles?schoolId=${schoolId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles",
+        "httpMethod": "GET",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "listBySchool",
+        "serviceCall": "service.listBySchool"
       }
     },
     {
@@ -1002,8 +1117,13 @@
       "line": 93,
       "snippet": "`/eligibility-profiles?schoolId=${schoolId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles",
+        "httpMethod": "GET",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "listBySchool",
+        "serviceCall": "service.listBySchool"
       }
     },
     {
@@ -1014,8 +1134,13 @@
       "line": 66,
       "snippet": "`/eligibility-profiles?schoolId=${schoolId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles",
+        "httpMethod": "GET",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "listBySchool",
+        "serviceCall": "service.listBySchool"
       }
     },
     {
@@ -1142,7 +1267,7 @@
       "pathDisplay": "/invitations?schoolId=:param:param",
       "pathNorm": "/invitations",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 85,
+      "line": 90,
       "snippet": "`/invitations?schoolId=${schoolId}${branchParam}`",
       "backend": {
         "status": "matched",
@@ -1159,7 +1284,7 @@
       "pathDisplay": "/invitations?schoolId=:param:param&status=pending",
       "pathNorm": "/invitations",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 87,
+      "line": 92,
       "snippet": "`/invitations?schoolId=${schoolId}${branchParam}&status=pending`",
       "backend": {
         "status": "matched",
@@ -1176,7 +1301,7 @@
       "pathDisplay": "/invitations?schoolId=:param:param&status=accepted",
       "pathNorm": "/invitations",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 88,
+      "line": 93,
       "snippet": "`/invitations?schoolId=${schoolId}${branchParam}&status=accepted`",
       "backend": {
         "status": "matched",
@@ -1213,8 +1338,13 @@
       "line": 108,
       "snippet": "`/messages/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/messages/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/messages/messages.controller.ts",
+        "controllerClass": "MessagesController",
+        "handler": "update",
+        "serviceCall": null
       }
     },
     {
@@ -1225,8 +1355,13 @@
       "line": 51,
       "snippet": "'/messages'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/messages",
+        "httpMethod": "GET",
+        "controllerFile": "modules/messages/messages.controller.ts",
+        "controllerClass": "MessagesController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -1237,8 +1372,13 @@
       "line": 86,
       "snippet": "\"/messages\"",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/messages",
+        "httpMethod": "POST",
+        "controllerFile": "modules/messages/messages.controller.ts",
+        "controllerClass": "MessagesController",
+        "handler": "create",
+        "serviceCall": null
       }
     },
     {
@@ -1249,8 +1389,13 @@
       "line": 119,
       "snippet": "'/notifications/expiration-reminders'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/notifications/expiration-reminders",
+        "httpMethod": "POST",
+        "controllerFile": "modules/notifications/notifications.controller.ts",
+        "controllerClass": "NotificationsController",
+        "handler": "expirationReminders",
+        "serviceCall": null
       }
     },
     {
@@ -1261,8 +1406,13 @@
       "line": 59,
       "snippet": "'/reminders/send-expiration'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/reminders/send-expiration",
+        "httpMethod": "POST",
+        "controllerFile": "modules/reminders/reminders.controller.ts",
+        "controllerClass": "RemindersController",
+        "handler": "sendExpiration",
+        "serviceCall": null
       }
     },
     {
@@ -1273,8 +1423,13 @@
       "line": 75,
       "snippet": "'/reminders/send-expiration'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/reminders/send-expiration",
+        "httpMethod": "POST",
+        "controllerFile": "modules/reminders/reminders.controller.ts",
+        "controllerClass": "RemindersController",
+        "handler": "sendExpiration",
+        "serviceCall": null
       }
     },
     {
@@ -1285,8 +1440,13 @@
       "line": 59,
       "snippet": "'/reminders/send-expiration'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/reminders/send-expiration",
+        "httpMethod": "POST",
+        "controllerFile": "modules/reminders/reminders.controller.ts",
+        "controllerClass": "RemindersController",
+        "handler": "sendExpiration",
+        "serviceCall": null
       }
     },
     {
@@ -1297,8 +1457,13 @@
       "line": 75,
       "snippet": "'/reminders/send-expiration'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/reminders/send-expiration",
+        "httpMethod": "POST",
+        "controllerFile": "modules/reminders/reminders.controller.ts",
+        "controllerClass": "RemindersController",
+        "handler": "sendExpiration",
+        "serviceCall": null
       }
     },
     {
@@ -1309,8 +1474,13 @@
       "line": 55,
       "snippet": "'/reminders/send'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/reminders/send",
+        "httpMethod": "POST",
+        "controllerFile": "modules/reminders/reminders.controller.ts",
+        "controllerClass": "RemindersController",
+        "handler": "send",
+        "serviceCall": null
       }
     },
     {
@@ -1321,8 +1491,13 @@
       "line": 68,
       "snippet": "'/reminders/send'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/reminders/send",
+        "httpMethod": "POST",
+        "controllerFile": "modules/reminders/reminders.controller.ts",
+        "controllerClass": "RemindersController",
+        "handler": "send",
+        "serviceCall": null
       }
     },
     {
@@ -1333,8 +1508,13 @@
       "line": 94,
       "snippet": "`/roster/import-jobs/${jobId}/students`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/roster/import-jobs/:jobId/students",
+        "httpMethod": "GET",
+        "controllerFile": "modules/roster/roster.controller.ts",
+        "controllerClass": "RosterController",
+        "handler": "getJobStudents",
+        "serviceCall": null
       }
     },
     {
@@ -1345,8 +1525,13 @@
       "line": 88,
       "snippet": "`/roster/import-jobs/${jobId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/roster/import-jobs/:jobId",
+        "httpMethod": "GET",
+        "controllerFile": "modules/roster/roster.controller.ts",
+        "controllerClass": "RosterController",
+        "handler": "getJob",
+        "serviceCall": null
       }
     },
     {
@@ -1357,8 +1542,13 @@
       "line": 202,
       "snippet": "'/roster/import'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/roster/import",
+        "httpMethod": "POST",
+        "controllerFile": "modules/roster/roster.controller.ts",
+        "controllerClass": "RosterController",
+        "handler": "startImport",
+        "serviceCall": null
       }
     },
     {
@@ -1369,8 +1559,13 @@
       "line": 96,
       "snippet": "'/school-applications'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/school-applications",
+        "httpMethod": "POST",
+        "controllerFile": "modules/school-applications/school-applications.controller.ts",
+        "controllerClass": "SchoolApplicationsController",
+        "handler": "submit",
+        "serviceCall": null
       }
     },
     {
@@ -1378,11 +1573,16 @@
       "pathDisplay": "/schools/:param/approve",
       "pathNorm": "/schools/:param/approve",
       "file": "src/services/schoolService.ts",
-      "line": 8,
+      "line": 13,
       "snippet": "`/schools/${id}/approve`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/approve",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "approve",
+        "serviceCall": "schoolService.approve"
       }
     },
     {
@@ -1427,8 +1627,13 @@
       "line": 16,
       "snippet": "`/schools/${schoolId}/certification-records/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/certification-records/:recordId",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "removeCertificationRecord",
+        "serviceCall": "schoolService.removeCertificationRecord"
       }
     },
     {
@@ -1456,8 +1661,13 @@
       "line": 15,
       "snippet": "`/schools/${schoolId}/certification-records/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/certification-records/:recordId",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "updateCertificationRecord",
+        "serviceCall": "schoolService.updateCertificationRecord"
       }
     },
     {
@@ -1485,8 +1695,13 @@
       "line": 14,
       "snippet": "`/schools/${schoolId}/certification-records`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/certification-records",
+        "httpMethod": "POST",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "createCertificationRecord",
+        "serviceCall": "schoolService.createCertificationRecord"
       }
     },
     {
@@ -1497,8 +1712,13 @@
       "line": 18,
       "snippet": "`/schools/${schoolId}/compliance-requirements/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/compliance-requirements/:requirementId",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "removeComplianceRequirement",
+        "serviceCall": "schoolService.removeComplianceRequirement"
       }
     },
     {
@@ -1526,8 +1746,13 @@
       "line": 17,
       "snippet": "`/schools/${schoolId}/compliance-requirements/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/compliance-requirements/:requirementId",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "updateComplianceRequirement",
+        "serviceCall": "schoolService.updateComplianceRequirement"
       }
     },
     {
@@ -1535,7 +1760,7 @@
       "pathDisplay": "/schools/:param/compliance-requirements",
       "pathNorm": "/schools/:param/compliance-requirements",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 90,
+      "line": 95,
       "snippet": "`/schools/${schoolId}/compliance-requirements`",
       "backend": {
         "status": "matched",
@@ -1572,8 +1797,13 @@
       "line": 16,
       "snippet": "`/schools/${schoolId}/compliance-requirements`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/compliance-requirements",
+        "httpMethod": "POST",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "createComplianceRequirement",
+        "serviceCall": "schoolService.createComplianceRequirement"
       }
     },
     {
@@ -1601,8 +1831,13 @@
       "line": 24,
       "snippet": "`/schools/${schoolId}/inspection-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/inspection-types/:inspectionTypeId",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "removeInspectionType",
+        "serviceCall": "schoolService.removeInspectionType"
       }
     },
     {
@@ -1613,8 +1848,13 @@
       "line": 23,
       "snippet": "`/schools/${schoolId}/inspection-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/inspection-types/:inspectionTypeId",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "updateInspectionType",
+        "serviceCall": "schoolService.updateInspectionType"
       }
     },
     {
@@ -1622,7 +1862,7 @@
       "pathDisplay": "/schools/:param/inspection-types",
       "pathNorm": "/schools/:param/inspection-types",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 89,
+      "line": 94,
       "snippet": "`/schools/${schoolId}/inspection-types`",
       "backend": {
         "status": "matched",
@@ -1639,7 +1879,7 @@
       "pathDisplay": "/schools/:param/inspection-types",
       "pathNorm": "/schools/:param/inspection-types",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 91,
+      "line": 96,
       "snippet": "`/schools/${schoolId}/inspection-types`",
       "backend": {
         "status": "matched",
@@ -1676,8 +1916,30 @@
       "line": 22,
       "snippet": "`/schools/${schoolId}/inspection-types`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/inspection-types",
+        "httpMethod": "POST",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "createInspectionType",
+        "serviceCall": "schoolService.createInspectionType"
+      }
+    },
+    {
+      "method": "GET",
+      "pathDisplay": "/schools/:param/students",
+      "pathNorm": "/schools/:param/students",
+      "file": "src/services/schoolService.ts",
+      "line": 7,
+      "snippet": "`/schools/${schoolId}/students`",
+      "backend": {
+        "status": "matched",
+        "path": "/schools/:id/students",
+        "httpMethod": "GET",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "listStudentProfiles",
+        "serviceCall": "schoolService.listStudentProfiles"
       }
     },
     {
@@ -1685,7 +1947,7 @@
       "pathDisplay": "/schools/:param/users?:param",
       "pathNorm": "/schools/:param/users",
       "file": "src/services/userService.ts",
-      "line": 24,
+      "line": 25,
       "snippet": "`/schools/${params.schoolId}/users?${qs.toString()}`",
       "backend": {
         "status": "matched",
@@ -1702,25 +1964,8 @@
       "pathDisplay": "/schools/:param/users?role=TEACHER:param&limit=:param",
       "pathNorm": "/schools/:param/users",
       "file": "src/services/userService.ts",
-      "line": 37,
+      "line": 38,
       "snippet": "`/schools/${schoolId}/users?role=TEACHER${branchId ? `&branchId=${branchId}` : ''}&limit=${SCHOOL_USER_PAGE_LIMIT}`",
-      "backend": {
-        "status": "matched",
-        "path": "/schools/:schoolId/users",
-        "httpMethod": "GET",
-        "controllerFile": "modules/user/user.controller.ts",
-        "controllerClass": "UserController",
-        "handler": "unknown",
-        "serviceCall": "userService.listBySchool"
-      }
-    },
-    {
-      "method": "GET",
-      "pathDisplay": "/schools/:param/users?role=STUDENT:param&limit=:param",
-      "pathNorm": "/schools/:param/users",
-      "file": "src/services/userService.ts",
-      "line": 43,
-      "snippet": "`/schools/${schoolId}/users?role=STUDENT${branchId ? `&branchId=${branchId}` : ''}&limit=${SCHOOL_USER_PAGE_LIMIT}`",
       "backend": {
         "status": "matched",
         "path": "/schools/:schoolId/users",
@@ -1736,7 +1981,7 @@
       "pathDisplay": "/schools/:param/users?limit=:param",
       "pathNorm": "/schools/:param/users",
       "file": "src/services/userService.ts",
-      "line": 49,
+      "line": 51,
       "snippet": "`/schools/${schoolId}/users?limit=${SCHOOL_USER_PAGE_LIMIT}`",
       "backend": {
         "status": "matched",
@@ -1753,7 +1998,7 @@
       "pathDisplay": "/schools/:param",
       "pathNorm": "/schools/:param",
       "file": "src/services/schoolService.ts",
-      "line": 9,
+      "line": 14,
       "snippet": "`/schools/${id}`",
       "backend": {
         "status": "matched",
@@ -1787,7 +2032,7 @@
       "pathDisplay": "/schools/:param",
       "pathNorm": "/schools/:param",
       "file": "src/services/schoolService.ts",
-      "line": 5,
+      "line": 10,
       "snippet": "`/schools/${id}`",
       "backend": {
         "status": "matched",
@@ -1804,7 +2049,7 @@
       "pathDisplay": "/schools/:param",
       "pathNorm": "/schools/:param",
       "file": "src/services/schoolService.ts",
-      "line": 7,
+      "line": 12,
       "snippet": "`/schools/${id}`",
       "backend": {
         "status": "matched",
@@ -1838,7 +2083,7 @@
       "pathDisplay": "/schools",
       "pathNorm": "/schools",
       "file": "src/services/schoolService.ts",
-      "line": 6,
+      "line": 11,
       "snippet": "'/schools'",
       "backend": {
         "status": "matched",
@@ -1892,8 +2137,13 @@
       "line": 145,
       "snippet": "'/storage/delete'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/storage/delete",
+        "httpMethod": "POST",
+        "controllerFile": "modules/storage/storage.controller.ts",
+        "controllerClass": "StorageController",
+        "handler": "delete",
+        "serviceCall": null
       }
     },
     {
@@ -1904,8 +2154,13 @@
       "line": 121,
       "snippet": "`/storage/download-url?bucket=staff-resumes&key=${encodeURIComponent(currentPath)}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/storage/download-url",
+        "httpMethod": "GET",
+        "controllerFile": "modules/storage/storage.controller.ts",
+        "controllerClass": "StorageController",
+        "handler": "downloadUrl",
+        "serviceCall": "storage.createPresignedDownloadUrl"
       }
     },
     {
@@ -1916,8 +2171,13 @@
       "line": 16,
       "snippet": "`/storage/download-url?bucket=${bucket}&key=${encodeURIComponent(filePath)}&expiresIn=${expiresIn}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/storage/download-url",
+        "httpMethod": "GET",
+        "controllerFile": "modules/storage/storage.controller.ts",
+        "controllerClass": "StorageController",
+        "handler": "downloadUrl",
+        "serviceCall": "storage.createPresignedDownloadUrl"
       }
     },
     {
@@ -1928,8 +2188,13 @@
       "line": 79,
       "snippet": "'/storage/presign'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/storage/presign",
+        "httpMethod": "POST",
+        "controllerFile": "modules/storage/storage.controller.ts",
+        "controllerClass": "StorageController",
+        "handler": "presign",
+        "serviceCall": "storage.createPresignedUploadUrl"
       }
     },
     {
@@ -1937,7 +2202,7 @@
       "pathDisplay": "/student-parents/:param",
       "pathNorm": "/student-parents/:param",
       "file": "src/services/studentParentService.ts",
-      "line": 13,
+      "line": 18,
       "snippet": "`/student-parents/${id}`",
       "backend": {
         "status": "matched",
@@ -1997,7 +2262,7 @@
         "controllerFile": "modules/student-parent/student-parent.controller.ts",
         "controllerClass": "StudentParentController",
         "handler": "listForStudent",
-        "serviceCall": "studentParentService.listForStudent"
+        "serviceCall": "studentParentService.listForStudentProfile"
       }
     },
     {
@@ -2005,7 +2270,7 @@
       "pathDisplay": "/student-parents",
       "pathNorm": "/student-parents",
       "file": "src/services/studentParentService.ts",
-      "line": 12,
+      "line": 17,
       "snippet": "'/student-parents'",
       "backend": {
         "status": "matched",
@@ -2018,6 +2283,23 @@
       }
     },
     {
+      "method": "GET",
+      "pathDisplay": "/student-profiles/:param",
+      "pathNorm": "/student-profiles/:param",
+      "file": "src/services/studentProfileService.ts",
+      "line": 4,
+      "snippet": "`/student-profiles/${id}`",
+      "backend": {
+        "status": "matched",
+        "path": "/student-profiles/:id",
+        "httpMethod": "GET",
+        "controllerFile": "modules/student-parent/student-profile.controller.ts",
+        "controllerClass": "StudentProfileController",
+        "handler": "unknown",
+        "serviceCall": "studentParentService.getStudentProfileById"
+      }
+    },
+    {
       "method": "PATCH",
       "pathDisplay": "/students/:param",
       "pathNorm": "/students/:param",
@@ -2025,8 +2307,13 @@
       "line": 139,
       "snippet": "`/students/${studentId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/students/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/students/students.controller.ts",
+        "controllerClass": "StudentsController",
+        "handler": "update",
+        "serviceCall": "service.update"
       }
     },
     {
@@ -2037,8 +2324,13 @@
       "line": 291,
       "snippet": "'/students'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/students",
+        "httpMethod": "POST",
+        "controllerFile": "modules/students/students.controller.ts",
+        "controllerClass": "StudentsController",
+        "handler": "create",
+        "serviceCall": "service.create"
       }
     },
     {
@@ -2049,8 +2341,13 @@
       "line": 169,
       "snippet": "'/students'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/students",
+        "httpMethod": "POST",
+        "controllerFile": "modules/students/students.controller.ts",
+        "controllerClass": "StudentsController",
+        "handler": "create",
+        "serviceCall": "service.create"
       }
     },
     {
@@ -2061,8 +2358,13 @@
       "line": 184,
       "snippet": "`/teacher-positions/${deletingPosition.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "remove",
+        "serviceCall": "service.remove"
       }
     },
     {
@@ -2073,8 +2375,13 @@
       "line": 153,
       "snippet": "`/teacher-positions/${editingPosition.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "update",
+        "serviceCall": "service.update"
       }
     },
     {
@@ -2085,8 +2392,13 @@
       "line": 202,
       "snippet": "`/teacher-positions/${position.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "update",
+        "serviceCall": "service.update"
       }
     },
     {
@@ -2097,8 +2409,13 @@
       "line": 152,
       "snippet": "`/teacher-positions?schoolId=${schoolId}&isActive=true`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions",
+        "httpMethod": "GET",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "list",
+        "serviceCall": "service.list"
       }
     },
     {
@@ -2109,8 +2426,13 @@
       "line": 104,
       "snippet": "`/teacher-positions?schoolId=${schoolId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions",
+        "httpMethod": "GET",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "list",
+        "serviceCall": "service.list"
       }
     },
     {
@@ -2121,8 +2443,13 @@
       "line": 67,
       "snippet": "`/teacher-positions?schoolId=${schoolId}&isActive=true`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions",
+        "httpMethod": "GET",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "list",
+        "serviceCall": "service.list"
       }
     },
     {
@@ -2133,8 +2460,13 @@
       "line": 210,
       "snippet": "`/teacher-positions?schoolId=${teacherData.school_id}&isActive=true`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions",
+        "httpMethod": "GET",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "list",
+        "serviceCall": "service.list"
       }
     },
     {
@@ -2145,8 +2477,13 @@
       "line": 159,
       "snippet": "'/teacher-positions'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions",
+        "httpMethod": "POST",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "create",
+        "serviceCall": "service.create"
       }
     },
     {
@@ -2158,12 +2495,12 @@
       "snippet": "`/teachers/${teacherId}`",
       "backend": {
         "status": "matched",
-        "path": "/teachers",
+        "path": "/teachers/:id",
         "httpMethod": "GET",
-        "controllerFile": "modules/user/user.controller.ts",
-        "controllerClass": "UserController",
-        "handler": "listTeachers",
-        "serviceCall": "userService.listTeachersForSchoolDirector"
+        "controllerFile": "modules/user/teacher.controller.ts",
+        "controllerClass": "TeacherController",
+        "handler": "getTeacher",
+        "serviceCall": "users.findOne"
       }
     },
     {
@@ -2174,8 +2511,13 @@
       "line": 283,
       "snippet": "`/teachers/${teacher.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teachers/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/user/teacher.controller.ts",
+        "controllerClass": "TeacherController",
+        "handler": "updateTeacher",
+        "serviceCall": "teacherProfiles.findOne"
       }
     },
     {
@@ -2186,8 +2528,13 @@
       "line": 79,
       "snippet": "'/user-consent'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-consent",
+        "httpMethod": "GET",
+        "controllerFile": "modules/user-consent/user-consent.controller.ts",
+        "controllerClass": "UserConsentController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -2198,8 +2545,13 @@
       "line": 164,
       "snippet": "'/user-consent'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-consent",
+        "httpMethod": "GET",
+        "controllerFile": "modules/user-consent/user-consent.controller.ts",
+        "controllerClass": "UserConsentController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -2210,8 +2562,13 @@
       "line": 215,
       "snippet": "'/user-consent'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-consent",
+        "httpMethod": "POST",
+        "controllerFile": "modules/user-consent/user-consent.controller.ts",
+        "controllerClass": "UserConsentController",
+        "handler": "upsert",
+        "serviceCall": null
       }
     },
     {
@@ -2222,8 +2579,13 @@
       "line": 84,
       "snippet": "`/user-roles/${directorRoleId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-roles/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/user-roles/user-roles.controller.ts",
+        "controllerClass": "UserRolesController",
+        "handler": "removeRole",
+        "serviceCall": "users.findOne"
       }
     },
     {
@@ -2234,8 +2596,13 @@
       "line": 104,
       "snippet": "`/user-roles/${directorRoleId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-roles/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/user-roles/user-roles.controller.ts",
+        "controllerClass": "UserRolesController",
+        "handler": "updateRole",
+        "serviceCall": "users.findOne"
       }
     },
     {
@@ -2246,8 +2613,13 @@
       "line": 55,
       "snippet": "`/user-roles?schoolId=${schoolId}&role=director`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-roles",
+        "httpMethod": "GET",
+        "controllerFile": "modules/user-roles/user-roles.controller.ts",
+        "controllerClass": "UserRolesController",
+        "handler": "listDirectors",
+        "serviceCall": "users.find"
       }
     },
     {
@@ -2255,7 +2627,7 @@
       "pathDisplay": "/users/:param/detail",
       "pathNorm": "/users/:param/detail",
       "file": "src/services/userService.ts",
-      "line": 33,
+      "line": 34,
       "snippet": "`/users/${id}/detail`",
       "backend": {
         "status": "matched",
@@ -2272,7 +2644,7 @@
       "pathDisplay": "/users/:param",
       "pathNorm": "/users/:param",
       "file": "src/services/userService.ts",
-      "line": 60,
+      "line": 62,
       "snippet": "`/users/${id}`",
       "backend": {
         "status": "matched",
@@ -2289,7 +2661,7 @@
       "pathDisplay": "/users/:param",
       "pathNorm": "/users/:param",
       "file": "src/services/userService.ts",
-      "line": 32,
+      "line": 33,
       "snippet": "`/users/${id}`",
       "backend": {
         "status": "matched",
@@ -2306,7 +2678,7 @@
       "pathDisplay": "/users/:param",
       "pathNorm": "/users/:param",
       "file": "src/services/userService.ts",
-      "line": 35,
+      "line": 36,
       "snippet": "`/users/${id}`",
       "backend": {
         "status": "matched",
@@ -2323,7 +2695,7 @@
       "pathDisplay": "/users/search?query=:param&limit=100",
       "pathNorm": "/users/search",
       "file": "src/services/userService.ts",
-      "line": 55,
+      "line": 57,
       "snippet": "`/users/search?query=${encodeURIComponent(query)}&limit=100`",
       "backend": {
         "status": "matched",
@@ -2340,7 +2712,7 @@
       "pathDisplay": "/users?:param",
       "pathNorm": "/users",
       "file": "src/services/userService.ts",
-      "line": 29,
+      "line": 30,
       "snippet": "`/users?${qs.toString()}`",
       "backend": {
         "status": "matched",
@@ -2357,7 +2729,7 @@
       "pathDisplay": "/users",
       "pathNorm": "/users",
       "file": "src/services/userService.ts",
-      "line": 34,
+      "line": 35,
       "snippet": "'/users'",
       "backend": {
         "status": "matched",
@@ -2478,11 +2850,16 @@
       "pathDisplay": "/auth/forgot-password",
       "pathNorm": "/auth/forgot-password",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 152,
+      "line": 151,
       "snippet": "'/auth/forgot-password'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/auth/forgot-password",
+        "httpMethod": "POST",
+        "controllerFile": "modules/auth/auth.controller.ts",
+        "controllerClass": "AuthController",
+        "handler": "forgotPassword",
+        "serviceCall": "authService.forgotPassword"
       }
     },
     {
@@ -2490,7 +2867,7 @@
       "pathDisplay": "/auth/login",
       "pathNorm": "/auth/login",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 80,
+      "line": 79,
       "snippet": "'/auth/login'",
       "backend": {
         "status": "matched",
@@ -2507,7 +2884,7 @@
       "pathDisplay": "/auth/me",
       "pathNorm": "/auth/me",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 57,
+      "line": 56,
       "snippet": "'/auth/me'",
       "backend": {
         "status": "matched",
@@ -2524,7 +2901,7 @@
       "pathDisplay": "/auth/register",
       "pathNorm": "/auth/register",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 110,
+      "line": 109,
       "snippet": "'/auth/register'",
       "backend": {
         "status": "matched",
@@ -2541,11 +2918,16 @@
       "pathDisplay": "/auth/update-password",
       "pathNorm": "/auth/update-password",
       "file": "src/contexts/AuthContext.tsx",
-      "line": 173,
+      "line": 172,
       "snippet": "'/auth/update-password'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/auth/update-password",
+        "httpMethod": "POST",
+        "controllerFile": "modules/auth/auth.controller.ts",
+        "controllerClass": "AuthController",
+        "handler": "updatePassword",
+        "serviceCall": "authService.updatePassword"
       }
     },
     {
@@ -2607,8 +2989,13 @@
       "line": 9,
       "snippet": "`/certification-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "remove",
+        "serviceCall": "repo.delete"
       }
     },
     {
@@ -2619,8 +3006,13 @@
       "line": 6,
       "snippet": "`/certification-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types/:id",
+        "httpMethod": "GET",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "get",
+        "serviceCall": "repo.findOne"
       }
     },
     {
@@ -2631,8 +3023,13 @@
       "line": 8,
       "snippet": "`/certification-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "update",
+        "serviceCall": "repo.findOne"
       }
     },
     {
@@ -2643,8 +3040,13 @@
       "line": 5,
       "snippet": "'/certification-types'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types",
+        "httpMethod": "GET",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "list",
+        "serviceCall": "repo.find"
       }
     },
     {
@@ -2655,8 +3057,13 @@
       "line": 7,
       "snippet": "'/certification-types'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/certification-types",
+        "httpMethod": "POST",
+        "controllerFile": "modules/certification-types/certification-types.controller.ts",
+        "controllerClass": "CertificationTypesController",
+        "handler": "create",
+        "serviceCall": "repo.save"
       }
     },
     {
@@ -2786,8 +3193,13 @@
       "line": 285,
       "snippet": "`/compliance/evidence/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/compliance/evidence/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+        "controllerClass": "ComplianceEvidenceController",
+        "handler": "remove",
+        "serviceCall": null
       }
     },
     {
@@ -2798,8 +3210,13 @@
       "line": 275,
       "snippet": "`/compliance/evidence?requirementId=${requirementId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/compliance/evidence",
+        "httpMethod": "GET",
+        "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+        "controllerClass": "ComplianceEvidenceController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -2810,8 +3227,13 @@
       "line": 253,
       "snippet": "'/compliance/evidence'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/compliance/evidence",
+        "httpMethod": "POST",
+        "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+        "controllerClass": "ComplianceEvidenceController",
+        "handler": "create",
+        "serviceCall": null
       }
     },
     {
@@ -2822,8 +3244,13 @@
       "line": 132,
       "snippet": "`/document-templates/${template.id}/download-url`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates/:id/download-url",
+        "httpMethod": "GET",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "downloadUrl",
+        "serviceCall": null
       }
     },
     {
@@ -2834,8 +3261,13 @@
       "line": 178,
       "snippet": "`/document-templates/${template.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "remove",
+        "serviceCall": null
       }
     },
     {
@@ -2846,8 +3278,13 @@
       "line": 147,
       "snippet": "`/document-templates/${template.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "update",
+        "serviceCall": null
       }
     },
     {
@@ -2858,8 +3295,13 @@
       "line": 95,
       "snippet": "`${API_BASE}/document-templates",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates",
+        "httpMethod": "GET",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -2870,8 +3312,13 @@
       "line": 59,
       "snippet": "`/document-templates?schoolId=${schoolId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-templates",
+        "httpMethod": "GET",
+        "controllerFile": "modules/document-templates/document-templates.controller.ts",
+        "controllerClass": "DocumentTemplatesController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -2916,8 +3363,13 @@
       "line": 14,
       "snippet": "`/document-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/document-types/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/document-type/document-type.controller.ts",
+        "controllerClass": "DocumentTypeController",
+        "handler": "remove",
+        "serviceCall": "documentTypeService.remove"
       }
     },
     {
@@ -2959,7 +3411,7 @@
       "pathDisplay": "/document-types?schoolId=:param",
       "pathNorm": "/document-types",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 74,
+      "line": 75,
       "snippet": "`/document-types?schoolId=${schoolId}`",
       "backend": {
         "status": "matched",
@@ -2993,7 +3445,7 @@
       "pathDisplay": "/documents/:param/download-url",
       "pathNorm": "/documents/:param/download-url",
       "file": "src/services/documentService.ts",
-      "line": 9,
+      "line": 23,
       "snippet": "`/documents/${id}/download-url`",
       "backend": {
         "status": "matched",
@@ -3010,11 +3462,16 @@
       "pathDisplay": "/documents/:param/review",
       "pathNorm": "/documents/:param/review",
       "file": "src/services/documentService.ts",
-      "line": 11,
+      "line": 25,
       "snippet": "`/documents/${id}/review`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/documents/:id/review",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/document/document.controller.ts",
+        "controllerClass": "DocumentController",
+        "handler": "review",
+        "serviceCall": null
       }
     },
     {
@@ -3022,7 +3479,7 @@
       "pathDisplay": "/documents/:param/verify",
       "pathNorm": "/documents/:param/verify",
       "file": "src/services/documentService.ts",
-      "line": 12,
+      "line": 26,
       "snippet": "`/documents/${id}/verify`",
       "backend": {
         "status": "matched",
@@ -3042,8 +3499,13 @@
       "line": 106,
       "snippet": "`/documents/${deleteId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/documents/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/document/document.controller.ts",
+        "controllerClass": "DocumentController",
+        "handler": "remove",
+        "serviceCall": null
       }
     },
     {
@@ -3051,7 +3513,7 @@
       "pathDisplay": "/documents/:param",
       "pathNorm": "/documents/:param",
       "file": "src/services/documentService.ts",
-      "line": 8,
+      "line": 22,
       "snippet": "`/documents/${id}`",
       "backend": {
         "status": "matched",
@@ -3068,7 +3530,7 @@
       "pathDisplay": "/documents/complete",
       "pathNorm": "/documents/complete",
       "file": "src/services/documentService.ts",
-      "line": 7,
+      "line": 21,
       "snippet": "'/documents/complete'",
       "backend": {
         "status": "matched",
@@ -3084,9 +3546,9 @@
       "method": "GET",
       "pathDisplay": "/documents/owner/:param",
       "pathNorm": "/documents/owner/:param",
-      "file": "src/services/documentService.ts",
-      "line": 20,
-      "snippet": "`/documents/owner/${ownerUserId}`",
+      "file": "src/components/compliance/StudentComplianceBreakdown.tsx",
+      "line": 66,
+      "snippet": "`/documents/owner/${s.id}`",
       "backend": {
         "status": "matched",
         "path": "/documents/owner/:ownerUserId",
@@ -3102,7 +3564,7 @@
       "pathDisplay": "/documents/per-form/:param",
       "pathNorm": "/documents/per-form/:param",
       "file": "src/services/documentService.ts",
-      "line": 22,
+      "line": 36,
       "snippet": "`/documents/per-form/${ownerUserId}`",
       "backend": {
         "status": "matched",
@@ -3119,7 +3581,7 @@
       "pathDisplay": "/documents/presign",
       "pathNorm": "/documents/presign",
       "file": "src/services/documentService.ts",
-      "line": 5,
+      "line": 11,
       "snippet": "'/documents/presign'",
       "backend": {
         "status": "matched",
@@ -3139,17 +3601,22 @@
       "line": 304,
       "snippet": "'/documents/scan'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/documents/scan",
+        "httpMethod": "POST",
+        "controllerFile": "modules/document/document.controller.ts",
+        "controllerClass": "DocumentController",
+        "handler": "scan",
+        "serviceCall": null
       }
     },
     {
       "method": "GET",
-      "pathDisplay": "/documents/search?ownerUserId=:param",
+      "pathDisplay": "/documents/search?schoolId=:param&status=approved",
       "pathNorm": "/documents/search",
-      "file": "src/components/compliance/StudentComplianceBreakdown.tsx",
-      "line": 66,
-      "snippet": "`/documents/search?ownerUserId=${student.id}`",
+      "file": "src/hooks/useSchoolSetupStatus.ts",
+      "line": 91,
+      "snippet": "`/documents/search?schoolId=${schoolId}&status=approved`",
       "backend": {
         "status": "matched",
         "path": "/documents/search",
@@ -3165,7 +3632,7 @@
       "pathDisplay": "/documents/summary/:param",
       "pathNorm": "/documents/summary/:param",
       "file": "src/services/documentService.ts",
-      "line": 21,
+      "line": 35,
       "snippet": "`/documents/summary/${ownerUserId}`",
       "backend": {
         "status": "matched",
@@ -3185,8 +3652,13 @@
       "line": 6,
       "snippet": "`/eligibility-profiles/user/${userId}/analyze`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles/user/:userId/analyze",
+        "httpMethod": "POST",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "analyze",
+        "serviceCall": "service.analyze"
       }
     },
     {
@@ -3197,8 +3669,13 @@
       "line": 4,
       "snippet": "`/eligibility-profiles/user/${userId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles/user/:userId",
+        "httpMethod": "GET",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "getForUser",
+        "serviceCall": "service.getForUser"
       }
     },
     {
@@ -3209,8 +3686,13 @@
       "line": 5,
       "snippet": "`/eligibility-profiles/user/${userId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles/user/:userId",
+        "httpMethod": "PUT",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "upsertForUser",
+        "serviceCall": "service.upsertForUser"
       }
     },
     {
@@ -3221,8 +3703,13 @@
       "line": 158,
       "snippet": "`/eligibility-profiles?schoolId=${schoolId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/eligibility-profiles",
+        "httpMethod": "GET",
+        "controllerFile": "modules/eligibility/eligibility.controller.ts",
+        "controllerClass": "EligibilityController",
+        "handler": "listBySchool",
+        "serviceCall": "service.listBySchool"
       }
     },
     {
@@ -3349,7 +3836,7 @@
       "pathDisplay": "/invitations?schoolId=:param:param",
       "pathNorm": "/invitations",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 85,
+      "line": 90,
       "snippet": "`/invitations?schoolId=${schoolId}${branchParam}`",
       "backend": {
         "status": "matched",
@@ -3386,8 +3873,13 @@
       "line": 108,
       "snippet": "`/messages/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/messages/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/messages/messages.controller.ts",
+        "controllerClass": "MessagesController",
+        "handler": "update",
+        "serviceCall": null
       }
     },
     {
@@ -3398,8 +3890,13 @@
       "line": 51,
       "snippet": "'/messages'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/messages",
+        "httpMethod": "GET",
+        "controllerFile": "modules/messages/messages.controller.ts",
+        "controllerClass": "MessagesController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -3410,8 +3907,13 @@
       "line": 86,
       "snippet": "\"/messages\"",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/messages",
+        "httpMethod": "POST",
+        "controllerFile": "modules/messages/messages.controller.ts",
+        "controllerClass": "MessagesController",
+        "handler": "create",
+        "serviceCall": null
       }
     },
     {
@@ -3422,8 +3924,13 @@
       "line": 119,
       "snippet": "'/notifications/expiration-reminders'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/notifications/expiration-reminders",
+        "httpMethod": "POST",
+        "controllerFile": "modules/notifications/notifications.controller.ts",
+        "controllerClass": "NotificationsController",
+        "handler": "expirationReminders",
+        "serviceCall": null
       }
     },
     {
@@ -3434,8 +3941,13 @@
       "line": 59,
       "snippet": "'/reminders/send-expiration'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/reminders/send-expiration",
+        "httpMethod": "POST",
+        "controllerFile": "modules/reminders/reminders.controller.ts",
+        "controllerClass": "RemindersController",
+        "handler": "sendExpiration",
+        "serviceCall": null
       }
     },
     {
@@ -3446,8 +3958,13 @@
       "line": 55,
       "snippet": "'/reminders/send'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/reminders/send",
+        "httpMethod": "POST",
+        "controllerFile": "modules/reminders/reminders.controller.ts",
+        "controllerClass": "RemindersController",
+        "handler": "send",
+        "serviceCall": null
       }
     },
     {
@@ -3458,8 +3975,13 @@
       "line": 94,
       "snippet": "`/roster/import-jobs/${jobId}/students`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/roster/import-jobs/:jobId/students",
+        "httpMethod": "GET",
+        "controllerFile": "modules/roster/roster.controller.ts",
+        "controllerClass": "RosterController",
+        "handler": "getJobStudents",
+        "serviceCall": null
       }
     },
     {
@@ -3470,8 +3992,13 @@
       "line": 88,
       "snippet": "`/roster/import-jobs/${jobId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/roster/import-jobs/:jobId",
+        "httpMethod": "GET",
+        "controllerFile": "modules/roster/roster.controller.ts",
+        "controllerClass": "RosterController",
+        "handler": "getJob",
+        "serviceCall": null
       }
     },
     {
@@ -3482,8 +4009,13 @@
       "line": 202,
       "snippet": "'/roster/import'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/roster/import",
+        "httpMethod": "POST",
+        "controllerFile": "modules/roster/roster.controller.ts",
+        "controllerClass": "RosterController",
+        "handler": "startImport",
+        "serviceCall": null
       }
     },
     {
@@ -3494,8 +4026,13 @@
       "line": 96,
       "snippet": "'/school-applications'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/school-applications",
+        "httpMethod": "POST",
+        "controllerFile": "modules/school-applications/school-applications.controller.ts",
+        "controllerClass": "SchoolApplicationsController",
+        "handler": "submit",
+        "serviceCall": null
       }
     },
     {
@@ -3503,11 +4040,16 @@
       "pathDisplay": "/schools/:param/approve",
       "pathNorm": "/schools/:param/approve",
       "file": "src/services/schoolService.ts",
-      "line": 8,
+      "line": 13,
       "snippet": "`/schools/${id}/approve`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/approve",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "approve",
+        "serviceCall": "schoolService.approve"
       }
     },
     {
@@ -3552,8 +4094,13 @@
       "line": 16,
       "snippet": "`/schools/${schoolId}/certification-records/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/certification-records/:recordId",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "removeCertificationRecord",
+        "serviceCall": "schoolService.removeCertificationRecord"
       }
     },
     {
@@ -3581,8 +4128,13 @@
       "line": 15,
       "snippet": "`/schools/${schoolId}/certification-records/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/certification-records/:recordId",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "updateCertificationRecord",
+        "serviceCall": "schoolService.updateCertificationRecord"
       }
     },
     {
@@ -3610,8 +4162,13 @@
       "line": 14,
       "snippet": "`/schools/${schoolId}/certification-records`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/certification-records",
+        "httpMethod": "POST",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "createCertificationRecord",
+        "serviceCall": "schoolService.createCertificationRecord"
       }
     },
     {
@@ -3622,8 +4179,13 @@
       "line": 18,
       "snippet": "`/schools/${schoolId}/compliance-requirements/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/compliance-requirements/:requirementId",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "removeComplianceRequirement",
+        "serviceCall": "schoolService.removeComplianceRequirement"
       }
     },
     {
@@ -3651,8 +4213,13 @@
       "line": 17,
       "snippet": "`/schools/${schoolId}/compliance-requirements/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/compliance-requirements/:requirementId",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "updateComplianceRequirement",
+        "serviceCall": "schoolService.updateComplianceRequirement"
       }
     },
     {
@@ -3660,7 +4227,7 @@
       "pathDisplay": "/schools/:param/compliance-requirements",
       "pathNorm": "/schools/:param/compliance-requirements",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 90,
+      "line": 95,
       "snippet": "`/schools/${schoolId}/compliance-requirements`",
       "backend": {
         "status": "matched",
@@ -3680,8 +4247,13 @@
       "line": 16,
       "snippet": "`/schools/${schoolId}/compliance-requirements`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/compliance-requirements",
+        "httpMethod": "POST",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "createComplianceRequirement",
+        "serviceCall": "schoolService.createComplianceRequirement"
       }
     },
     {
@@ -3709,8 +4281,13 @@
       "line": 24,
       "snippet": "`/schools/${schoolId}/inspection-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/inspection-types/:inspectionTypeId",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "removeInspectionType",
+        "serviceCall": "schoolService.removeInspectionType"
       }
     },
     {
@@ -3721,8 +4298,13 @@
       "line": 23,
       "snippet": "`/schools/${schoolId}/inspection-types/${id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/inspection-types/:inspectionTypeId",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "updateInspectionType",
+        "serviceCall": "schoolService.updateInspectionType"
       }
     },
     {
@@ -3730,7 +4312,7 @@
       "pathDisplay": "/schools/:param/inspection-types",
       "pathNorm": "/schools/:param/inspection-types",
       "file": "src/hooks/useSchoolSetupStatus.ts",
-      "line": 89,
+      "line": 94,
       "snippet": "`/schools/${schoolId}/inspection-types`",
       "backend": {
         "status": "matched",
@@ -3750,8 +4332,30 @@
       "line": 22,
       "snippet": "`/schools/${schoolId}/inspection-types`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/schools/:id/inspection-types",
+        "httpMethod": "POST",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "createInspectionType",
+        "serviceCall": "schoolService.createInspectionType"
+      }
+    },
+    {
+      "method": "GET",
+      "pathDisplay": "/schools/:param/students",
+      "pathNorm": "/schools/:param/students",
+      "file": "src/services/schoolService.ts",
+      "line": 7,
+      "snippet": "`/schools/${schoolId}/students`",
+      "backend": {
+        "status": "matched",
+        "path": "/schools/:id/students",
+        "httpMethod": "GET",
+        "controllerFile": "modules/school/school.controller.ts",
+        "controllerClass": "SchoolController",
+        "handler": "listStudentProfiles",
+        "serviceCall": "schoolService.listStudentProfiles"
       }
     },
     {
@@ -3759,7 +4363,7 @@
       "pathDisplay": "/schools/:param/users?:param",
       "pathNorm": "/schools/:param/users",
       "file": "src/services/userService.ts",
-      "line": 24,
+      "line": 25,
       "snippet": "`/schools/${params.schoolId}/users?${qs.toString()}`",
       "backend": {
         "status": "matched",
@@ -3776,7 +4380,7 @@
       "pathDisplay": "/schools/:param",
       "pathNorm": "/schools/:param",
       "file": "src/services/schoolService.ts",
-      "line": 9,
+      "line": 14,
       "snippet": "`/schools/${id}`",
       "backend": {
         "status": "matched",
@@ -3810,7 +4414,7 @@
       "pathDisplay": "/schools/:param",
       "pathNorm": "/schools/:param",
       "file": "src/services/schoolService.ts",
-      "line": 7,
+      "line": 12,
       "snippet": "`/schools/${id}`",
       "backend": {
         "status": "matched",
@@ -3844,7 +4448,7 @@
       "pathDisplay": "/schools",
       "pathNorm": "/schools",
       "file": "src/services/schoolService.ts",
-      "line": 6,
+      "line": 11,
       "snippet": "'/schools'",
       "backend": {
         "status": "matched",
@@ -3898,8 +4502,13 @@
       "line": 145,
       "snippet": "'/storage/delete'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/storage/delete",
+        "httpMethod": "POST",
+        "controllerFile": "modules/storage/storage.controller.ts",
+        "controllerClass": "StorageController",
+        "handler": "delete",
+        "serviceCall": null
       }
     },
     {
@@ -3910,8 +4519,13 @@
       "line": 121,
       "snippet": "`/storage/download-url?bucket=staff-resumes&key=${encodeURIComponent(currentPath)}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/storage/download-url",
+        "httpMethod": "GET",
+        "controllerFile": "modules/storage/storage.controller.ts",
+        "controllerClass": "StorageController",
+        "handler": "downloadUrl",
+        "serviceCall": "storage.createPresignedDownloadUrl"
       }
     },
     {
@@ -3922,8 +4536,13 @@
       "line": 79,
       "snippet": "'/storage/presign'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/storage/presign",
+        "httpMethod": "POST",
+        "controllerFile": "modules/storage/storage.controller.ts",
+        "controllerClass": "StorageController",
+        "handler": "presign",
+        "serviceCall": "storage.createPresignedUploadUrl"
       }
     },
     {
@@ -3931,7 +4550,7 @@
       "pathDisplay": "/student-parents/:param",
       "pathNorm": "/student-parents/:param",
       "file": "src/services/studentParentService.ts",
-      "line": 13,
+      "line": 18,
       "snippet": "`/student-parents/${id}`",
       "backend": {
         "status": "matched",
@@ -3991,7 +4610,7 @@
         "controllerFile": "modules/student-parent/student-parent.controller.ts",
         "controllerClass": "StudentParentController",
         "handler": "listForStudent",
-        "serviceCall": "studentParentService.listForStudent"
+        "serviceCall": "studentParentService.listForStudentProfile"
       }
     },
     {
@@ -3999,7 +4618,7 @@
       "pathDisplay": "/student-parents",
       "pathNorm": "/student-parents",
       "file": "src/services/studentParentService.ts",
-      "line": 12,
+      "line": 17,
       "snippet": "'/student-parents'",
       "backend": {
         "status": "matched",
@@ -4012,6 +4631,23 @@
       }
     },
     {
+      "method": "GET",
+      "pathDisplay": "/student-profiles/:param",
+      "pathNorm": "/student-profiles/:param",
+      "file": "src/services/studentProfileService.ts",
+      "line": 4,
+      "snippet": "`/student-profiles/${id}`",
+      "backend": {
+        "status": "matched",
+        "path": "/student-profiles/:id",
+        "httpMethod": "GET",
+        "controllerFile": "modules/student-parent/student-profile.controller.ts",
+        "controllerClass": "StudentProfileController",
+        "handler": "unknown",
+        "serviceCall": "studentParentService.getStudentProfileById"
+      }
+    },
+    {
       "method": "PATCH",
       "pathDisplay": "/students/:param",
       "pathNorm": "/students/:param",
@@ -4019,8 +4655,13 @@
       "line": 139,
       "snippet": "`/students/${studentId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/students/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/students/students.controller.ts",
+        "controllerClass": "StudentsController",
+        "handler": "update",
+        "serviceCall": "service.update"
       }
     },
     {
@@ -4031,8 +4672,13 @@
       "line": 291,
       "snippet": "'/students'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/students",
+        "httpMethod": "POST",
+        "controllerFile": "modules/students/students.controller.ts",
+        "controllerClass": "StudentsController",
+        "handler": "create",
+        "serviceCall": "service.create"
       }
     },
     {
@@ -4043,8 +4689,13 @@
       "line": 184,
       "snippet": "`/teacher-positions/${deletingPosition.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "remove",
+        "serviceCall": "service.remove"
       }
     },
     {
@@ -4055,8 +4706,13 @@
       "line": 153,
       "snippet": "`/teacher-positions/${editingPosition.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "update",
+        "serviceCall": "service.update"
       }
     },
     {
@@ -4067,8 +4723,13 @@
       "line": 152,
       "snippet": "`/teacher-positions?schoolId=${schoolId}&isActive=true`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions",
+        "httpMethod": "GET",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "list",
+        "serviceCall": "service.list"
       }
     },
     {
@@ -4079,8 +4740,13 @@
       "line": 159,
       "snippet": "'/teacher-positions'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teacher-positions",
+        "httpMethod": "POST",
+        "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+        "controllerClass": "TeacherPositionController",
+        "handler": "create",
+        "serviceCall": "service.create"
       }
     },
     {
@@ -4092,12 +4758,12 @@
       "snippet": "`/teachers/${teacherId}`",
       "backend": {
         "status": "matched",
-        "path": "/teachers",
+        "path": "/teachers/:id",
         "httpMethod": "GET",
-        "controllerFile": "modules/user/user.controller.ts",
-        "controllerClass": "UserController",
-        "handler": "listTeachers",
-        "serviceCall": "userService.listTeachersForSchoolDirector"
+        "controllerFile": "modules/user/teacher.controller.ts",
+        "controllerClass": "TeacherController",
+        "handler": "getTeacher",
+        "serviceCall": "users.findOne"
       }
     },
     {
@@ -4108,8 +4774,13 @@
       "line": 283,
       "snippet": "`/teachers/${teacher.id}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/teachers/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/user/teacher.controller.ts",
+        "controllerClass": "TeacherController",
+        "handler": "updateTeacher",
+        "serviceCall": "teacherProfiles.findOne"
       }
     },
     {
@@ -4120,8 +4791,13 @@
       "line": 79,
       "snippet": "'/user-consent'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-consent",
+        "httpMethod": "GET",
+        "controllerFile": "modules/user-consent/user-consent.controller.ts",
+        "controllerClass": "UserConsentController",
+        "handler": "list",
+        "serviceCall": null
       }
     },
     {
@@ -4132,8 +4808,13 @@
       "line": 215,
       "snippet": "'/user-consent'",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-consent",
+        "httpMethod": "POST",
+        "controllerFile": "modules/user-consent/user-consent.controller.ts",
+        "controllerClass": "UserConsentController",
+        "handler": "upsert",
+        "serviceCall": null
       }
     },
     {
@@ -4144,8 +4825,13 @@
       "line": 84,
       "snippet": "`/user-roles/${directorRoleId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-roles/:id",
+        "httpMethod": "DELETE",
+        "controllerFile": "modules/user-roles/user-roles.controller.ts",
+        "controllerClass": "UserRolesController",
+        "handler": "removeRole",
+        "serviceCall": "users.findOne"
       }
     },
     {
@@ -4156,8 +4842,13 @@
       "line": 104,
       "snippet": "`/user-roles/${directorRoleId}`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-roles/:id",
+        "httpMethod": "PATCH",
+        "controllerFile": "modules/user-roles/user-roles.controller.ts",
+        "controllerClass": "UserRolesController",
+        "handler": "updateRole",
+        "serviceCall": "users.findOne"
       }
     },
     {
@@ -4168,8 +4859,13 @@
       "line": 55,
       "snippet": "`/user-roles?schoolId=${schoolId}&role=director`",
       "backend": {
-        "status": "not_found",
-        "message": "No matching Nest @Controller route in backend/src (path may be unimplemented, different prefix, or non-controller module)."
+        "status": "matched",
+        "path": "/user-roles",
+        "httpMethod": "GET",
+        "controllerFile": "modules/user-roles/user-roles.controller.ts",
+        "controllerClass": "UserRolesController",
+        "handler": "listDirectors",
+        "serviceCall": "users.find"
       }
     },
     {
@@ -4177,7 +4873,7 @@
       "pathDisplay": "/users/:param/detail",
       "pathNorm": "/users/:param/detail",
       "file": "src/services/userService.ts",
-      "line": 33,
+      "line": 34,
       "snippet": "`/users/${id}/detail`",
       "backend": {
         "status": "matched",
@@ -4194,7 +4890,7 @@
       "pathDisplay": "/users/:param",
       "pathNorm": "/users/:param",
       "file": "src/services/userService.ts",
-      "line": 60,
+      "line": 62,
       "snippet": "`/users/${id}`",
       "backend": {
         "status": "matched",
@@ -4211,7 +4907,7 @@
       "pathDisplay": "/users/:param",
       "pathNorm": "/users/:param",
       "file": "src/services/userService.ts",
-      "line": 32,
+      "line": 33,
       "snippet": "`/users/${id}`",
       "backend": {
         "status": "matched",
@@ -4228,7 +4924,7 @@
       "pathDisplay": "/users/:param",
       "pathNorm": "/users/:param",
       "file": "src/services/userService.ts",
-      "line": 35,
+      "line": 36,
       "snippet": "`/users/${id}`",
       "backend": {
         "status": "matched",
@@ -4245,7 +4941,7 @@
       "pathDisplay": "/users/search?query=:param&limit=100",
       "pathNorm": "/users/search",
       "file": "src/services/userService.ts",
-      "line": 55,
+      "line": 57,
       "snippet": "`/users/search?query=${encodeURIComponent(query)}&limit=100`",
       "backend": {
         "status": "matched",
@@ -4262,7 +4958,7 @@
       "pathDisplay": "/users?:param",
       "pathNorm": "/users",
       "file": "src/services/userService.ts",
-      "line": 29,
+      "line": 30,
       "snippet": "`/users?${qs.toString()}`",
       "backend": {
         "status": "matched",
@@ -4279,7 +4975,7 @@
       "pathDisplay": "/users",
       "pathNorm": "/users",
       "file": "src/services/userService.ts",
-      "line": 34,
+      "line": 35,
       "snippet": "'/users'",
       "backend": {
         "status": "matched",
@@ -4294,10 +4990,10 @@
   ],
   "backendMappingMeta": {
     "backendSrc": "/Users/moinkhan/Projects/SchoolSystem/SchoolCompliance/backend/src",
-    "controllerRouteCount": 93,
-    "uniqueFrontendEndpoints": 130,
-    "matched": 72,
-    "notFound": 58
+    "controllerRouteCount": 156,
+    "uniqueFrontendEndpoints": 132,
+    "matched": 132,
+    "notFound": 0
   },
   "backendRoutes": [
     {
@@ -4317,6 +5013,22 @@
       "serviceCall": "documentService.nudge"
     },
     {
+      "method": "PATCH",
+      "path": "/schools/:id/compliance-requirements/:requirementId",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "updateComplianceRequirement",
+      "serviceCall": "schoolService.updateComplianceRequirement"
+    },
+    {
+      "method": "DELETE",
+      "path": "/schools/:id/compliance-requirements/:requirementId",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "removeComplianceRequirement",
+      "serviceCall": "schoolService.removeComplianceRequirement"
+    },
+    {
       "method": "GET",
       "path": "/documents/owner/:ownerUserId/type/:documentTypeId",
       "controllerFile": "modules/document/document.controller.ts",
@@ -4325,12 +5037,60 @@
       "serviceCall": "documentService.getPerFormDetail"
     },
     {
+      "method": "PATCH",
+      "path": "/schools/:id/inspection-types/:inspectionTypeId",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "updateInspectionType",
+      "serviceCall": "schoolService.updateInspectionType"
+    },
+    {
+      "method": "DELETE",
+      "path": "/schools/:id/inspection-types/:inspectionTypeId",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "removeInspectionType",
+      "serviceCall": "schoolService.removeInspectionType"
+    },
+    {
       "method": "GET",
       "path": "/schools/:schoolId/branch-director-candidates",
       "controllerFile": "modules/user/user.controller.ts",
       "controllerClass": "UserController",
       "handler": "listBranchDirectorCandidates",
       "serviceCall": "userService.listBranchDirectorCandidates"
+    },
+    {
+      "method": "GET",
+      "path": "/user-roles/_internal/teacher-profile/:userId",
+      "controllerFile": "modules/user-roles/user-roles.controller.ts",
+      "controllerClass": "UserRolesController",
+      "handler": "_getTeacherProfile",
+      "serviceCall": "teacherProfiles.findOne"
+    },
+    {
+      "method": "PATCH",
+      "path": "/schools/:id/certification-records/:recordId",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "updateCertificationRecord",
+      "serviceCall": "schoolService.updateCertificationRecord"
+    },
+    {
+      "method": "DELETE",
+      "path": "/schools/:id/certification-records/:recordId",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "removeCertificationRecord",
+      "serviceCall": "schoolService.removeCertificationRecord"
+    },
+    {
+      "method": "POST",
+      "path": "/eligibility-profiles/user/:userId/analyze",
+      "controllerFile": "modules/eligibility/eligibility.controller.ts",
+      "controllerClass": "EligibilityController",
+      "handler": "analyze",
+      "serviceCall": "service.analyze"
     },
     {
       "method": "GET",
@@ -4350,6 +5110,14 @@
     },
     {
       "method": "GET",
+      "path": "/document-templates/:id/download-url",
+      "controllerFile": "modules/document-templates/document-templates.controller.ts",
+      "controllerClass": "DocumentTemplatesController",
+      "handler": "downloadUrl",
+      "serviceCall": null
+    },
+    {
+      "method": "GET",
       "path": "/schools/:id/compliance-requirements",
       "controllerFile": "modules/school/school.controller.ts",
       "controllerClass": "SchoolController",
@@ -4357,12 +5125,36 @@
       "serviceCall": "schoolService.listComplianceRequirements"
     },
     {
+      "method": "POST",
+      "path": "/schools/:id/compliance-requirements",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "createComplianceRequirement",
+      "serviceCall": "schoolService.createComplianceRequirement"
+    },
+    {
+      "method": "POST",
+      "path": "/notifications/expiration-reminders",
+      "controllerFile": "modules/notifications/notifications.controller.ts",
+      "controllerClass": "NotificationsController",
+      "handler": "expirationReminders",
+      "serviceCall": null
+    },
+    {
+      "method": "GET",
+      "path": "/roster/import-jobs/:jobId/students",
+      "controllerFile": "modules/roster/roster.controller.ts",
+      "controllerClass": "RosterController",
+      "handler": "getJobStudents",
+      "serviceCall": null
+    },
+    {
       "method": "GET",
       "path": "/student-parents/student/:studentId",
       "controllerFile": "modules/student-parent/student-parent.controller.ts",
       "controllerClass": "StudentParentController",
       "handler": "listForStudent",
-      "serviceCall": "studentParentService.listForStudent"
+      "serviceCall": "studentParentService.listForStudentProfile"
     },
     {
       "method": "DELETE",
@@ -4374,11 +5166,35 @@
     },
     {
       "method": "GET",
+      "path": "/eligibility-profiles/user/:userId",
+      "controllerFile": "modules/eligibility/eligibility.controller.ts",
+      "controllerClass": "EligibilityController",
+      "handler": "getForUser",
+      "serviceCall": "service.getForUser"
+    },
+    {
+      "method": "PUT",
+      "path": "/eligibility-profiles/user/:userId",
+      "controllerFile": "modules/eligibility/eligibility.controller.ts",
+      "controllerClass": "EligibilityController",
+      "handler": "upsertForUser",
+      "serviceCall": "service.upsertForUser"
+    },
+    {
+      "method": "GET",
       "path": "/schools/:id/certification-records",
       "controllerFile": "modules/school/school.controller.ts",
       "controllerClass": "SchoolController",
       "handler": "listCertificationRecords",
       "serviceCall": "schoolService.listCertificationRecords"
+    },
+    {
+      "method": "POST",
+      "path": "/schools/:id/certification-records",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "createCertificationRecord",
+      "serviceCall": "schoolService.createCertificationRecord"
     },
     {
       "method": "GET",
@@ -4509,6 +5325,14 @@
       "serviceCall": "schoolService.listInspectionTypes"
     },
     {
+      "method": "POST",
+      "path": "/schools/:id/inspection-types",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "createInspectionType",
+      "serviceCall": "schoolService.createInspectionType"
+    },
+    {
       "method": "GET",
       "path": "/analytics/forms/submissions",
       "controllerFile": "modules/analytics/analytics.controller.ts",
@@ -4630,6 +5454,22 @@
     },
     {
       "method": "POST",
+      "path": "/reminders/send-expiration",
+      "controllerFile": "modules/reminders/reminders.controller.ts",
+      "controllerClass": "RemindersController",
+      "handler": "sendExpiration",
+      "serviceCall": null
+    },
+    {
+      "method": "GET",
+      "path": "/roster/import-jobs/:jobId",
+      "controllerFile": "modules/roster/roster.controller.ts",
+      "controllerClass": "RosterController",
+      "handler": "getJob",
+      "serviceCall": null
+    },
+    {
+      "method": "POST",
       "path": "/auth/resend-verification",
       "controllerFile": "modules/auth/auth.controller.ts",
       "controllerClass": "AuthController",
@@ -4651,6 +5491,46 @@
       "controllerClass": "InvitationController",
       "handler": "sendTeacher",
       "serviceCall": "invitationService.send"
+    },
+    {
+      "method": "GET",
+      "path": "/certification-types/:id",
+      "controllerFile": "modules/certification-types/certification-types.controller.ts",
+      "controllerClass": "CertificationTypesController",
+      "handler": "get",
+      "serviceCall": "repo.findOne"
+    },
+    {
+      "method": "PATCH",
+      "path": "/certification-types/:id",
+      "controllerFile": "modules/certification-types/certification-types.controller.ts",
+      "controllerClass": "CertificationTypesController",
+      "handler": "update",
+      "serviceCall": "repo.findOne"
+    },
+    {
+      "method": "DELETE",
+      "path": "/certification-types/:id",
+      "controllerFile": "modules/certification-types/certification-types.controller.ts",
+      "controllerClass": "CertificationTypesController",
+      "handler": "remove",
+      "serviceCall": "repo.delete"
+    },
+    {
+      "method": "GET",
+      "path": "/compliance/evidence/:id",
+      "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+      "controllerClass": "ComplianceEvidenceController",
+      "handler": "get",
+      "serviceCall": null
+    },
+    {
+      "method": "DELETE",
+      "path": "/compliance/evidence/:id",
+      "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+      "controllerClass": "ComplianceEvidenceController",
+      "handler": "remove",
+      "serviceCall": null
     },
     {
       "method": "POST",
@@ -4683,6 +5563,22 @@
       "controllerClass": "DocumentController",
       "handler": "getDownloadUrl",
       "serviceCall": "documentService.getDownloadUrl"
+    },
+    {
+      "method": "PATCH",
+      "path": "/document-templates/:id",
+      "controllerFile": "modules/document-templates/document-templates.controller.ts",
+      "controllerClass": "DocumentTemplatesController",
+      "handler": "update",
+      "serviceCall": null
+    },
+    {
+      "method": "DELETE",
+      "path": "/document-templates/:id",
+      "controllerFile": "modules/document-templates/document-templates.controller.ts",
+      "controllerClass": "DocumentTemplatesController",
+      "handler": "remove",
+      "serviceCall": null
     },
     {
       "method": "PATCH",
@@ -4725,12 +5621,52 @@
       "serviceCall": "documentService.verifyMany"
     },
     {
+      "method": "PATCH",
+      "path": "/teacher-positions/:id",
+      "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+      "controllerClass": "TeacherPositionController",
+      "handler": "update",
+      "serviceCall": "service.update"
+    },
+    {
+      "method": "DELETE",
+      "path": "/teacher-positions/:id",
+      "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+      "controllerClass": "TeacherPositionController",
+      "handler": "remove",
+      "serviceCall": "service.remove"
+    },
+    {
       "method": "GET",
       "path": "/analytics/compliance",
       "controllerFile": "modules/analytics/analytics.controller.ts",
       "controllerClass": "AnalyticsController",
       "handler": "getComplianceRoot",
       "serviceCall": "analytics.getComplianceSummary"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/forgot-password",
+      "controllerFile": "modules/auth/auth.controller.ts",
+      "controllerClass": "AuthController",
+      "handler": "forgotPassword",
+      "serviceCall": "authService.forgotPassword"
+    },
+    {
+      "method": "POST",
+      "path": "/auth/update-password",
+      "controllerFile": "modules/auth/auth.controller.ts",
+      "controllerClass": "AuthController",
+      "handler": "updatePassword",
+      "serviceCall": "authService.updatePassword"
+    },
+    {
+      "method": "PATCH",
+      "path": "/documents/:id/review",
+      "controllerFile": "modules/document/document.controller.ts",
+      "controllerClass": "DocumentController",
+      "handler": "review",
+      "serviceCall": null
     },
     {
       "method": "PATCH",
@@ -4742,11 +5678,91 @@
     },
     {
       "method": "GET",
+      "path": "/eligibility-profiles",
+      "controllerFile": "modules/eligibility/eligibility.controller.ts",
+      "controllerClass": "EligibilityController",
+      "handler": "listBySchool",
+      "serviceCall": "service.listBySchool"
+    },
+    {
+      "method": "GET",
+      "path": "/schools/:id/students",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "listStudentProfiles",
+      "serviceCall": "schoolService.listStudentProfiles"
+    },
+    {
+      "method": "GET",
+      "path": "/storage/download-url",
+      "controllerFile": "modules/storage/storage.controller.ts",
+      "controllerClass": "StorageController",
+      "handler": "downloadUrl",
+      "serviceCall": "storage.createPresignedDownloadUrl"
+    },
+    {
+      "method": "GET",
+      "path": "/student-profiles/:id",
+      "controllerFile": "modules/student-parent/student-profile.controller.ts",
+      "controllerClass": "StudentProfileController",
+      "handler": "unknown",
+      "serviceCall": "studentParentService.getStudentProfileById"
+    },
+    {
+      "method": "GET",
       "path": "/analytics/dashboard",
       "controllerFile": "modules/analytics/analytics.controller.ts",
       "controllerClass": "AnalyticsController",
       "handler": "getSchoolDashboard",
       "serviceCall": "analytics.getSchoolDashboardAnalytics"
+    },
+    {
+      "method": "GET",
+      "path": "/certification-types",
+      "controllerFile": "modules/certification-types/certification-types.controller.ts",
+      "controllerClass": "CertificationTypesController",
+      "handler": "list",
+      "serviceCall": "repo.find"
+    },
+    {
+      "method": "POST",
+      "path": "/certification-types",
+      "controllerFile": "modules/certification-types/certification-types.controller.ts",
+      "controllerClass": "CertificationTypesController",
+      "handler": "create",
+      "serviceCall": "repo.save"
+    },
+    {
+      "method": "GET",
+      "path": "/compliance/evidence",
+      "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+      "controllerClass": "ComplianceEvidenceController",
+      "handler": "list",
+      "serviceCall": null
+    },
+    {
+      "method": "POST",
+      "path": "/compliance/evidence",
+      "controllerFile": "modules/compliance-evidence/compliance-evidence.controller.ts",
+      "controllerClass": "ComplianceEvidenceController",
+      "handler": "create",
+      "serviceCall": null
+    },
+    {
+      "method": "PATCH",
+      "path": "/schools/:id/approve",
+      "controllerFile": "modules/school/school.controller.ts",
+      "controllerClass": "SchoolController",
+      "handler": "approve",
+      "serviceCall": "schoolService.approve"
+    },
+    {
+      "method": "POST",
+      "path": "/school-applications",
+      "controllerFile": "modules/school-applications/school-applications.controller.ts",
+      "controllerClass": "SchoolApplicationsController",
+      "handler": "submit",
+      "serviceCall": null
     },
     {
       "method": "DELETE",
@@ -4765,12 +5781,36 @@
       "serviceCall": "documentService.complete"
     },
     {
+      "method": "GET",
+      "path": "/document-templates",
+      "controllerFile": "modules/document-templates/document-templates.controller.ts",
+      "controllerClass": "DocumentTemplatesController",
+      "handler": "list",
+      "serviceCall": null
+    },
+    {
+      "method": "POST",
+      "path": "/document-templates",
+      "controllerFile": "modules/document-templates/document-templates.controller.ts",
+      "controllerClass": "DocumentTemplatesController",
+      "handler": "create",
+      "serviceCall": null
+    },
+    {
       "method": "PATCH",
       "path": "/document-types/:id",
       "controllerFile": "modules/document-type/document-type.controller.ts",
       "controllerClass": "DocumentTypeController",
       "handler": "update",
       "serviceCall": "documentTypeService.update"
+    },
+    {
+      "method": "DELETE",
+      "path": "/document-types/:id",
+      "controllerFile": "modules/document-type/document-type.controller.ts",
+      "controllerClass": "DocumentTypeController",
+      "handler": "remove",
+      "serviceCall": "documentTypeService.remove"
     },
     {
       "method": "GET",
@@ -4798,6 +5838,22 @@
     },
     {
       "method": "GET",
+      "path": "/teacher-positions",
+      "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+      "controllerClass": "TeacherPositionController",
+      "handler": "list",
+      "serviceCall": "service.list"
+    },
+    {
+      "method": "POST",
+      "path": "/teacher-positions",
+      "controllerFile": "modules/teacher-position/teacher-position.controller.ts",
+      "controllerClass": "TeacherPositionController",
+      "handler": "create",
+      "serviceCall": "service.create"
+    },
+    {
+      "method": "GET",
       "path": "/documents/search",
       "controllerFile": "modules/document/document.controller.ts",
       "controllerClass": "DocumentController",
@@ -4822,11 +5878,27 @@
     },
     {
       "method": "POST",
+      "path": "/storage/presign",
+      "controllerFile": "modules/storage/storage.controller.ts",
+      "controllerClass": "StorageController",
+      "handler": "presign",
+      "serviceCall": "storage.createPresignedUploadUrl"
+    },
+    {
+      "method": "POST",
       "path": "/student-parents",
       "controllerFile": "modules/student-parent/student-parent.controller.ts",
       "controllerClass": "StudentParentController",
       "handler": "create",
       "serviceCall": "studentParentService.create"
+    },
+    {
+      "method": "POST",
+      "path": "/documents/scan",
+      "controllerFile": "modules/document/document.controller.ts",
+      "controllerClass": "DocumentController",
+      "handler": "scan",
+      "serviceCall": null
     },
     {
       "method": "POST",
@@ -4846,6 +5918,38 @@
     },
     {
       "method": "POST",
+      "path": "/reminders/send",
+      "controllerFile": "modules/reminders/reminders.controller.ts",
+      "controllerClass": "RemindersController",
+      "handler": "send",
+      "serviceCall": null
+    },
+    {
+      "method": "POST",
+      "path": "/storage/delete",
+      "controllerFile": "modules/storage/storage.controller.ts",
+      "controllerClass": "StorageController",
+      "handler": "delete",
+      "serviceCall": null
+    },
+    {
+      "method": "PATCH",
+      "path": "/user-roles/:id",
+      "controllerFile": "modules/user-roles/user-roles.controller.ts",
+      "controllerClass": "UserRolesController",
+      "handler": "updateRole",
+      "serviceCall": "users.findOne"
+    },
+    {
+      "method": "DELETE",
+      "path": "/user-roles/:id",
+      "controllerFile": "modules/user-roles/user-roles.controller.ts",
+      "controllerClass": "UserRolesController",
+      "handler": "removeRole",
+      "serviceCall": "users.findOne"
+    },
+    {
+      "method": "POST",
       "path": "/auth/register",
       "controllerFile": "modules/auth/auth.controller.ts",
       "controllerClass": "AuthController",
@@ -4859,6 +5963,22 @@
       "controllerClass": "DocumentController",
       "handler": "getDocumentById",
       "serviceCall": "documentService.findDocumentById"
+    },
+    {
+      "method": "DELETE",
+      "path": "/documents/:id",
+      "controllerFile": "modules/document/document.controller.ts",
+      "controllerClass": "DocumentController",
+      "handler": "remove",
+      "serviceCall": null
+    },
+    {
+      "method": "POST",
+      "path": "/roster/import",
+      "controllerFile": "modules/roster/roster.controller.ts",
+      "controllerClass": "RosterController",
+      "handler": "startImport",
+      "serviceCall": null
     },
     {
       "method": "GET",
@@ -4893,12 +6013,60 @@
       "serviceCall": "branchService.remove"
     },
     {
+      "method": "PATCH",
+      "path": "/messages/:id",
+      "controllerFile": "modules/messages/messages.controller.ts",
+      "controllerClass": "MessagesController",
+      "handler": "update",
+      "serviceCall": null
+    },
+    {
+      "method": "PATCH",
+      "path": "/students/:id",
+      "controllerFile": "modules/students/students.controller.ts",
+      "controllerClass": "StudentsController",
+      "handler": "update",
+      "serviceCall": "service.update"
+    },
+    {
+      "method": "GET",
+      "path": "/teachers/:id",
+      "controllerFile": "modules/user/teacher.controller.ts",
+      "controllerClass": "TeacherController",
+      "handler": "getTeacher",
+      "serviceCall": "users.findOne"
+    },
+    {
+      "method": "PATCH",
+      "path": "/teachers/:id",
+      "controllerFile": "modules/user/teacher.controller.ts",
+      "controllerClass": "TeacherController",
+      "handler": "updateTeacher",
+      "serviceCall": "teacherProfiles.findOne"
+    },
+    {
       "method": "GET",
       "path": "/users/search",
       "controllerFile": "modules/user/user.controller.ts",
       "controllerClass": "UserController",
       "handler": "unknown",
       "serviceCall": "userService.searchUsers"
+    },
+    {
+      "method": "GET",
+      "path": "/user-consent",
+      "controllerFile": "modules/user-consent/user-consent.controller.ts",
+      "controllerClass": "UserConsentController",
+      "handler": "list",
+      "serviceCall": null
+    },
+    {
+      "method": "POST",
+      "path": "/user-consent",
+      "controllerFile": "modules/user-consent/user-consent.controller.ts",
+      "controllerClass": "UserConsentController",
+      "handler": "upsert",
+      "serviceCall": null
     },
     {
       "method": "POST",
@@ -4958,6 +6126,14 @@
     },
     {
       "method": "GET",
+      "path": "/user-roles",
+      "controllerFile": "modules/user-roles/user-roles.controller.ts",
+      "controllerClass": "UserRolesController",
+      "handler": "listDirectors",
+      "serviceCall": "users.find"
+    },
+    {
+      "method": "GET",
       "path": "/users/:id",
       "controllerFile": "modules/user/user.controller.ts",
       "controllerClass": "UserController",
@@ -4982,6 +6158,22 @@
     },
     {
       "method": "GET",
+      "path": "/messages",
+      "controllerFile": "modules/messages/messages.controller.ts",
+      "controllerClass": "MessagesController",
+      "handler": "list",
+      "serviceCall": null
+    },
+    {
+      "method": "POST",
+      "path": "/messages",
+      "controllerFile": "modules/messages/messages.controller.ts",
+      "controllerClass": "MessagesController",
+      "handler": "create",
+      "serviceCall": null
+    },
+    {
+      "method": "GET",
       "path": "/settings",
       "controllerFile": "modules/settings/settings.controller.ts",
       "controllerClass": "SettingsController",
@@ -4995,6 +6187,14 @@
       "controllerClass": "SettingsController",
       "handler": "patch",
       "serviceCall": "settings.update"
+    },
+    {
+      "method": "POST",
+      "path": "/students",
+      "controllerFile": "modules/students/students.controller.ts",
+      "controllerClass": "StudentsController",
+      "handler": "create",
+      "serviceCall": "service.create"
     },
     {
       "method": "GET",

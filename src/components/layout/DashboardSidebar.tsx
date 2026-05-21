@@ -20,7 +20,6 @@ import {
   Bell,
   Search,
   ClipboardCheck,
-  ClipboardList,
   Briefcase,
   LayoutGrid,
   Scale,
@@ -56,6 +55,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import {
+  ADMIN_PEOPLE,
+  SCHOOL_PEOPLE,
+  SCHOOL_REQUIREMENTS,
+} from "@/routes/appRoutes";
 import logoImage from "@/assets/logo-nobg.png";
 
 interface NavigationItem {
@@ -129,32 +133,86 @@ export function DashboardSidebar({
       return pathname === base || pathname === `${base}/`;
     }
 
-    if (base === '/school/students') {
+    const studentsBases = [SCHOOL_PEOPLE.students, '/school/students', ADMIN_PEOPLE.students, '/admin/students'];
+    if (studentsBases.includes(base)) {
       return (
+        pathname === SCHOOL_PEOPLE.students ||
+        pathname === `${SCHOOL_PEOPLE.students}/` ||
         pathname === '/school/students' ||
         pathname === '/school/students/' ||
+        pathname === ADMIN_PEOPLE.students ||
+        pathname === `${ADMIN_PEOPLE.students}/` ||
+        pathname === '/admin/students' ||
+        pathname === '/admin/students/' ||
         pathname.startsWith('/admin/student/')
       );
     }
-    if (base === '/school/staff') {
+    const staffBases = [SCHOOL_PEOPLE.staff, '/school/staff', ADMIN_PEOPLE.staff, '/admin/staff'];
+    if (staffBases.includes(base)) {
       return (
+        pathname === SCHOOL_PEOPLE.staff ||
+        pathname === `${SCHOOL_PEOPLE.staff}/` ||
         pathname === '/school/staff' ||
         pathname === '/school/staff/' ||
+        pathname === ADMIN_PEOPLE.staff ||
+        pathname === `${ADMIN_PEOPLE.staff}/` ||
+        pathname === '/admin/staff' ||
+        pathname === '/admin/staff/' ||
         pathname.startsWith('/admin/teacher/')
       );
     }
-    if (base === '/school/parents') {
-      return pathname === '/school/parents' || pathname === '/school/parents/';
+    const parentsBases = [SCHOOL_PEOPLE.parents, '/school/parents', ADMIN_PEOPLE.parents, '/admin/parents'];
+    if (parentsBases.includes(base)) {
+      return (
+        pathname === SCHOOL_PEOPLE.parents ||
+        pathname === `${SCHOOL_PEOPLE.parents}/` ||
+        pathname === '/school/parents' ||
+        pathname === '/school/parents/' ||
+        pathname === ADMIN_PEOPLE.parents ||
+        pathname === `${ADMIN_PEOPLE.parents}/` ||
+        pathname === '/admin/parents' ||
+        pathname === '/admin/parents/'
+      );
     }
     if (base === '/school/branches') {
       return pathname === '/school/branches' || pathname === '/school/branches/';
     }
-    if (base === '/school/branch-directors') {
+    const branchDirBases = [
+      SCHOOL_PEOPLE.branchDirectors,
+      '/school/branch-directors',
+      ADMIN_PEOPLE.branchDirectors,
+      '/admin/branch-directors',
+    ];
+    if (branchDirBases.includes(base)) {
       return (
+        pathname === SCHOOL_PEOPLE.branchDirectors ||
+        pathname === `${SCHOOL_PEOPLE.branchDirectors}/` ||
         pathname === '/school/branch-directors' ||
         pathname === '/school/branch-directors/' ||
         pathname === '/school/leadership' ||
-        pathname === '/school/leadership/'
+        pathname === '/school/leadership/' ||
+        pathname === ADMIN_PEOPLE.branchDirectors ||
+        pathname === `${ADMIN_PEOPLE.branchDirectors}/` ||
+        pathname === '/admin/branch-directors' ||
+        pathname === '/admin/branch-directors/'
+      );
+    }
+    if (base === SCHOOL_REQUIREMENTS.root) {
+      return (
+        pathname === "/school/requirements" ||
+        pathname === "/school/requirements/" ||
+        pathname.startsWith("/school/requirements/") ||
+        pathname.startsWith("/admin/requirements")
+      );
+    }
+
+    const directorOnlyBases = [ADMIN_PEOPLE.directors, '/admin/directors'];
+    if (directorOnlyBases.includes(base)) {
+      return (
+        pathname === ADMIN_PEOPLE.directors ||
+        pathname === `${ADMIN_PEOPLE.directors}/` ||
+        pathname === '/admin/directors' ||
+        pathname === '/admin/directors/'
       );
     }
 
@@ -184,10 +242,13 @@ export function DashboardSidebar({
     location.pathname === '/all-documents';
 
   const requirementsGroupOpen =
-    location.pathname.includes('/student-requirements') ||
-    location.pathname.includes('/staff-documents');
+    location.pathname.startsWith("/school/requirements") ||
+    location.pathname.startsWith("/admin/requirements") ||
+    location.pathname.includes("/student-requirements") ||
+    location.pathname.includes("/staff-documents");
 
   const schoolPeoplePaths =
+    location.pathname.startsWith('/school/people/') ||
     location.pathname === '/school/students' ||
     location.pathname === '/school/students/' ||
     location.pathname === '/school/staff' ||
@@ -245,8 +306,7 @@ export function DashboardSidebar({
       groups.push({
         label: "Requirements",
         items: [
-          { title: "Student document requirements", url: '/admin/student-requirements', icon: ClipboardList },
-          { title: "Staff document requirements", url: '/admin/staff-documents', icon: GraduationCap },
+          { title: "Requirements", url: SCHOOL_REQUIREMENTS.root, icon: ClipboardCheck },
         ],
         collapsible: true,
         defaultOpen: requirementsGroupOpen,
@@ -255,13 +315,13 @@ export function DashboardSidebar({
       groups.push({
         label: "People",
         items: [
-          { title: "Students", url: '/admin/students', icon: Users, badge: stats.studentCount },
-          { title: "Staff", url: '/admin/staff', icon: GraduationCap, badge: stats.teacherCount },
-          { title: "Parents", url: '/admin/parents', icon: UserCircle, badge: stats.parentCount },
-          { title: "School directors", url: '/admin/directors', icon: UserCog, badge: stats.directorCount },
+          { title: "Students", url: ADMIN_PEOPLE.students, icon: Users, badge: stats.studentCount },
+          { title: "Staff", url: ADMIN_PEOPLE.staff, icon: GraduationCap, badge: stats.teacherCount },
+          { title: "Parents", url: ADMIN_PEOPLE.parents, icon: UserCircle, badge: stats.parentCount },
+          { title: "School directors", url: ADMIN_PEOPLE.directors, icon: UserCog, badge: stats.directorCount },
           {
             title: "Branch directors",
-            url: '/admin/branch-directors',
+            url: ADMIN_PEOPLE.branchDirectors,
             icon: UsersRound,
             badge: stats.branchDirectorCount,
           },
@@ -286,12 +346,12 @@ export function DashboardSidebar({
           { title: "School dashboard", url: dashboardPath, icon: LayoutDashboard },
           { title: "Branches", url: '/school/branches', icon: MapPin, badge: stats.branchCount },
           { title: "School settings", url: '/school/settings', icon: Settings },
-          { title: "Students", url: '/school/students', icon: Users, badge: stats.studentCount },
-          { title: "Staff", url: '/school/staff', icon: GraduationCap, badge: stats.teacherCount },
-          { title: "Parents", url: '/school/parents', icon: UserCircle, badge: stats.parentCount },
+          { title: "Students", url: SCHOOL_PEOPLE.students, icon: Users, badge: stats.studentCount },
+          { title: "Staff", url: SCHOOL_PEOPLE.staff, icon: GraduationCap, badge: stats.teacherCount },
+          { title: "Parents", url: SCHOOL_PEOPLE.parents, icon: UserCircle, badge: stats.parentCount },
           {
             title: "Branch directors",
-            url: '/school/branch-directors',
+            url: SCHOOL_PEOPLE.branchDirectors,
             icon: UsersRound,
             badge: stats.branchDirectorCount,
           },
@@ -331,9 +391,7 @@ export function DashboardSidebar({
       groups.push({
         label: "Requirements",
         items: [
-          { title: "Requirement rules", url: '/school/requirements', icon: ClipboardCheck },
-          { title: "Student document requirements", url: '/school/student-requirements', icon: ClipboardList },
-          { title: "Staff document requirements", url: '/school/staff-documents', icon: GraduationCap },
+          { title: "Requirements", url: SCHOOL_REQUIREMENTS.root, icon: ClipboardCheck },
         ],
         collapsible: true,
         defaultOpen: requirementsGroupOpen,
@@ -349,12 +407,12 @@ export function DashboardSidebar({
         items: [
           { title: "School dashboard", url: dashboardPath, icon: LayoutDashboard },
           { title: "School settings", url: '/school/settings', icon: Settings },
-          { title: "Students", url: '/school/students', icon: Users, badge: stats.studentCount },
-          { title: "Staff", url: '/school/staff', icon: GraduationCap, badge: stats.teacherCount },
-          { title: "Parents", url: '/school/parents', icon: UserCircle, badge: stats.parentCount },
+          { title: "Students", url: SCHOOL_PEOPLE.students, icon: Users, badge: stats.studentCount },
+          { title: "Staff", url: SCHOOL_PEOPLE.staff, icon: GraduationCap, badge: stats.teacherCount },
+          { title: "Parents", url: SCHOOL_PEOPLE.parents, icon: UserCircle, badge: stats.parentCount },
           {
             title: "Branch directors",
-            url: '/school/branch-directors',
+            url: SCHOOL_PEOPLE.branchDirectors,
             icon: UsersRound,
             badge: stats.branchDirectorCount,
           },
@@ -394,9 +452,7 @@ export function DashboardSidebar({
       groups.push({
         label: "Requirements",
         items: [
-          { title: "Requirement rules", url: '/school/requirements', icon: ClipboardCheck },
-          { title: "Student document requirements", url: '/school/student-requirements', icon: ClipboardList },
-          { title: "Staff document requirements", url: '/school/staff-documents', icon: GraduationCap },
+          { title: "Requirements", url: SCHOOL_REQUIREMENTS.root, icon: ClipboardCheck },
         ],
         collapsible: true,
         defaultOpen: requirementsGroupOpen,

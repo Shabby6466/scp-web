@@ -15,7 +15,8 @@ import { userService } from "@/services/userService";
 import { schoolService } from "@/services/schoolService";
 import { documentTypeService } from "@/services/documentTypeService";
 import { studentProfileService } from "@/services/studentProfileService";
-import { requirementService, type RequirementAssignment } from "@/services/requirementService";
+import { requirementService, type Requirement } from "@/services/requirementService";
+import RequirementStatusBadge from "@/components/requirements/RequirementStatusBadge";
 import { useUserRole } from "@/hooks/useUserRole";
 import { PersonFileCard } from "@/components/documents/PersonFileCard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,7 +54,7 @@ export default function AllDocumentsPage() {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [studentRequirements, setStudentRequirements] = useState<number>(0);
   const [teacherRequirements, setTeacherRequirements] = useState<number>(0);
-  const [myAssignments, setMyAssignments] = useState<RequirementAssignment[]>([]);
+  const [myRequirements, setMyRequirements] = useState<Requirement[]>([]);
 
   useEffect(() => {
     loadData();
@@ -65,8 +66,8 @@ export default function AllDocumentsPage() {
       const effectiveSchoolId = schoolId && !isAdmin ? schoolId : undefined;
 
       const [studentReqRes, teacherReqRes] = await Promise.all([
-        documentTypeService.list({ schoolId: effectiveSchoolId ?? undefined, targetRole: 'STUDENT' }),
-        documentTypeService.list({ schoolId: effectiveSchoolId ?? undefined, targetRole: 'TEACHER' }),
+        documentTypeService.list({ schoolId: effectiveSchoolId ?? undefined, role: 'STUDENT' }),
+        documentTypeService.list({ schoolId: effectiveSchoolId ?? undefined, role: 'TEACHER' }),
       ]);
 
       const studentReqList: any[] = Array.isArray(studentReqRes) ? studentReqRes : (studentReqRes as any)?.data ?? [];
@@ -152,10 +153,10 @@ export default function AllDocumentsPage() {
       );
 
       try {
-        const mine = await requirementService.myAssignments();
-        setMyAssignments(Array.isArray(mine) ? mine : []);
+        const mine = await requirementService.mine();
+        setMyRequirements(Array.isArray(mine) ? mine : []);
       } catch {
-        setMyAssignments([]);
+        setMyRequirements([]);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -223,19 +224,17 @@ export default function AllDocumentsPage() {
 
   return (
     <div className="p-6 space-y-8">
-      {myAssignments.length > 0 && (
+      {myRequirements.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">My requirement checklist</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {myAssignments.slice(0, 8).map((a) => (
+              {myRequirements.slice(0, 8).map((a) => (
                 <div key={a.id} className="flex items-center justify-between border rounded px-3 py-2">
                   <span className="text-sm">{a.documentType?.name ?? a.documentTypeId}</span>
-                  <Badge variant={a.status === "APPROVED" ? "secondary" : "default"}>
-                    {a.status}
-                  </Badge>
+                  <RequirementStatusBadge kind="requirement" status={a.status} />
                 </div>
               ))}
             </div>

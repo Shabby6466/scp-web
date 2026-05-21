@@ -4,7 +4,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { documentService } from '@/services/documentService';
 import { schoolService } from '@/services/schoolService';
-import { requirementService, type RequirementAssignment } from '@/services/requirementService';
+import { requirementService, type Requirement } from '@/services/requirementService';
+import RequirementStatusBadge from '@/components/requirements/RequirementStatusBadge';
 import { api } from '@/lib/api';
 import { unwrapList } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
@@ -101,7 +102,7 @@ export default function SchoolDocumentsPage() {
   const [sending30, setSending30] = useState(false);
   const [sending7, setSending7] = useState(false);
   const [sendingExpired, setSendingExpired] = useState(false);
-  const [assignmentRows, setAssignmentRows] = useState<RequirementAssignment[]>([]);
+  const [assignmentRows, setAssignmentRows] = useState<Requirement[]>([]);
   const [loadingAssignments, setLoadingAssignments] = useState(false);
 
   const effectiveSchoolId = isAdmin && !schoolId ? adminSchoolId : schoolId ?? '';
@@ -282,16 +283,17 @@ export default function SchoolDocumentsPage() {
     if (!effectiveSchoolId) return;
     setLoadingAssignments(true);
     try {
-      const statuses = ['PENDING', 'REJECTED', 'EXPIRING', 'EXPIRED'] as const;
+      const statuses = ['PENDING', 'REJECTED', 'EXPIRED'] as const;
       const chunks = await Promise.all(
         statuses.map((status) =>
-          requirementService.listAssignments({
+          requirementService.list({
+            schoolId: effectiveSchoolId,
             ...(isBranchDirector && branchId ? { branchId } : {}),
             status,
           }),
         ),
       );
-      const unique = new Map<string, RequirementAssignment>();
+      const unique = new Map<string, Requirement>();
       chunks.flat().forEach((row) => unique.set(row.id, row));
       setAssignmentRows(Array.from(unique.values()));
     } catch {
@@ -641,18 +643,10 @@ export default function SchoolDocumentsPage() {
                       <div>
                         <p className="font-medium">{a.documentType?.name ?? a.documentTypeId}</p>
                         <p className="text-xs text-muted-foreground">
-                          Subject: {a.subjectUserId ?? a.subjectStudentProfileId ?? '—'}
+                          User: {a.user?.email ?? a.userId ?? '—'}
                         </p>
                       </div>
-                      <Badge
-                        variant={
-                          a.status === 'EXPIRED' || a.status === 'REJECTED'
-                            ? 'destructive'
-                            : 'secondary'
-                        }
-                      >
-                        {a.status}
-                      </Badge>
+                      <RequirementStatusBadge kind="requirement" status={a.status} />
                     </div>
                   ))}
                 </div>

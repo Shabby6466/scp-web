@@ -237,7 +237,7 @@ const ImportReviewPage = () => {
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
             <h2 className="text-lg font-semibold">Import Job Not Found</h2>
             <p className="text-muted-foreground mb-4">The requested import job does not exist.</p>
-            <Button onClick={() => navigate('/school/students')}>
+            <Button onClick={() => navigate('/school/people/students')}>
               Go to students
             </Button>
           </CardContent>
@@ -464,7 +464,7 @@ const ImportReviewPage = () => {
         <Button variant="outline" onClick={() => navigate('/school-dashboard')}>
           Back to Dashboard
         </Button>
-        <Button onClick={() => navigate('/school/students')}>
+        <Button onClick={() => navigate('/school/people/students')}>
           View All Students
         </Button>
       </div>

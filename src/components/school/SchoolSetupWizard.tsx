@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Check, Upload, Users, GraduationCap, Mail, BarChart3, ChevronRight, Loader2 } from "lucide-react";
+import { COMPLIANCE_CENTER, SCHOOL_PEOPLE, SCHOOL_REQUIREMENTS } from "@/routes/appRoutes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -31,7 +32,7 @@ const SchoolSetupWizard = ({
       title: "Upload Required Documents",
       description: "Define which documents parents must submit",
       icon: Upload,
-      path: "/school/student-requirements",
+      path: SCHOOL_REQUIREMENTS.students,
       isComplete: setupStatus.hasRequiredDocuments,
       count: setupStatus.requiredDocumentCount,
       threshold: 3,
@@ -42,7 +43,7 @@ const SchoolSetupWizard = ({
       title: "Add Your Staff",
       description: "Invite teachers and administrators",
       icon: Users,
-      path: "/school/staff",
+      path: SCHOOL_PEOPLE.staff,
       isComplete: setupStatus.hasStaff,
       count: setupStatus.staffCount,
       threshold: 1,
@@ -53,7 +54,7 @@ const SchoolSetupWizard = ({
       title: "Add Your Students",
       description: "Import your student roster",
       icon: GraduationCap,
-      path: "/school/students",
+      path: SCHOOL_PEOPLE.students,
       isComplete: setupStatus.hasStudents,
       count: setupStatus.studentCount,
       threshold: 1,
@@ -64,7 +65,7 @@ const SchoolSetupWizard = ({
       title: "Send Parent Invitations",
       description: "Invite parents to upload documents",
       icon: Mail,
-      path: "/school/parents",
+      path: SCHOOL_PEOPLE.parents,
       isComplete: setupStatus.hasSentParentInvites,
       count: setupStatus.parentInviteCount,
       threshold: 1,
@@ -75,7 +76,7 @@ const SchoolSetupWizard = ({
       title: "Monitor Compliance",
       description: "Track document status and send reminders",
       icon: BarChart3,
-      path: "/compliance",
+      path: COMPLIANCE_CENTER.root,
       isComplete: setupStatus.hasComplianceActivity,
       count: setupStatus.approvedDocumentCount,
       threshold: 1,

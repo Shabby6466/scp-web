@@ -179,7 +179,7 @@ const TeacherCompliance = () => {
           schoolId,
           isBranchDirector && branchId ? branchId : undefined,
         ),
-        documentTypeService.list({ schoolId, targetRole: 'TEACHER' }),
+        documentTypeService.list({ schoolId, role: 'TEACHER' }),
         documentService.search({
           schoolId,
           ownerRole: 'TEACHER',

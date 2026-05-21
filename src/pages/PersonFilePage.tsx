@@ -150,7 +150,7 @@ export default function PersonFilePage() {
       });
 
       const [reqRes, docsRes] = await Promise.all([
-        documentTypeService.list({ schoolId: personSchoolId ?? undefined, targetRole: 'TEACHER' }),
+        documentTypeService.list({ schoolId: personSchoolId ?? undefined, role: 'TEACHER' }),
         documentService.listByOwner(personId),
       ]);
 

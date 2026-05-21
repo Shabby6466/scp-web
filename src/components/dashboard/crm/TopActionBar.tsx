@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useUserRole } from '@/hooks/useUserRole';
+import { SCHOOL_REQUIREMENTS } from '@/routes/appRoutes';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -54,8 +54,7 @@ export function TopActionBar({
   branchId,
 }: TopActionBarProps) {
   const navigate = useNavigate();
-  const { isAdmin } = useUserRole();
-  const studentRequirementsPath = isAdmin ? '/admin/student-requirements' : '/school/student-requirements';
+  const studentRequirementsPath = SCHOOL_REQUIREMENTS.students;
 
   return (
     <div className="flex flex-col lg:flex-row lg:items-center gap-4 pb-4 border-b border-border/40">

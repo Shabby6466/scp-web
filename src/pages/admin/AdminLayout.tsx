@@ -3,12 +3,12 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const TAB_REDIRECTS: Record<string, string> = {
   overview: '/admin',
-  students: '/admin/students',
-  parents: '/admin/parents',
-  teachers: '/admin/staff',
+  students: '/admin/people/students',
+  parents: '/admin/people/parents',
+  teachers: '/admin/people/staff',
   schools: '/admin/schools',
-  directors: '/admin/directors',
-  'branch-directors': '/admin/branch-directors',
+  directors: '/admin/people/directors',
+  'branch-directors': '/admin/people/branch-directors',
   documents: '/admin/documents',
   reminders: '/admin/reminders',
 };
