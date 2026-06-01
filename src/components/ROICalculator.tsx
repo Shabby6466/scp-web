@@ -235,10 +235,10 @@ const ROICalculator = () => {
                     <AnimatedNumber value={roiPercentage} suffix="% ROI" />
                   </div>
                 </div>
-                <p className="text-4xl font-bold">
+                <p className="text-4xl font-bold text-white">
                   <AnimatedNumber value={netSavings} prefix="$" />
                 </p>
-                <p className="text-sm opacity-75 mt-1">per year in savings and avoided risk</p>
+                <p className="text-sm opacity-75 mt-1 text-white">per year in savings and avoided risk</p>
               </div>
 
               <Button asChild size="lg" className="w-full font-semibold" variant="accent">
